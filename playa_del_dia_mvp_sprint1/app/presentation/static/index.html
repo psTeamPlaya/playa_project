@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La Playa del Día</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">MVP Sprint 1</p>
+        <h1>La Playa del Día</h1>
+        <p class="subtitle">
+          Recomienda el top-3 de playas de Gran Canaria según actividad, fecha, hora y distancia.
+        </p>
+      </div>
+      <div class="badge">FastAPI · Open-Meteo · SQL ready</div>
+    </section>
+
+    <section class="panel">
+      <form id="recommendation-form" class="form-grid">
+        <label>
+          <span>Actividad</span>
+          <select id="activity" required></select>
+        </label>
+
+        <label>
+          <span>Fecha</span>
+          <input id="selected-date" type="date" required />
+        </label>
+
+        <label>
+          <span>Hora</span>
+          <input id="selected-hour" type="number" min="0" max="23" value="10" required />
+        </label>
+
+        <label>
+          <span>Distancia máxima (km)</span>
+          <input id="max-distance" type="number" min="1" max="200" step="1" value="35" required />
+        </label>
+
+        <label>
+          <span>Latitud</span>
+          <input id="latitude" type="number" step="0.000001" placeholder="28.123456" required />
+        </label>
+
+        <label>
+          <span>Longitud</span>
+          <input id="longitude" type="number" step="0.000001" placeholder="-15.123456" required />
+        </label>
+
+        <div class="actions">
+          <button type="button" id="geo-btn" class="secondary">Usar mi ubicación</button>
+          <button type="submit" class="primary">Calcular top-3</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel hidden" id="status-panel">
+      <p id="status-message"></p>
+    </section>
+
+    <section class="results" id="results"></section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
