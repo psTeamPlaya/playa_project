@@ -68,7 +68,7 @@ En esta fase inicial del proyecto se persigue:
 - definir una base mantenible para funcionalidades futuras.
 
 
-## Estructura del proyecto
+# Estructura del proyecto
 
 ```text
 mi-playita-hoy/
@@ -92,3 +92,110 @@ mi-playita-hoy/
 ├─ requirements.txt
 ├─ .gitignore
 └─ README.md
+```
+## Organización de carpetas y ficheros
+```app/backend/```
+
+- Contiene la lógica principal del servidor, la configuración y las rutas del sistema.
+
+```main.py```
+
+- Punto de entrada de la aplicación.
+- Se encarga de crear la app con FastAPI, montar recursos estáticos y conectar las rutas HTML y las rutas de API.
+
+```db.py```
+
+- Gestiona la base de datos.
+- Proporciona el mecanismo de conexión con PostgreSQL y servirá de base para operaciones como:
+
+    * buscar playas;
+    * guardar favoritas;
+    * leer usuarios;
+    * insertar reseñas;
+    * aprobar o rechazar reseñas desde el panel de administración;
+    * comprobar que la conexión funciona;
+    * inicializar tablas.
+
+```config.py```
+
+- Centraliza la configuración global del proyecto, como:
+
+    * nombre de la aplicación;
+    * variables de entorno;
+    * conexión a base de datos;
+    * claves o parámetros sensibles;
+    * modo de ejecución.
+
+```routes/views.py```
+
+- Contiene las rutas que devuelven páginas HTML renderizadas.
+- Ejemplos previstos:
+
+    * /    → página de inicio;
+    * /login → formulario de inicio de sesión;
+    * /favoritas → página de playas favoritas;
+    * /admin → panel de administración.
+
+```routes/api.py```
+
+- Contiene las rutas que devuelven datos, inicialmente en formato JSON.
+-Ejemplos previstos:
+```
+    /api/health
+    /api/playas
+    /api/playas/{id}
+    /api/favoritas
+    /api/reviews
+```
+
+- Este módulo gestiona la comunicación de datos entre frontend y backend.
+
+```app/frontend/```
+
+- Contiene los recursos de presentación de la aplicación.
+
+```templates/base.html```
+
+- Plantilla base común para todas las páginas HTML.
+- Incluye la estructura general compartida de la web:
+
+```
+<!DOCTYPE html>
+estructura <html>
+metadatos
+enlace a hojas de estilo
+cabecera
+navegación
+pie de página
+carga de scripts JavaScript
+```
+
+```templates/index.html```
+
+- Página principal o portada del sistema.
+- Hereda de base.html y muestra el contenido específico de inicio, como por ejemplo:
+
+    * texto de bienvenida;
+    * explicación breve de la aplicación;
+    * formulario para elegir una actividad;
+    * botón de búsqueda;
+    * resultados iniciales;
+    * acceso a login o favoritas.
+
+```static/css/styles.css```
+
+- Hoja de estilos principal del proyecto.
+- Define la presentación visual de la interfaz, incluyendo tipografía, colores, espaciados, diseño responsive, tarjetas, formularios y estructura general de la web.
+
+```static/js/main.js```
+
+- Fichero principal de lógica del lado del navegador.
+- Se encargará de aspectos interactivos como:
+
+    * detectar clics en botones;
+    * leer la actividad seleccionada;
+    * validar formularios;
+    * lanzar peticiones al backend;
+    * mostrar resultados sin recargar la página;
+    * abrir o cerrar menús;
+    * actualizar favoritos en pantalla.
