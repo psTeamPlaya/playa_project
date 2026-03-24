@@ -1,4 +1,4 @@
-# Mi Playita para HOY
+# "Mi día de playa" web app
 
 Aplicación web orientada a recomendar playas según la actividad que desea realizar el usuario teniendo en cuenta parámetros meteorológicos (dinámicos) y datos estáticos (de arena, de pieda, tiene escuelas de surf, zonas de comida, etc), mostrando una primera selección priorizada (top-3) y permitiendo una evolución posterior hacia funcionalidades como login, favoritas, reseñas y panel de administración.
 
@@ -71,7 +71,7 @@ En esta fase inicial del proyecto se persigue:
 # Estructura del proyecto
 
 ```text
-mi-playita-hoy/
+playa_project/
 ├─ app/
 │  ├─ backend/
 │  │  ├─ main.py
