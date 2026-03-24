@@ -139,7 +139,7 @@ mi-playita-hoy/
 ```routes/api.py```
 
 - Contiene las rutas que devuelven datos, inicialmente en formato JSON.
--Ejemplos previstos:
+- Rutas previstas:
 ```
     /api/health
     /api/playas
