@@ -131,10 +131,10 @@ playa_project/
 - Contiene las rutas que devuelven páginas HTML renderizadas.
 - Ejemplos previstos:
 
-    * /    → página de inicio;
-    * /login → formulario de inicio de sesión;
-    * /favoritas → página de playas favoritas;
-    * /admin → panel de administración.
+    * /             → página de inicio;
+    * /login        → formulario de inicio de sesión;
+    * /favoritas    → página de playas favoritas;
+    * /admin        → panel de administración.
 
 ```routes/api.py```
 
