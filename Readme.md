@@ -24,6 +24,10 @@ El frontend será servido por el propio backend, evitando introducir frameworks 
 ```bash
 python -m venv .venv
 ```
+o
+```
+uv venv
+```
 
 ### 2. Activar entorno virtual
 
@@ -37,23 +41,14 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Instalar dependencias
+### 3. Para levantar el backend
+
 ```bash
-pip install -r requirements.txt
+uvicorn backend.main:app --reload
 ```
-
-### 4. Crear archivo `.env`
-Copiar `.env.example` a `.env` y ajustar valores.
-
-### 5. Ejecutar la aplicación
-```bash
-uvicorn app.main:app --reload
-```
-
-## URLs de prueba
-- Inicio: `http://127.0.0.1:8000/`
+## URL para comprobar que backend está OK
 - Salud de la API: `http://127.0.0.1:8000/api/health`
-- Comprobación de BD: `http://127.0.0.1:8000/api/db-check`
+
 
 
 ## Objetivos técnicos iniciales
