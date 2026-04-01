@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-tropical-blue: #00CED1;
+  --color-tropical-sand: #F4A460;
+  --color-tropical-orange: #FF4500;
+  --color-tropical-dark: #1A202C;
+}
+
+body {
+  @apply bg-white text-tropical-dark;
+}
+
+.tropical-gradient {
+  background: linear-gradient(135deg, #00CED1 0%, #FF4500 100%);
+}
