@@ -8,5 +8,3 @@ services:
     
     environment:
       - WATCHPACK_POLLING=true 
-    stdin_open: true 
-    tty: true
