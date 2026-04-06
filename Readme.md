@@ -194,3 +194,35 @@ carga de scripts JavaScript
     * mostrar resultados sin recargar la página;
     * abrir o cerrar menús;
     * actualizar favoritos en pantalla.
+
+---
+
+#  Frontend
+
+
+> [!IMPORTANT]
+> This version is a **UI Mockup**. The interface is static for design and layout review. Data integration from the database is the next planned step.
+
+
+## Prerequisites
+
+* **Docker** installed
+* **Docker Compose** installed
+
+
+
+## Getting Started
+
+To spin up the development server with **Hot Reload** enabled, run the following commands in your terminal:
+
+```bash
+# 1. Navigate to the frontend directory
+cd frontend
+
+# 2. Build and start the container
+docker compose up --build
+```
+## How to see
+1.  Open **localhost:5173** 
+
+---
