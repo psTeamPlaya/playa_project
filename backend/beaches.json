@@ -7,7 +7,6 @@
       "3) I didn't include environment attributes (surf clubs, bus stations...), because it depends on how we measure that something is 'close'"
     ]
   },
-
   "data": [
     {
       "static": {
@@ -39,12 +38,12 @@
     {
       "static": {
         "id": 2,
-        "name": "Playa del Inglés",
+        "name": "Playa del Ingl\u00c3\u00a9s",
         "coordinates": {
           "latitude": 27.7567,
           "longitude": -15.5787
         },
-        "municipality": "San Bartolomé de Tirajana",
+        "municipality": "San Bartolom\u00c3\u00a9 de Tirajana",
         "surface": "sand"
       },
       "dynamic": {
@@ -71,7 +70,7 @@
           "latitude": 27.7919,
           "longitude": -15.7222
         },
-        "municipality": "Mogán",
+        "municipality": "Mog\u00c3\u00a1n",
         "surface": "sand"
       },
       "dynamic": {
@@ -83,7 +82,7 @@
           "period": 7
         },
         "rain": 0.01,
-        "rainProbability": 0.20,
+        "rainProbability": 0.2,
         "uvRadiation": 3,
         "haze": 0,
         "tide": 1.1,
@@ -93,12 +92,12 @@
     {
       "static": {
         "id": 4,
-        "name": "San Agustín",
+        "name": "San Agust\u00c3\u00adn",
         "coordinates": {
           "latitude": 27.771,
           "longitude": -15.5347
         },
-        "municipality": "San Bartolomé de Tirajana",
+        "municipality": "San Bartolom\u00c3\u00a9 de Tirajana",
         "surface": "sand"
       },
       "dynamic": {
@@ -120,12 +119,12 @@
     {
       "static": {
         "id": 5,
-        "name": "Arguineguín",
+        "name": "Arguinegu\u00c3\u00adn",
         "coordinates": {
           "latitude": 27.7565,
           "longitude": -15.6808
         },
-        "municipality": "Mogán",
+        "municipality": "Mog\u00c3\u00a1n",
         "surface": "sand"
       },
       "dynamic": {
