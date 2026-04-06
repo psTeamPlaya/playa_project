@@ -1,4 +1,4 @@
-from general_scorers import score_temperature, score_wind, score_swell, score_general_conditions
+from backend.scorer.general_scorers import score_temperature, score_wind, score_swell, score_general_conditions
 
 def calculate_sunbathing(d: dict) -> float:
     t = score_temperature(d["airTemperature"], d["seaTemperature"], 26, 22)

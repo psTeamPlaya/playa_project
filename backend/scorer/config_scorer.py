@@ -1,4 +1,4 @@
-import specific_scorers
+from backend.scorer import specific_scorers
 
 EXCLUSION_RULES = {
     "sunbathing":  lambda d: d["rain"] > 0.3 or d["rainProbability"] > 0.5 or d["cloudiness"] > 0.8,
