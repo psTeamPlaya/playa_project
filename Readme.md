@@ -1,8 +1,8 @@
-# "Mi día de playa" web app
+# "Mi día de Playa" web app
 
 Aplicación web orientada a recomendar playas según la actividad que desea realizar el usuario teniendo en cuenta parámetros meteorológicos (dinámicos) y datos estáticos (de arena, de pieda, tiene escuelas de surf, zonas de comida, etc), mostrando una primera selección priorizada (top-3) y permitiendo una evolución posterior hacia funcionalidades como login, favoritas, reseñas y panel de administración.
 
-Base técnica del proyecto para el Sprint Zero.
+## Base técnica del proyecto para el Sprint Zero.
 
 
 La arquitectura elegida sigue un enfoque claro y mantenible:
@@ -13,7 +13,6 @@ La arquitectura elegida sigue un enfoque claro y mantenible:
 
 El frontend será servido por el propio backend, evitando introducir frameworks adicionales en esta primera fase del proyecto.
 
-
 ## Requisitos
 - Python 3.11 o superior
 - PostgreSQL en ejecución
@@ -21,6 +20,8 @@ El frontend será servido por el propio backend, evitando introducir frameworks 
 ## Instalación
 
 ### 1. Crear entorno virtual
+- Abrimos un terminal en la carpeta base del proyecto, y ejecutamos el siguiente comando:
+
 ```bash
 python -m venv .venv
 ```
@@ -41,14 +42,26 @@ uv venv
 source .venv/bin/activate
 ```
 
+
+### 2.1 Instalación de dependencias
+
+#### Si existe el fichero **requirements.txt**, ejecutamos:
+```bash
+python -m pip install -r requirements.txt
+```
+
+#### o si, por el contrario, tenemos definidas las dependencias en el fichero **pyproject.toml**, podemos ejecutar, puesto que suele ser bastante más rápido:
+```
+uv sync
+```
+
 ### 3. Para levantar el backend
 
 ```bash
 uvicorn backend.main:app --reload
 ```
-## URL para comprobar que backend está OK
+## URL para comprobar que el backend está funcionando
 - Salud de la API: `http://127.0.0.1:8000/api/health`
-
 
 
 ## Objetivos técnicos iniciales
@@ -77,7 +90,6 @@ playa_project/
 │  │     └─ api.py
 │  └─ frontend/
 │     ├─ templates/
-│     │  ├─ base.html
 │     │  └─ index.html
 │     └─ static/
 │        ├─ css/
@@ -149,33 +161,18 @@ playa_project/
 
 - Contiene los recursos de presentación de la aplicación.
 
-```templates/base.html```
-
-- Plantilla base común para todas las páginas HTML.
-- Incluye la estructura general compartida de la web:
-
-```
-<!DOCTYPE html>
-estructura <html>
-metadatos
-enlace a hojas de estilo
-cabecera
-navegación
-pie de página
-carga de scripts JavaScript
-```
 
 ```templates/index.html```
 
 - Página principal o portada del sistema.
-- Hereda de base.html y muestra el contenido específico de inicio, como por ejemplo:
+- Muestra el contenido específico de inicio, como por ejemplo:
 
     * texto de bienvenida;
     * explicación breve de la aplicación;
     * formulario para elegir una actividad;
     * botón de búsqueda;
     * resultados iniciales;
-    * acceso a login o favoritas.
+    * acceso a login o playas favoritas (en futuras versiones)
 
 ```static/css/styles.css```
 
