@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mi Día de Playa</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ocean:    #1a6b8a;
+    --ocean-lt: #d6eef5;
+    --sand:     #e8d5a3;
+    --sand-dk:  #b89b5e;
+    --sky:      #f0f7fb;
+    --text:     #1c2b35;
+    --muted:    #5c7a89;
+    --white:    #ffffff;
+    --radius:   14px;
+    --shadow:   0 4px 24px rgba(26,107,138,.12);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--sky);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--ocean);
+    color: var(--white);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+  }
+  header .wave-icon { font-size: 1.6rem; }
+
+  /* ===== ACTIVITY SELECTOR ===== */
+  .activity-bar {
+    background: var(--white);
+    border-bottom: 1px solid rgba(26,107,138,.12);
+    padding: .9rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .activity-bar label {
+    font-size: .85rem;
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+  .chip-group { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .chip {
+    border: 1.5px solid rgba(26,107,138,.3);
+    border-radius: 999px;
+    padding: .35rem .9rem;
+    font-size: .85rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--ocean);
+    background: transparent;
+    transition: all .18s;
+  }
+  .chip:hover { background: var(--ocean-lt); }
+  .chip.active { background: var(--ocean); color: var(--white); border-color: var(--ocean); }
+
+  /* ===== PAGE VIEWS ===== */
+  #view-list, #view-detail { padding: 2rem; max-width: 980px; margin: 0 auto; }
+  #view-detail { display: none; }
+
+  /* ===== BEACH CARDS (LIST) ===== */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+
+  .beach-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+    border: 1.5px solid transparent;
+  }
+  .beach-card:hover { transform: translateY(-4px); box-shadow: 0 10px 32px rgba(26,107,138,.18); border-color: var(--ocean-lt); }
+
+  .card-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    background: var(--ocean-lt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+  }
+
+  .card-body { padding: 1.1rem 1.25rem 1.25rem; }
+  .card-body h2 { font-family: 'Playfair Display', serif; font-size: 1.15rem; margin-bottom: .3rem; }
+  .card-body .municipality { font-size: .82rem; color: var(--muted); margin-bottom: .8rem; }
+
+  .score-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    border-radius: 999px;
+    padding: .3rem .8rem;
+    font-size: .88rem;
+    font-weight: 500;
+  }
+  .score-pill.great  { background: #d6f0e0; color: #1a7a45; }
+  .score-pill.good   { background: #d6eef5; color: #1a6b8a; }
+  .score-pill.ok     { background: #fdf0d6; color: #9a6c10; }
+  .score-pill.bad    { background: #fde8e8; color: #a33030; }
+  .score-pill.excl   { background: #eeeeee; color: #777; }
+
+  .card-meta { display: flex; gap: .5rem; align-items: center; margin-top: .75rem; flex-wrap: wrap; }
+  .tag {
+    font-size: .75rem;
+    padding: .2rem .65rem;
+    border-radius: 999px;
+    background: var(--ocean-lt);
+    color: var(--ocean);
+    font-weight: 500;
+  }
+
+  /* ===== DETAIL VIEW ===== */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    border: 1.5px solid var(--ocean);
+    border-radius: 999px;
+    padding: .45rem 1.1rem;
+    font-size: .88rem;
+    font-weight: 500;
+    color: var(--ocean);
+    background: transparent;
+    cursor: pointer;
+    transition: all .18s;
+    margin-bottom: 1.5rem;
+  }
+  .back-btn:hover { background: var(--ocean); color: var(--white); }
+
+  .detail-hero {
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+  }
+  .detail-hero-img {
+    width: 100%;
+    height: 220px;
+    background: var(--ocean-lt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+  }
+  .detail-hero-body { padding: 1.5rem 1.75rem; }
+  .detail-hero-body h1 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: .3rem; }
+  .detail-hero-body .municipality { color: var(--muted); font-size: .92rem; margin-bottom: 1rem; }
+
+  .detail-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 620px) { .detail-cols { grid-template-columns: 1fr; } }
+
+  .detail-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .detail-card h3 {
+    font-size: .78rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  /* Criteria rows */
+  .criteria-list { display: flex; flex-direction: column; gap: .65rem; }
+  .criterion {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .6rem .85rem;
+    border-radius: 8px;
+    font-size: .9rem;
+  }
+  .criterion.matched   { background: #d6f0e0; }
+  .criterion.unmatched { background: #f5f5f5; opacity: .75; }
+  .criterion .crit-icon { font-size: 1rem; flex-shrink: 0; }
+  .criterion .crit-label { flex: 1; color: var(--text); }
+  .criterion .crit-value { font-weight: 500; font-size: .82rem; color: var(--muted); }
+  .criterion.matched .crit-label { color: #14603a; font-weight: 500; }
+  .criterion .match-badge {
+    font-size: .72rem;
+    padding: .15rem .5rem;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .criterion.matched .match-badge   { background: #1a7a45; color: #fff; }
+  .criterion.unmatched .match-badge { background: #ccc; color: #555; }
+
+  /* Conditions grid */
+  .conditions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .cond-item { display: flex; flex-direction: column; gap: .15rem; }
+  .cond-label { font-size: .78rem; color: var(--muted); }
+  .cond-value { font-size: 1.05rem; font-weight: 500; }
+
+  /* Score section */
+  .score-section { text-align: center; }
+  .big-score { font-family: 'Playfair Display', serif; font-size: 3.5rem; line-height: 1; }
+  .big-score.great  { color: #1a7a45; }
+  .big-score.good   { color: var(--ocean); }
+  .big-score.ok     { color: #9a6c10; }
+  .big-score.bad    { color: #a33030; }
+  .big-score.excl   { color: #777; }
+  .score-label { font-size: .85rem; color: var(--muted); margin-top: .3rem; }
+
+  .excluded-notice {
+    background: #fde8e8;
+    color: #a33030;
+    border-radius: 8px;
+    padding: .75rem 1rem;
+    font-size: .88rem;
+    margin-top: .75rem;
+    font-weight: 500;
+  }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 3rem; color: var(--muted); }
+  .empty .big-emoji { font-size: 3rem; margin-bottom: 1rem; }
+
+  /* Score bar */
+  .score-bar-wrap { margin-top: .85rem; }
+  .score-bar-bg { background: #e5eef2; border-radius: 999px; height: 8px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 999px; transition: width .4s; }
+  .fill-great  { background: #1a7a45; }
+  .fill-good   { background: var(--ocean); }
+  .fill-ok     { background: #e8a020; }
+  .fill-bad    { background: #c83030; }
+  .fill-excl   { background: #ccc; width: 0 !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="wave-icon">🌊</span>
+  <h1>Mi Día de Playa</h1>
+</header>
+
+<div class="activity-bar">
+  <label>Actividad:</label>
+  <div class="chip-group" id="chips"></div>
+</div>
+
+<!-- LIST VIEW -->
+<div id="view-list">
+  <div class="grid" id="beach-grid"></div>
+</div>
+
+<!-- DETAIL VIEW -->
+<div id="view-detail">
+  <button class="back-btn" id="back-btn">← Volver al listado</button>
+  <div class="detail-hero">
+    <div class="detail-hero-img" id="detail-emoji"></div>
+    <div class="detail-hero-body">
+      <h1 id="detail-name"></h1>
+      <div class="municipality" id="detail-municipality"></div>
+      <div id="detail-score-pill"></div>
+    </div>
+  </div>
+
+  <div class="detail-cols">
+    <!-- Criterios -->
+    <div class="detail-card">
+      <h3>Por qué se recomienda</h3>
+      <div class="criteria-list" id="criteria-list"></div>
+    </div>
+
+    <!-- Condiciones -->
+    <div class="detail-card">
+      <h3>Condiciones actuales</h3>
+      <div class="conditions-grid" id="conditions-grid"></div>
+    </div>
+  </div>
+
+  <!-- Puntuación -->
+  <div class="detail-card" style="text-align:center; padding:1.75rem;">
+    <h3>Puntuación para la actividad seleccionada</h3>
+    <div class="big-score" id="detail-big-score"></div>
+    <div class="score-label" id="detail-score-label"></div>
+    <div class="score-bar-wrap">
+      <div class="score-bar-bg"><div class="score-bar-fill" id="score-bar-fill"></div></div>
+    </div>
+    <div class="excluded-notice" id="excluded-notice" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const BEACHES = [
+  { static: { id:1, name:"Las Canteras", coordinates:{latitude:28.5148,longitude:-16.3086}, municipality:"Las Palmas de Gran Canaria", surface:"sand" }, dynamic:{ airTemperature:20, seaTemperature:16, wind:9, waves:{height:1.5,period:7}, rain:0, rainProbability:0.08, uvRadiation:3, haze:0, tide:1.7, cloudiness:0.4 } },
+  { static: { id:2, name:"Playa del Inglés", coordinates:{latitude:27.7567,longitude:-15.5787}, municipality:"San Bartolomé de Tirajana", surface:"sand" }, dynamic:{ airTemperature:23, seaTemperature:18, wind:16, waves:{height:1.3,period:6.5}, rain:0, rainProbability:0.02, uvRadiation:6, haze:0, tide:2.1, cloudiness:0.1 } },
+  { static: { id:3, name:"Amadores", coordinates:{latitude:27.7919,longitude:-15.7222}, municipality:"Mogán", surface:"sand" }, dynamic:{ airTemperature:17, seaTemperature:12, wind:5, waves:{height:0.3,period:7}, rain:0.01, rainProbability:0.2, uvRadiation:3, haze:0, tide:1.1, cloudiness:0.6 } },
+  { static: { id:4, name:"San Agustín", coordinates:{latitude:27.771,longitude:-15.5347}, municipality:"San Bartolomé de Tirajana", surface:"sand" }, dynamic:{ airTemperature:26, seaTemperature:20, wind:8, waves:{height:1.1,period:6.45}, rain:0, rainProbability:0, uvRadiation:5, haze:1, tide:1.1, cloudiness:0 } },
+  { static: { id:5, name:"Arguineguín", coordinates:{latitude:27.7565,longitude:-15.6808}, municipality:"Mogán", surface:"sand" }, dynamic:{ airTemperature:20, seaTemperature:25, wind:12, waves:{height:0.7,period:5.1}, rain:0, rainProbability:0.12, uvRadiation:2, haze:0, tide:0.8, cloudiness:0.2 } }
+];
+
+const ACTIVITIES = ["sunbathing","surf","windsurf","paddle_surf","kayak","family"];
+
+const ACTIVITY_LABELS = {
+  sunbathing:"☀️ Baño de sol", surf:"🏄 Surf",
+  windsurf:"💨 Windsurf", paddle_surf:"🏄‍♀️ Paddle surf",
+  kayak:"🚣 Kayak", family:"👨‍👩‍👧 Familia"
+};
+
+const BEACH_EMOJIS = {
+  1:"🏖️", 2:"🏝️", 3:"⛱️", 4:"🌅", 5:"🐚"
+};
+
+// ── SCORER (mirror of Python logic) ──────────────────────────────────────
+function clamp(v,mn,mx){ return Math.max(mn,Math.min(mx,v)); }
+
+function scoreTemp(air,sea,airIdeal,seaIdeal){
+  const a = Math.max(0,1-Math.abs(air-airIdeal)/10);
+  const s = Math.max(0,1-Math.abs(sea-seaIdeal)/8);
+  return (a*0.6+s*0.4)*100;
+}
+function scoreWind(wind,mn,mx,maxT){
+  if(wind>maxT) return 0;
+  if(wind>=mn&&wind<=mx) return 100;
+  if(wind<mn) return Math.max(0,100-(mn-wind)*5);
+  return Math.max(0,100-(wind-mx)*6);
+}
+function scoreSwell(h,p,hMin,hMax,pMin){
+  let hScore;
+  if(h<hMin||h>hMax){ const d=Math.min(Math.abs(h-hMin),Math.abs(h-hMax)); hScore=Math.max(0,100-d*60); }
+  else hScore=100;
+  const pScore=clamp((p-pMin)/5*100,0,100);
+  return hScore*0.7+pScore*0.3;
+}
+function scoreGeneral(rain,rainP,uv,cloud,haze){
+  const r=rain===0&&rainP<0.15?100:Math.max(0,100-rainP*200);
+  const u=clamp(uv/8*100,0,100);
+  const c=Math.max(0,100-cloud*100);
+  const h=haze===0?100:50;
+  return r*0.4+u*0.2+c*0.2+h*0.2;
+}
+
+const EXCLUSION_RULES = {
+  sunbathing: d=>d.rain>0.3||d.rainProbability>0.5||d.cloudiness>0.8,
+  surf:       d=>d.waves.height<0.4||d.waves.height>3.5||d.wind>50,
+  windsurf:   d=>d.wind<8||d.wind>40||d.rain>0.5,
+  paddle_surf:d=>d.waves.height>1.2||d.wind>20,
+  kayak:      d=>d.waves.height>1.0||d.wind>25,
+  family:     d=>d.waves.height>1.2||d.rain>0.3||d.wind>30,
+};
+
+function calcScore(d,activity){
+  if(EXCLUSION_RULES[activity](d)) return -1;
+  let raw;
+  switch(activity){
+    case "sunbathing": raw=scoreTemp(d.airTemperature,d.seaTemperature,26,22)*0.3+scoreWind(d.wind,0,15,30)*0.2+scoreGeneral(d.rain,d.rainProbability,d.uvRadiation,d.cloudiness,d.haze)*0.5; break;
+    case "surf":       raw=scoreSwell(d.waves.height,d.waves.period,0.8,2.5,7)*0.55+scoreWind(d.wind,10,25,40)*0.3+scoreTemp(d.airTemperature,d.seaTemperature,22,18)*0.15; break;
+    case "windsurf":   raw=scoreWind(d.wind,15,30,40)*0.6+scoreSwell(d.waves.height,d.waves.period,0.3,1.5,5)*0.25+scoreTemp(d.airTemperature,d.seaTemperature,22,18)*0.15; break;
+    case "paddle_surf":raw=scoreSwell(d.waves.height,d.waves.period,0,0.8,4)*0.5+scoreWind(d.wind,0,12,20)*0.35+scoreTemp(d.airTemperature,d.seaTemperature,24,20)*0.15; break;
+    case "kayak":      raw=scoreSwell(d.waves.height,d.waves.period,0,0.8,4)*0.45+scoreWind(d.wind,0,15,25)*0.4+scoreTemp(d.airTemperature,d.seaTemperature,23,19)*0.15; break;
+    case "family":     raw=scoreSwell(d.waves.height,d.waves.period,0,0.8,4)*0.35+scoreTemp(d.airTemperature,d.seaTemperature,25,21)*0.3+scoreWind(d.wind,0,15,30)*0.2+scoreGeneral(d.rain,d.rainProbability,d.uvRadiation,d.cloudiness,d.haze)*0.15; break;
+  }
+  return Math.round(clamp(raw,0,100)*10)/10;
+}
+
+function scoreClass(s){
+  if(s===-1) return "excl";
+  if(s>=75)  return "great";
+  if(s>=50)  return "good";
+  if(s>=25)  return "ok";
+  return "bad";
+}
+function scoreText(s){
+  if(s===-1) return "Excluida";
+  if(s>=75)  return "Excelente";
+  if(s>=50)  return "Buena";
+  if(s>=25)  return "Aceptable";
+  return "No recomendada";
+}
+
+// ── CRITERIA DEFINITIONS ──────────────────────────────────────────────────
+function getCriteria(beach, activity){
+  const d = beach.dynamic;
+  const checks = {
+    sunbathing:[
+      { icon:"🌡️", label:"Temperatura ambiente agradable", value:`${d.airTemperature}°C`, ok: d.airTemperature>=20 },
+      { icon:"🌊", label:"Temperatura del mar confortable", value:`${d.seaTemperature}°C`, ok: d.seaTemperature>=18 },
+      { icon:"💨", label:"Viento moderado", value:`${d.wind} km/h`, ok: d.wind<=20 },
+      { icon:"☀️",  label:"Poca nubosidad", value:`${Math.round(d.cloudiness*100)}%`, ok: d.cloudiness<0.4 },
+      { icon:"🌧️", label:"Sin riesgo de lluvia", value:`${Math.round(d.rainProbability*100)}%`, ok: d.rainProbability<0.2 },
+      { icon:"😎", label:"Radiación UV suficiente", value:`índice ${d.uvRadiation}`, ok: d.uvRadiation>=3 },
+    ],
+    surf:[
+      { icon:"🌊", label:"Altura de oleaje ideal", value:`${d.waves.height}m`, ok: d.waves.height>=0.8&&d.waves.height<=2.5 },
+      { icon:"⏱️", label:"Período de ola suficiente", value:`${d.waves.period}s`, ok: d.waves.period>=7 },
+      { icon:"💨", label:"Viento offshore/onshore", value:`${d.wind} km/h`, ok: d.wind>=10&&d.wind<=25 },
+      { icon:"🌡️", label:"Temperatura ambiente ok", value:`${d.airTemperature}°C`, ok: d.airTemperature>=18 },
+      { icon:"🏄", label:"Ola no excesiva", value:`${d.waves.height}m`, ok: d.waves.height<=3.5 },
+    ],
+    windsurf:[
+      { icon:"💨", label:"Viento ideal para navegar", value:`${d.wind} km/h`, ok: d.wind>=15&&d.wind<=30 },
+      { icon:"🌊", label:"Oleaje manejable", value:`${d.waves.height}m`, ok: d.waves.height<=1.5 },
+      { icon:"🌧️", label:"Sin lluvia intensa", value:`${d.rain}mm`, ok: d.rain<=0.1 },
+      { icon:"🌡️", label:"Temperatura ambiente ok", value:`${d.airTemperature}°C`, ok: d.airTemperature>=18 },
+    ],
+    paddle_surf:[
+      { icon:"🌊", label:"Mar en calma", value:`${d.waves.height}m`, ok: d.waves.height<=0.8 },
+      { icon:"💨", label:"Viento suave", value:`${d.wind} km/h`, ok: d.wind<=15 },
+      { icon:"🌡️", label:"Temperatura agradable", value:`${d.airTemperature}°C`, ok: d.airTemperature>=20 },
+      { icon:"🌊", label:"Período de ola aceptable", value:`${d.waves.period}s`, ok: d.waves.period>=4 },
+    ],
+    kayak:[
+      { icon:"🌊", label:"Mar en calma", value:`${d.waves.height}m`, ok: d.waves.height<=0.8 },
+      { icon:"💨", label:"Viento moderado", value:`${d.wind} km/h`, ok: d.wind<=15 },
+      { icon:"🌡️", label:"Temperatura agradable", value:`${d.airTemperature}°C`, ok: d.airTemperature>=18 },
+      { icon:"⏱️", label:"Período de ola aceptable", value:`${d.waves.period}s`, ok: d.waves.period>=4 },
+    ],
+    family:[
+      { icon:"🌊", label:"Oleaje seguro para niños", value:`${d.waves.height}m`, ok: d.waves.height<=0.8 },
+      { icon:"🌡️", label:"Temperatura ambiente cálida", value:`${d.airTemperature}°C`, ok: d.airTemperature>=22 },
+      { icon:"🌊", label:"Agua templada", value:`${d.seaTemperature}°C`, ok: d.seaTemperature>=19 },
+      { icon:"💨", label:"Viento suave", value:`${d.wind} km/h`, ok: d.wind<=20 },
+      { icon:"🌧️", label:"Sin lluvia", value:`${d.rain}mm`, ok: d.rain===0 },
+      { icon:"☀️",  label:"Poca nubosidad", value:`${Math.round(d.cloudiness*100)}%`, ok: d.cloudiness<0.5 },
+    ],
+  };
+  return checks[activity] || [];
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let currentActivity = "sunbathing";
+let scrollPositionBeforeDetail = 0;
+
+// ── RENDER CHIPS ──────────────────────────────────────────────────────────
+const chipsEl = document.getElementById("chips");
+ACTIVITIES.forEach(act=>{
+  const btn = document.createElement("button");
+  btn.className = "chip" + (act===currentActivity?" active":"");
+  btn.textContent = ACTIVITY_LABELS[act];
+  btn.onclick = ()=>{ currentActivity=act; renderChips(); renderList(); };
+  chipsEl.appendChild(btn);
+});
+function renderChips(){
+  chipsEl.querySelectorAll(".chip").forEach((btn,i)=>{
+    btn.classList.toggle("active", ACTIVITIES[i]===currentActivity);
+  });
+}
+
+// ── RENDER LIST ───────────────────────────────────────────────────────────
+function renderList(){
+  const grid = document.getElementById("beach-grid");
+  const scored = BEACHES.map(b=>({ beach:b, score:calcScore(b.dynamic, currentActivity) }));
+  scored.sort((a,b)=>{
+    if(a.score===-1&&b.score===-1) return 0;
+    if(a.score===-1) return 1;
+    if(b.score===-1) return -1;
+    return b.score-a.score;
+  });
+  grid.innerHTML="";
+  scored.forEach(({beach,score})=>{
+    const sc = scoreClass(score);
+    const card = document.createElement("div");
+    card.className="beach-card";
+    card.innerHTML=`
+      <div class="card-img">${BEACH_EMOJIS[beach.static.id]}</div>
+      <div class="card-body">
+        <h2>${beach.static.name}</h2>
+        <div class="municipality">📍 ${beach.static.municipality}</div>
+        <span class="score-pill ${sc}">${scoreText(score)}${score!==-1?" · "+score+"/100":""}</span>
+        <div class="card-meta">
+          <span class="tag">🏖️ Arena</span>
+          <span class="tag">💨 Viento ${beach.dynamic.wind}km/h</span>
+          <span class="tag">🌊 ${beach.dynamic.waves.height}m</span>
+        </div>
+      </div>`;
+    card.onclick=()=>openDetail(beach,score);
+    grid.appendChild(card);
+  });
+}
+
+// ── OPEN DETAIL ───────────────────────────────────────────────────────────
+function openDetail(beach, score){
+  scrollPositionBeforeDetail = window.scrollY;
+  document.getElementById("view-list").style.display="none";
+  document.getElementById("view-detail").style.display="block";
+  window.scrollTo(0,0);
+
+  const sc = scoreClass(score);
+  const d = beach.dynamic;
+
+  document.getElementById("detail-emoji").textContent = BEACH_EMOJIS[beach.static.id];
+  document.getElementById("detail-name").textContent = beach.static.name;
+  document.getElementById("detail-municipality").innerHTML = `📍 ${beach.static.municipality} · Superficie: arena`;
+
+  const pill = document.getElementById("detail-score-pill");
+  pill.innerHTML=`<span class="score-pill ${sc}">${scoreText(score)}${score!==-1?" · "+score+"/100":""}</span>`;
+
+  // Criteria
+  const criteriaList = document.getElementById("criteria-list");
+  criteriaList.innerHTML="";
+  getCriteria(beach, currentActivity).forEach(c=>{
+    const row = document.createElement("div");
+    row.className = "criterion "+(c.ok?"matched":"unmatched");
+    row.innerHTML=`
+      <span class="crit-icon">${c.icon}</span>
+      <span class="crit-label">${c.label}</span>
+      <span class="crit-value">${c.value}</span>
+      <span class="match-badge">${c.ok?"✓":"✗"}</span>`;
+    criteriaList.appendChild(row);
+  });
+
+  // Conditions
+  const condGrid = document.getElementById("conditions-grid");
+  condGrid.innerHTML=`
+    <div class="cond-item"><span class="cond-label">🌡️ Aire</span><span class="cond-value">${d.airTemperature}°C</span></div>
+    <div class="cond-item"><span class="cond-label">🌊 Mar</span><span class="cond-value">${d.seaTemperature}°C</span></div>
+    <div class="cond-item"><span class="cond-label">💨 Viento</span><span class="cond-value">${d.wind} km/h</span></div>
+    <div class="cond-item"><span class="cond-label">🌊 Oleaje</span><span class="cond-value">${d.waves.height}m / ${d.waves.period}s</span></div>
+    <div class="cond-item"><span class="cond-label">🌧️ Lluvia</span><span class="cond-value">${d.rain}mm (${Math.round(d.rainProbability*100)}%)</span></div>
+    <div class="cond-item"><span class="cond-label">☀️ UV</span><span class="cond-value">Índice ${d.uvRadiation}</span></div>
+    <div class="cond-item"><span class="cond-label">☁️ Nubosidad</span><span class="cond-value">${Math.round(d.cloudiness*100)}%</span></div>
+    <div class="cond-item"><span class="cond-label">🌫️ Calima</span><span class="cond-value">${d.haze>0?"Sí":"No"}</span></div>`;
+
+  // Big score
+  const bigScore = document.getElementById("detail-big-score");
+  const scoreLabel = document.getElementById("detail-score-label");
+  const barFill = document.getElementById("score-bar-fill");
+  const excl = document.getElementById("excluded-notice");
+
+  bigScore.className = "big-score " + sc;
+  bigScore.textContent = score===-1?"—":score+"/100";
+  scoreLabel.textContent = `Puntuación para: ${ACTIVITY_LABELS[currentActivity]}`;
+  barFill.className = "score-bar-fill fill-"+sc;
+  barFill.style.width = (score===-1?0:score)+"%";
+
+  if(score===-1){
+    excl.style.display="block";
+    const exclusionReasons = {
+      sunbathing:"Excluida por lluvia intensa, alta probabilidad de lluvia o nubosidad total.",
+      surf:"Excluida por oleaje fuera del rango óptimo o viento excesivo.",
+      windsurf:"Excluida por viento insuficiente, excesivo o lluvia intensa.",
+      paddle_surf:"Excluida por oleaje o viento demasiado fuerte.",
+      kayak:"Excluida por oleaje o viento demasiado fuerte.",
+      family:"Excluida por oleaje peligroso, lluvia o viento excesivo.",
+    };
+    excl.textContent="⚠️ "+exclusionReasons[currentActivity];
+  } else {
+    excl.style.display="none";
+  }
+}
+
+// ── BACK BUTTON ───────────────────────────────────────────────────────────
+document.getElementById("back-btn").onclick=()=>{
+  document.getElementById("view-detail").style.display="none";
+  document.getElementById("view-list").style.display="block";
+  window.scrollTo(0, scrollPositionBeforeDetail);
+};
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+renderList();
+</script>
+</body>
+</html>
