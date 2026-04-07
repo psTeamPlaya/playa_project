@@ -1,9 +1,4 @@
-backend/__pycache__/config.cpython-310.pyc
-backend/__pycache__/db.cpython-310.pyc
-backend/__pycache__/main.cpython-310.pyc
-backend/routes/__pycache__/api.cpython-310.pyc
-backend/__pycache__/config.cpython-312.pyc
-backend/__pycache__/engine_recomendation.cpython-312.pyc
-backend/__pycache__/main.cpython-312.pyc
-backend/routes/__pycache__/views.cpython-312.pyc
+__pycache__/
 .venv/
+*.pyc
+.env
