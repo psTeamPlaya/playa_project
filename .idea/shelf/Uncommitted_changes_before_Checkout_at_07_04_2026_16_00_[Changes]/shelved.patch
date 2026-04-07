@@ -1,0 +1,17 @@
+Index: .gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>backend/__pycache__/config.cpython-310.pyc\r\nbackend/__pycache__/db.cpython-310.pyc\r\nbackend/__pycache__/main.cpython-310.pyc\r\nbackend/routes/__pycache__/api.cpython-310.pyc\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.gitignore b/.gitignore
+--- a/.gitignore	(revision 3c9de63fe0835d445321dcba928cdffdfb3c131b)
++++ b/.gitignore	(date 1775574015744)
+@@ -1,4 +1,4 @@
+ backend/__pycache__/config.cpython-310.pyc
+ backend/__pycache__/db.cpython-310.pyc
+ backend/__pycache__/main.cpython-310.pyc
+-backend/routes/__pycache__/api.cpython-310.pyc
++backend/routes/__pycache__/api.cpython-310.pyc
+\ No newline at end of file

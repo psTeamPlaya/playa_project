@@ -1,0 +1,54 @@
+Index: backend/Dockerfile.dev
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>FROM python:3.12-slim\r\n\r\nWORKDIR /app\r\n\r\nRUN apt-get update && apt-get install -y --no-install-recommends \\\r\n    && rm -rf /var/lib/apt/lists/*\r\n\r\nCOPY . .\r\n\r\nRUN pip install --no-cache-dir -r requirements.txt\r\n\r\nCMD [\"uvicorn\", \"???\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]
+===================================================================
+diff --git a/backend/Dockerfile.dev b/backend/Dockerfile.dev
+--- a/backend/Dockerfile.dev	(revision 7dc3a893b1dd06aa004c1b05855042dde5165c9e)
++++ b/backend/Dockerfile.dev	(date 1775573017744)
+@@ -9,4 +9,4 @@
+ 
+ RUN pip install --no-cache-dir -r requirements.txt
+ 
+-CMD ["uvicorn", "???", "--host", "0.0.0.0", "--port", "8000"]
+\ No newline at end of file
++CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+\ No newline at end of file
+Index: .idea/playa_project.iml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<module type=\"PYTHON_MODULE\" version=\"4\">\r\n  <component name=\"NewModuleRootManager\">\r\n    <content url=\"file://$MODULE_DIR$\" />\r\n    <orderEntry type=\"jdk\" jdkName=\"Python 3.13\" jdkType=\"Python SDK\" />\r\n    <orderEntry type=\"sourceFolder\" forTests=\"false\" />\r\n  </component>\r\n</module>
+===================================================================
+diff --git a/.idea/playa_project.iml b/.idea/playa_project.iml
+--- a/.idea/playa_project.iml	(revision 7dc3a893b1dd06aa004c1b05855042dde5165c9e)
++++ b/.idea/playa_project.iml	(date 1775573059182)
+@@ -2,7 +2,11 @@
+ <module type="PYTHON_MODULE" version="4">
+   <component name="NewModuleRootManager">
+     <content url="file://$MODULE_DIR$" />
+-    <orderEntry type="jdk" jdkName="Python 3.13" jdkType="Python SDK" />
++    <orderEntry type="inheritedJdk" />
+     <orderEntry type="sourceFolder" forTests="false" />
+   </component>
++  <component name="PyDocumentationSettings">
++    <option name="format" value="PLAIN" />
++    <option name="myDocStringFormat" value="Plain" />
++  </component>
+ </module>
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"Black\">\r\n    <option name=\"sdkName\" value=\"Python 3.13\" />\r\n  </component>\r\n  <component name=\"ProjectRootManager\" version=\"2\" project-jdk-name=\"Python 3.13\" project-jdk-type=\"Python SDK\" />\r\n</project>
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 7dc3a893b1dd06aa004c1b05855042dde5165c9e)
++++ b/.idea/misc.xml	(date 1775573017805)
+@@ -3,5 +3,5 @@
+   <component name="Black">
+     <option name="sdkName" value="Python 3.13" />
+   </component>
+-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13" project-jdk-type="Python SDK" />
++  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11" project-jdk-type="Python SDK" />
+ </project>
+\ No newline at end of file

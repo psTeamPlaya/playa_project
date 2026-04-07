@@ -2,8 +2,3 @@ backend/__pycache__/config.cpython-310.pyc
 backend/__pycache__/db.cpython-310.pyc
 backend/__pycache__/main.cpython-310.pyc
 backend/routes/__pycache__/api.cpython-310.pyc
-
-.venv/
-__pycache__/
-*.pyc
-.env
