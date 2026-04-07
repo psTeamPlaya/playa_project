@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/static/css/styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&family=Bangers&family=Caveat+Brush&family=Fira+Sans+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Rum+Raisin&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <header class="container">
@@ -30,10 +30,9 @@
 
   <main class="container">
     <section class="panel">
-      <h2>1. Elige tu actividad</h2>
-      <p class="help">Selecciona la actividad principal que quieres realizar.</p>
-
+      <h2>1. ¿Qué quieres hacer en tu día de playa?</h2>
       <div class="activities-grid" id="activitiesGrid">
+
         <div class="activity-card" data-activity="tomar_sol">
           <span class="activity-icon">☀️</span>
           <span class="activity-name">Tomar el sol</span>
@@ -54,9 +53,9 @@
           <span class="activity-name">Windsurf</span>
         </div>
 
-        <div class="activity-card" data-activity="snorkel">
+        <div class="activity-card" data-activity="bucear">
           <span class="activity-icon">🤿</span>
-          <span class="activity-name">Snorkel</span>
+          <span class="activity-name">Bucear</span>
         </div>
 
         <div class="activity-card" data-activity="caminar">
@@ -67,53 +66,31 @@
     </section>
 
     <section class="panel">
-      <h2>2. Selecciona fecha y hora</h2>
-      <p class="help">Indica cuándo quieres ir a la playa.</p>
-
+      <h2>2. ¿Cuándo tienes pensado ir?</h2>
+      
       <div class="form-grid">
         <div class="field">
-            <label for="fecha">Fecha</label>
+          <label for="fecha">Fecha</label>
+
+          <div class="date-picker-shell" id="fechaShell">
+            <div class="date-display" id="fechaDisplay">---</div>
+            <div class="date-icon" aria-hidden="true">📅</div>
             <input type="date" id="fecha" />
+          </div>
         </div>
         <div class="field">
           <label for="hourWheel">Hora</label>
           <div class="hour-wheel-wrapper">
             <div class="hour-wheel-highlight"></div>
-              <div class="hour-wheel" id="hourWheel">
-                <div class="hour-option" data-hour="00:00">00:00</div>
-                <div class="hour-option" data-hour="01:00">01:00</div>
-                <div class="hour-option" data-hour="02:00">02:00</div>
-                <div class="hour-option" data-hour="03:00">03:00</div>
-                <div class="hour-option" data-hour="04:00">04:00</div>
-                <div class="hour-option" data-hour="05:00">05:00</div>
-                <div class="hour-option" data-hour="06:00">06:00</div>
-                <div class="hour-option" data-hour="07:00">07:00</div>
-                <div class="hour-option" data-hour="08:00">08:00</div>
-                <div class="hour-option" data-hour="09:00">09:00</div>
-                <div class="hour-option" data-hour="10:00">10:00</div>
-                <div class="hour-option" data-hour="11:00">11:00</div>
-                <div class="hour-option" data-hour="12:00">12:00</div>
-                <div class="hour-option" data-hour="13:00">13:00</div>
-                <div class="hour-option" data-hour="14:00">14:00</div>
-                <div class="hour-option" data-hour="15:00">15:00</div>
-                <div class="hour-option" data-hour="16:00">16:00</div>
-                <div class="hour-option" data-hour="17:00">17:00</div>
-                <div class="hour-option" data-hour="18:00">18:00</div>
-                <div class="hour-option" data-hour="19:00">19:00</div>
-                <div class="hour-option" data-hour="20:00">20:00</div>
-                <div class="hour-option" data-hour="21:00">21:00</div>
-                <div class="hour-option" data-hour="22:00">22:00</div>
-                <div class="hour-option" data-hour="23:00">23:00</div>
-              </div>
+              <div class="hour-wheel" id="hourWheel"></div>
             </div>
           </div>
         </div>
       </div>
       <div class="actions">
-        <button class="btn-primary" id="buscarBtn">Buscar recomendaciones</button>
-        <button class="btn-secondary" id="limpiarBtn" type="button">Limpiar datos</button>
+        <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
+        
       </div>
-
       <div class="status" id="status"></div>
     </section>
 
@@ -124,244 +101,14 @@
 
       <div id="resultsContainer" class="results-grid">
         <div class="empty-state">
-          Aquí aparecerá el top-3 de playas recomendadas cuando hagas una búsqueda.
+          Por ahora no hay ninguna recomendación de playas.
         </div>
       </div>
     </section>
+
   </main>
-
-  <script>
-    const activityCards = document.querySelectorAll(".activity-card");
-    const fechaInput = document.getElementById("fecha");
-    const buscarBtn = document.getElementById("buscarBtn");
-    const limpiarBtn = document.getElementById("limpiarBtn");
-    const statusEl = document.getElementById("status");
-    const resultsContainer = document.getElementById("resultsContainer");
-    const hourWheel = document.getElementById("hourWheel");
-    const hourOptions = document.querySelectorAll(".hour-option");
-    let horaSeleccionada = "12:00";
-    let actividadSeleccionada = "";
-
-    // Fecha y hora por defecto para que coincida con datos fake
-    fechaInput.value = "2026-04-06";
-    fijarHoraInicial("12:00");
-
-    activityCards.forEach(card => {
-      card.addEventListener("click", () => {
-        activityCards.forEach(c => c.classList.remove("selected"));
-        card.classList.add("selected");
-        actividadSeleccionada = card.dataset.activity;
-      });
-    });
-
-    limpiarBtn.addEventListener("click", () => {
-      activityCards.forEach(c => c.classList.remove("selected"));
-      actividadSeleccionada = "";
-      fechaInput.value = "2026-04-06";
-      fijarHoraInicial("12:00");
-      statusEl.textContent = "";
-      resultsContainer.innerHTML = `
-        <div class="empty-state">
-          Aquí aparecerán las recomendaciones cuando realices una búsqueda.
-        </div>
-      `;
-    });
-
-    buscarBtn.addEventListener("click", async () => {
-      const fecha = fechaInput.value;
-      const hora = horaSeleccionada;
-
-      if (!actividadSeleccionada) {
-        statusEl.textContent = "Debes seleccionar una actividad.";
-        return;
-      }
-
-      if (!fecha) {
-        statusEl.textContent = "Debes seleccionar una fecha.";
-        return;
-      }
-
-      if (!hora) {
-        statusEl.textContent = "Debes seleccionar una hora.";
-        return;
-      }
-
-      statusEl.textContent = "Buscando recomendaciones...";
-
-      try {
-        const url = `http://192.168.1.53:8000/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error("No se pudieron obtener las recomendaciones.");
-        }
-
-        const data = await response.json();
-        pintarResultados(data.resultados);
-        statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
-      } catch (error) {
-        console.error(error);
-        statusEl.textContent = "Ha ocurrido un error al consultar la API.";
-        resultsContainer.innerHTML = `
-          <div class="empty-state">
-            No se pudieron cargar los resultados.
-          </div>
-        `;
-      }
-    });
-
-function actualizarHoraActiva() {
-  const wheelRect = hourWheel.getBoundingClientRect();
-  const wheelCenter = wheelRect.top + wheelRect.height / 2;
-
-  let opcionMasCercana = null;
-  let distanciaMinima = Infinity;
-
-  hourOptions.forEach(option => {
-    const rect = option.getBoundingClientRect();
-    const optionCenter = rect.top + rect.height / 2;
-    const distancia = Math.abs(wheelCenter - optionCenter);
-
-    option.classList.remove("active", "near");
-
-    if (distancia < distanciaMinima) {
-      distanciaMinima = distancia;
-      opcionMasCercana = option;
-    }
-  });
-
-  hourOptions.forEach(option => {
-    const rect = option.getBoundingClientRect();
-    const optionCenter = rect.top + rect.height / 2;
-    const distancia = Math.abs(wheelCenter - optionCenter);
-
-    if (distancia < 18) {
-      option.classList.add("active");
-    } else if (distancia < 54) {
-      option.classList.add("near");
-    }
-  });
-
-  if (opcionMasCercana) {
-    horaSeleccionada = opcionMasCercana.dataset.hour;
-  }
-}
-
-let scrollTimeout;
-hourWheel.addEventListener("scroll", () => {
-  actualizarHoraActiva();
-
-  clearTimeout(scrollTimeout);
-  scrollTimeout = setTimeout(() => {
-    const activa = [...hourOptions].find(option => option.classList.contains("active"));
-    if (activa) {
-      activa.scrollIntoView({
-        block: "center",
-        behavior: "smooth"
-      });
-      horaSeleccionada = activa.dataset.hour;
-    }
-  }, 120);
-});
-
-hourOptions.forEach(option => {
-  option.addEventListener("click", () => {
-    option.scrollIntoView({
-      block: "center",
-      behavior: "smooth"
-    });
-    horaSeleccionada = option.dataset.hour;
-    setTimeout(actualizarHoraActiva, 180);
-  });
-});
-
-    function fijarHoraInicial(valor = "12:00") {
-      const option = document.querySelector(`.hour-option[data-hour="${valor}"]`);
-      if (option) {
-        option.scrollIntoView({
-          block: "center",
-          behavior: "auto"
-        });
-        horaSeleccionada = valor;
-        setTimeout(actualizarHoraActiva, 50);
-      }
-    }
-
-
-    function pintarResultados(resultados) {
-        if (!resultados || resultados.length === 0) {
-        resultsContainer.innerHTML = `
-            <div class="empty-state">
-            No hay resultados para esa búsqueda.
-            </div>
-        `;
-        return;
-        }
-
-        resultsContainer.innerHTML = resultados.map((playa, index) => {
-        const servicios = formatearServicios(playa.servicios);
-        const condiciones = playa.condiciones;
-
-        return `
-            <details class="beach-card desplegable">
-            <summary class="beach-summary">
-                <div class="beach-summary-left">
-                <div class="ranking-badge">#${index + 1}</div>
-                <div>
-                    <h3 class="beach-title">${playa.nombre}</h3>
-                    <div class="beach-location">${playa.ubicacion}</div>
-                    <div class="beach-short-motivo">
-                    </div>
-                </div>
-                </div>
-
-                <div class="beach-summary-right">
-                <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
-                <div class="expand-hint">Ver detalle</div>
-                </div>
-            </summary>
-
-            <div class="beach-detail">
-                <p class="beach-desc">${playa.descripcion}</p>
-
-                <div class="meta-list">
-                <span class="chip">🏖️ Tipo: ${playa.tipo}</span>
-                <span class="chip">🌡️ Temp. aire: ${condiciones.temperatura_ambiente} ºC</span>
-                <span class="chip">🌊 Oleaje: ${condiciones.altura_oleaje} m</span>
-                <span class="chip">💨 Viento: ${condiciones.velocidad_viento} km/h</span>
-                <span class="chip">🌡️ Agua: ${condiciones.temperatura_agua} ºC</span>
-                <span class="chip">🌤️ Nubosidad: ${condiciones.nubosidad}%</span>
-                <span class="chip">🌧️ Lluvia: ${condiciones.probabilidad_lluvia}%</span>
-                <span class="chip">🌙 Marea: ${condiciones.marea}</span>
-                </div>
-
-                <div class="motivo detalle-box">
-                <strong>Explicación de la recomendación:</strong> ${playa.motivo}
-                </div>
-
-                <div class="services-list">
-                ${servicios}
-                </div>
-            </div>
-            </details>
-        `;
-        }).join("");
-    }
-
-
-    function formatearServicios(servicios) {
-      const iconos = {
-        restaurantes: "🍽️ Restaurantes",
-        comida_para_llevar: "🥡 Comida para llevar",
-        balneario: "🚿 Balneario",
-        zona_deportiva: "🏐 Zona deportiva"
-      };
-
-      return Object.entries(servicios)
-        .filter(([_, disponible]) => disponible)
-        .map(([clave]) => `<span class="chip">${iconos[clave] || clave}</span>`)
-        .join("");
-    }
-  </script>
+  
+  <!-- Me aseguro que la página está totalmente cargada antes de iniciar el script-->
+  <script src="static/js/main.js"></script>
 </body>
 </html>
