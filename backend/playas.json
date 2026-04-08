@@ -17,7 +17,7 @@
         "condicion": "ideal en condiciones generales"
       },
       {
-        "actividad": "snorkel",
+        "actividad": "bucear",
         "condicion": "adecuada en zonas tranquilas y con buena visibilidad"
       }
     ],
@@ -221,7 +221,7 @@
     "descripcion": "Zona costera muy apreciada para actividades acuáticas tranquilas.",
     "actividades_ideales": [
       {
-        "actividad": "snorkel",
+        "actividad": "bucear",
         "condicion": "ideal con buena visibilidad"
       },
       {

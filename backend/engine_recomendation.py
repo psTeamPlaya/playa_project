@@ -156,7 +156,7 @@ PESOS_ACTIVIDAD: dict[str, dict[str, float]] = {
         "probabilidad_lluvia": 0.05,
         "marea": 0.10,
     },
-    "snorkel": {
+    "bucear": {
         "altura_oleaje": 0.30,
         "velocidad_viento": 0.20,
         "temperatura_agua": 0.20,
@@ -187,7 +187,7 @@ def puntuar_temperatura_ambiente(actividad: str, valor: float) -> float:
         return puntuacion_cercania(valor, ideal=22, tolerancia=12)
     if actividad == "windsurf":
         return puntuacion_cercania(valor, ideal=23, tolerancia=12)
-    if actividad == "snorkel":
+    if actividad == "bucear":
         return puntuacion_cercania(valor, ideal=24, tolerancia=12)
     if actividad == "caminar":
         return puntuacion_cercania(valor, ideal=22, tolerancia=12)
@@ -201,7 +201,7 @@ def puntuar_temperatura_agua(actividad: str, valor: float) -> float:
         return puntuacion_cercania(valor, ideal=21, tolerancia=8)
     if actividad == "windsurf":
         return puntuacion_cercania(valor, ideal=21, tolerancia=8)
-    if actividad == "snorkel":
+    if actividad == "bucear":
         return puntuacion_cercania(valor, ideal=22, tolerancia=8)
     return 5.0
 
@@ -215,7 +215,7 @@ def puntuar_viento(actividad: str, valor: float) -> float:
         return puntuacion_cercania(valor, ideal=18, tolerancia=18)
     if actividad == "windsurf":
         return puntuacion_cercania(valor, ideal=30, tolerancia=20)
-    if actividad == "snorkel":
+    if actividad == "bucear":
         return normalizar_inverso(valor, minimo=0, maximo=25)
     if actividad == "caminar":
         return puntuacion_cercania(valor, ideal=12, tolerancia=20)
@@ -231,7 +231,7 @@ def puntuar_oleaje(actividad: str, valor: float) -> float:
         return puntuacion_cercania(valor, ideal=1.8, tolerancia=1.5)
     if actividad == "windsurf":
         return puntuacion_cercania(valor, ideal=1.2, tolerancia=1.2)
-    if actividad == "snorkel":
+    if actividad == "bucear":
         return normalizar_inverso(valor, minimo=0, maximo=1.5)
     if actividad == "caminar":
         return 5.0
@@ -241,14 +241,14 @@ def puntuar_oleaje(actividad: str, valor: float) -> float:
 def puntuar_nubosidad(actividad: str, valor: float) -> float:
     if actividad in {"tomar_sol", "caminar"}:
         return normalizar_inverso(valor, minimo=0, maximo=100)
-    if actividad == "snorkel":
+    if actividad == "bucear":
         # La nubosidad importa poco, pero algo influye en percepción/visibilidad.
         return normalizar_inverso(valor, minimo=0, maximo=100)
     return 5.0
 
 
 def puntuar_lluvia(actividad: str, valor: float) -> float:
-    if actividad in {"tomar_sol", "nadar", "surf", "windsurf", "snorkel", "caminar"}:
+    if actividad in {"tomar_sol", "nadar", "surf", "windsurf", "bucear", "caminar"}:
         return normalizar_inverso(valor, minimo=0, maximo=100)
     return 5.0
 
@@ -285,7 +285,7 @@ def puntuar_marea(actividad: str, valor: str) -> float:
             "baja": 6.0,
         })
 
-    if actividad == "snorkel":
+    if actividad == "bucear":
         return puntuacion_categorica(valor, {
             "baja": 9.0,
             "media": 7.0,
@@ -420,7 +420,7 @@ def recomendar_playas(
 # =========================================================
 
 if __name__ == "__main__":
-    actividad = "snorkel"
+    actividad = "bucear"
     fecha = "2026-04-05"
     hora = "10:00"
 
