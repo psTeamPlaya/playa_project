@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi día de Playa</title>
+  <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="container">
+<section class="hero">
+    <div class="hero-brand">
+        <div class="hero-logo">
+            <img src="/static/img/logo.png" alt="Logo Mi día de Playa">
+            <h1>Mi día de Playa</h1>
+        </div>
+        <div>
+            <p>
+                Selecciona una actividad, una fecha y una hora para obtener un top-3 de playas
+                recomendadas según nuestro catálogo de playas de Gran Canaria y condiciones atmosféricas/marítimas simuladas.
+            </p>
+        </div>
+    </div>
+</section>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <h2>1. ¿Qué quieres hacer en tu día de playa?</h2>
+      <div class="activities-grid" id="activitiesGrid">
+
+        <div class="activity-card" data-activity="tomar_sol">
+          <span class="activity-icon">☀️</span>
+          <span class="activity-name">Tomar el sol</span>
+        </div>
+
+        <div class="activity-card" data-activity="nadar">
+          <span class="activity-icon">🏊</span>
+          <span class="activity-name">Nadar</span>
+        </div>
+
+        <div class="activity-card" data-activity="surf">
+          <span class="activity-icon">🏄</span>
+          <span class="activity-name">Surf</span>
+        </div>
+
+        <div class="activity-card" data-activity="windsurf">
+          <span class="activity-icon">🌬️</span>
+          <span class="activity-name">Windsurf</span>
+        </div>
+
+        <div class="activity-card" data-activity="bucear">
+          <span class="activity-icon">🤿</span>
+          <span class="activity-name">Bucear</span>
+        </div>
+
+        <div class="activity-card" data-activity="caminar">
+          <span class="activity-icon">🚶</span>
+          <span class="activity-name">Pasear</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>2. ¿Cuándo tienes pensado ir?</h2>
+      
+      <div class="form-grid">
+        <div class="field">
+          <label for="fecha">Fecha</label>
+
+          <div class="date-picker-shell" id="fechaShell">
+            <div class="date-display" id="fechaDisplay">---</div>
+            <div class="date-icon" aria-hidden="true">📅</div>
+            <input type="date" id="fecha" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="hourWheel">Hora</label>
+          <div class="hour-wheel-wrapper">
+            <div class="hour-wheel-highlight"></div>
+              <div class="hour-wheel" id="hourWheel"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
+        
+      </div>
+      <div class="status" id="status"></div>
+    </section>
+
+    <section class="panel">
+      <div class="results-header">
+        <h2>3. Top-3 de playas recomendadas</h2>
+      </div>
+
+      <div id="resultsContainer" class="results-grid">
+        <div class="empty-state">
+          Por ahora no hay ninguna recomendación de playas.
+        </div>
+      </div>
+    </section>
+
+  </main>
+  
+  <!-- Me aseguro que la página está totalmente cargada antes de iniciar el script-->
+  <script src="static/js/main.js"></script>
+</body>
+</html>
