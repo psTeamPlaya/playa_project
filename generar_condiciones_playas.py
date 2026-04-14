@@ -7,8 +7,8 @@ from typing import Any
 
 import requests
 
-START_ISO = "2026-04-05T09:00"
-END_ISO = "2026-04-10T18:00"
+START_ISO = "2026-04-08T07:00"
+END_ISO = "2026-04-19T21:00"
 TIMEZONE = "Atlantic/Canary"
 
 # Catálogo base de playas usado en el proyecto
@@ -23,6 +23,14 @@ PLAYAS = [
     {"id": 8, "nombre": "Anfi del Mar", "latitud": 27.7777, "longitud": -15.7102},
     {"id": 9, "nombre": "Sardina del Norte", "latitud": 28.1654, "longitud": -15.6990},
     {"id": 10, "nombre": "La Laja", "latitud": 28.0894, "longitud": -15.4135},
+    {"id": 11, "nombre": "Melenara", "latitud": 27.9877, "longitud": -15.3751},
+    {"id": 12, "nombre": "La Garita", "latitud": 28.0065, "longitud": -15.3767},
+    {"id": 13, "nombre": "Meloneras", "latitud": 27.7351, "longitud": -15.5989},
+    {"id": 14, "nombre": "Playa del Cabrón", "latitud": 27.8545, "longitud": -15.3804},
+    {"id": 15, "nombre": "Salinetas", "latitud": 27.9966, "longitud": -15.3649},
+    {"id": 16, "nombre": "San Agustín", "latitud": 27.7676, "longitud": -15.5494},
+    {"id": 17, "nombre": "Arinaga", "latitud": 27.8559, "longitud": -15.3926},
+    {"id": 18, "nombre": "Tufia", "latitud": 27.9614, "longitud": -15.3523},
 ]
 
 WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
