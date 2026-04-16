@@ -1,32 +1,12 @@
 from pydantic import BaseModel
+from typing import Optional
 
-class Coordinates(BaseModel):
+class BeachCreate(BaseModel):
+    name: str
+    location: Optional[str] = None
+    description: Optional[str] = None
+    type: Optional[str] = None
     latitude: float
     longitude: float
-
-class StaticBeach(BaseModel):
-    id: int
-    name: str
-    coordinates: Coordinates
-    municipality: str
-    surface: str
-
-class Waves(BaseModel):
-    height: float
-    period: float
-
-class DynamicBeach(BaseModel):
-    airTemperature: float
-    seaTemperature: float
-    wind: float
-    waves: Waves
-    rain: float
-    rainProbability: float
-    uvRadiation: float
-    haze: float
-    tide: float
-    cloudiness: float
-
-class Beach(BaseModel):
-    static: StaticBeach
-    dynamic: DynamicBeach
+    accessibility: Optional[bool] = False
+    image: Optional[str] = None
