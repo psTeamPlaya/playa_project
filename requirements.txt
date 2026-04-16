@@ -3,5 +3,6 @@ uvicorn
 sqlalchemy
 psycopg2-binary
 passlib[bcrypt]
+bcrypt<5
 python-jose[cryptography]
 python-dotenv

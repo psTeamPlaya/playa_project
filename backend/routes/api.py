@@ -12,6 +12,7 @@ def health():
 
     tables = []
     if database_connected:
+        all_data = {}
         try:
             with engine.connect() as conn:
                 result = conn.execute(text("""
@@ -20,8 +21,11 @@ def health():
                     WHERE table_schema = 'public';
                 """))
                 tables = [row[0] for row in result]
-        except Exception:
-            tables = ["error"]
+                for table in tables:
+                    rows = conn.execute(text(f"SELECT * FROM {table}"))
+                    all_data[table] = [dict(row._mapping) for row in rows]  # make dicts from rows
+        except Exception as e:
+            all_data[table] = {"error": str(e)}
 
     return {
         "status": "ok",
@@ -29,5 +33,6 @@ def health():
         "environment": settings.APP_ENV,
         "database_connected": database_connected,
         "tables": tables,
+        "data": all_data
     }
 
