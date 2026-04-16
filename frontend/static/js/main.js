@@ -503,6 +503,41 @@ async function handleLogin() {
     } catch {
         alert("Login failed");
     }
+    loadCurrentUser();
+}
+
+async function loadCurrentUser() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        document.getElementById("userInfo").textContent = `No user logged in.`;
+        return;
+    }
+
+    try {
+        const response = await fetch("/auth/me", {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        document.getElementById("userInfo").textContent = `Logged in as: ${data.email}`;
+
+    } catch (e) {
+        console.error("Failed to load user");
+    }
+}
+
+function logout() {
+    localStorage.removeItem("token");
+
+    loadCurrentUser();
+    
+    alert("Logged out");
 }
 
 
@@ -515,3 +550,4 @@ seleccionarActividadPorDefecto();
 configurarFechaPorDefecto();
 actualizarHorasDisponibles();
 configurarHoraPorDefecto();
+loadCurrentUser();
