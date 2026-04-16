@@ -12,20 +12,25 @@
 </head>
 <body>
   <header class="container">
-<section class="hero">
-    <div class="hero-brand">
-        <div class="hero-logo">
-            <img src="/static/img/logo.png" alt="Logo Mi día de Playa">
-            <h1>Mi día de Playa</h1>
+    <section class="hero">
+        <div class="hero-brand">
+            <div class="hero-logo">
+                <img src="/static/img/logo.png" alt="Logo Mi día de Playa">
+                <h1>Mi día de Playa</h1>
+            </div>
+            <div>
+                <p>
+                    Selecciona una actividad, una fecha y una hora para obtener un top-3 de playas
+                    recomendadas según nuestro catálogo de playas de Gran Canaria y condiciones atmosféricas/marítimas simuladas.
+                </p>
+            </div>
         </div>
-        <div>
-            <p>
-                Selecciona una actividad, una fecha y una hora para obtener un top-3 de playas
-                recomendadas según nuestro catálogo de playas de Gran Canaria y condiciones atmosféricas/marítimas simuladas.
-            </p>
-        </div>
-    </div>
-</section>
+    </section>
+    <section class="auth">
+      <input id="email">
+      <input id="password" type="password">
+      <button onclick="handleLogin()">Login</button>
+    </section>  
   </header>
 
   <main class="container">
