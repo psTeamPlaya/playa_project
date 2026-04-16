@@ -461,6 +461,42 @@ function formatearServicios(servicios) {
 }
 
 // =========================================================
+// Login
+// =========================================================
+
+async function login(email, password) {
+    const response = await fetch("/auth/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+    });
+
+    if (!response.ok) {
+        throw new Error("Login failed");
+    }
+
+    return response.json();
+}
+
+localStorage.setItem("token", data.access_token);
+
+function authFetch(url, options = {}) {
+    const token = localStorage.getItem("token");
+
+    return fetch(url, {
+        ...options,
+        headers: {
+            ...(options.headers || {}),
+            "Authorization": `Bearer ${token}`
+        }
+    });
+}
+
+
+
+// =========================================================
 // ARRANQUE
 // =========================================================
 
