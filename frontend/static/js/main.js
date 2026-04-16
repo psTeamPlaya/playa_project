@@ -500,6 +500,12 @@ async function handleLogin() {
         const data = await login(email, password);
         localStorage.setItem("token", data.access_token);
         alert("Logged in!");
+        document.querySelectorAll(".loggedOut").forEach(el => {
+            el.classList.add("hidden");
+        });
+        document.querySelectorAll(".loggedIn").forEach(el => {
+            el.classList.remove("hidden");
+        });
     } catch {
         alert("Login failed");
     }
@@ -536,7 +542,13 @@ function logout() {
     localStorage.removeItem("token");
 
     loadCurrentUser();
-    
+    document.querySelectorAll(".loggedIn").forEach(el => {
+        el.classList.add("hidden");
+    });
+    document.querySelectorAll(".loggedOut").forEach(el => {
+        el.classList.remove("hidden");
+    });
+
     alert("Logged out");
 }
 

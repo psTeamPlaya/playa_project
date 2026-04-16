@@ -512,3 +512,24 @@
 
 
     }
+
+    .auth-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .login, .logout {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .login input {
+        padding: 6px 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .hidden {
+       display: none;
+    }
