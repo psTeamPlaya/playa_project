@@ -18,6 +18,18 @@
                 <img src="/static/img/logo.png" alt="Logo Mi día de Playa">
                 <h1>Mi día de Playa</h1>
             </div>
+            <section class="auth-container">
+              <div class="login loggedOut">     <!-- Logged OUT -->
+                <input id="email">
+                <input id="password" type="password">
+                <button onclick="handleLogin()">Login</button>
+              </div>
+              <div class="logout loggedIn">   <!-- Logged IN -->
+                <button id="logoutBtn" onclick="logout()">Logout</button>
+              </div>
+              <div id="userInfo"></div>
+            </section>
+
             <div>
                 <p>
                     Selecciona una actividad, una fecha y una hora para obtener un top-3 de playas
@@ -25,15 +37,6 @@
                 </p>
             </div>
         </div>
-    </section>
-    <section class="auth">
-      <input id="email">
-      <input id="password" type="password">
-      <button onclick="handleLogin()">Login</button>
-    </section>
-    <section class="auth">
-      <div id="userInfo"></div>
-      <button id="logoutBtn" onclick="logout()">Logout</button>
     </section>
   </header>
 
