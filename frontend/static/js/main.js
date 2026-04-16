@@ -480,8 +480,6 @@ async function login(email, password) {
     return response.json();
 }
 
-localStorage.setItem("token", data.access_token);
-
 function authFetch(url, options = {}) {
     const token = localStorage.getItem("token");
 
@@ -492,6 +490,19 @@ function authFetch(url, options = {}) {
             "Authorization": `Bearer ${token}`
         }
     });
+}
+
+async function handleLogin() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        const data = await login(email, password);
+        localStorage.setItem("token", data.access_token);
+        alert("Logged in!");
+    } catch {
+        alert("Login failed");
+    }
 }
 
 
