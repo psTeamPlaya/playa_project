@@ -4,6 +4,9 @@ import json
 from pathlib import Path
 from typing import Any
 
+from backend.config import settings
+from backend.weather_provider import OpenMeteoError, obtener_condiciones_open_meteo
+
 BASE_DIR = Path(__file__).resolve().parent
 PLAYAS_FILE = BASE_DIR / "playas.json"
 CONDICIONES_FILE = BASE_DIR / "condiciones_playas.json"
@@ -24,6 +27,46 @@ def cargar_playas() -> list[dict[str, Any]]:
 
 def cargar_condiciones() -> list[dict[str, Any]]:
     return cargar_json(CONDICIONES_FILE)
+
+
+def cargar_condiciones_locales_filtradas(fecha: str, hora: str) -> list[dict[str, Any]]:
+    return [
+        condicion
+        for condicion in cargar_condiciones()
+        if condicion.get("fecha") == fecha and condicion.get("hora") == hora
+    ]
+
+
+def cargar_condiciones_para_busqueda(
+    playas: list[dict[str, Any]],
+    fecha: str,
+    hora: str,
+) -> list[dict[str, Any]]:
+    condiciones_locales = cargar_condiciones_locales_filtradas(fecha, hora)
+
+    if settings.WEATHER_PROVIDER == "local":
+        return condiciones_locales
+
+    try:
+        condiciones_remotas = obtener_condiciones_open_meteo(
+            playas=playas,
+            fecha=fecha,
+            hora=hora,
+            timezone=settings.OPEN_METEO_TIMEZONE,
+            timeout_seconds=settings.OPEN_METEO_TIMEOUT_SECONDS,
+        )
+    except OpenMeteoError:
+        return condiciones_locales
+
+    condiciones_por_playa = {
+        condicion["playa_id"]: condicion
+        for condicion in condiciones_remotas
+    }
+
+    for condicion_local in condiciones_locales:
+        condiciones_por_playa.setdefault(condicion_local["playa_id"], condicion_local)
+
+    return list(condiciones_por_playa.values())
 
 
 # =========================================================
@@ -375,7 +418,7 @@ def recomendar_playas(
     top_n: int = 3
 ) -> list[dict[str, Any]]:
     playas = cargar_playas()
-    condiciones = cargar_condiciones()
+    condiciones = cargar_condiciones_para_busqueda(playas, fecha, hora)
 
     resultados: list[dict[str, Any]] = []
 
