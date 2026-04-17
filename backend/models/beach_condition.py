@@ -1,7 +1,5 @@
 from sqlalchemy import Column, Integer, Float, ForeignKey, DateTime, Enum, UniqueConstraint
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
+from backend.db import Base
 
 class BeachCondition(Base):
     __tablename__ = "beach_conditions"
