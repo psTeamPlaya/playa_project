@@ -4,9 +4,15 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 
 from backend.config import settings
-from backend.routes.api import router as api_router
-from backend.routes.views import router as views_router
+from backend.routes import api_router, views_router, auth_router, users_router 
 from backend.engine_recomendation import recomendar_playas
+from backend.db import engine, Base
+import backend.models
+from backend.routes import auth_router
+# from backend.routes.favourites import router as fav_router
+
+
+Base.metadata.create_all(bind=engine)   # create tables
 
 app = FastAPI(title=settings.APP_NAME)
 
@@ -17,6 +23,9 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 app.include_router(api_router)
 app.include_router(views_router)
+app.include_router(auth_router)
+app.include_router(users_router)
+# app.include_router(fav_router)
 
 @app.get("/")
 def inicio():
