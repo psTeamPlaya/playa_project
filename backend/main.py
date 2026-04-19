@@ -9,9 +9,10 @@ from backend.engine_recomendation import recomendar_playas
 from backend.db import engine, Base
 import backend.models
 from backend.routes import auth_router
-from fastapi.responses import FileResponse
+# from backend.routes.favourites import router as fav_router
 
-Base.metadata.create_all(bind=engine)
+
+Base.metadata.create_all(bind=engine)   # create tables
 
 app = FastAPI(title=settings.APP_NAME)
 
@@ -26,9 +27,9 @@ app.include_router(auth_router)
 app.include_router(users_router)
 # app.include_router(fav_router)
 
-@app.get("/")
-def inicio():
-    return {"mensaje": "API de recomendación de playas funcionando"}
+#@app.get("/")
+#def inicio():
+#    return {"mensaje": "API de recomendación de playas funcionando"}
 
 @app.get("/recomendaciones")
 def obtener_recomendaciones(actividad: str, fecha: str, hora: str):
@@ -48,13 +49,3 @@ def obtener_recomendaciones(actividad: str, fecha: str, hora: str):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
-@app.get("/login")
-def serve_login():
-    ruta_login = BASE_DIR / "frontend" / "templates" / "login.html"
-    return FileResponse(ruta_login)
-
-@app.get("/")
-def inicio():
-    ruta_index = BASE_DIR / "frontend" / "templates" / "index.html"
-    return FileResponse(ruta_index)
