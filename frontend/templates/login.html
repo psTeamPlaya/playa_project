@@ -1,18 +1,47 @@
-<input id="email">
-<input id="password" type="password">
-<button onclick="handleLogin()">Login</button>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Mi día de Playa</title>
+    <link rel="stylesheet" href="/styles">
+    <link rel="stylesheet" href="/login">
+    <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
 
-<script>
-    async function handleLogin() {
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+    <header class="login-header">
+        <div class="logo">
+            <img src="/static/img/logo.png" alt="Logo">
+            <span>Mi día de Playa</span>
+        </div>
+        <div class="actions" style="margin-top: 0;">
+            <button class="btn-primary">Inicio de sesión</button>
+            <button class="btn-secondary">Registro</button>
+        </div>
+    </header>
 
-        try {
-            const data = await login(email, password);
-            localStorage.setItem("token", data.access_token);
-            alert("Logged in!");
-        } catch {
-            alert("Login failed");
-        }
-    }
-</script>
+    <main class="login-main container">
+        <section class="panel login-card">
+            <h2>Iniciar sesión</h2>
+
+            <div class="field" style="margin-bottom: 1.5rem;">
+                <label for="email">Correo electrónico</label>
+                <input id="email" type="email" placeholder="tu@correo.com">
+            </div>
+
+            <div class="field" style="margin-bottom: 1.5rem;">
+                <label for="password">Contraseña</label>
+                <input id="password" type="password" placeholder="********">
+            </div>
+
+            <div class="actions">
+                <button onclick="handleLogin()" class="btn-primary" style="width: 100%;">Entrar a mi cuenta</button>
+            </div>
+
+            <div id="errorMessage" class="status" style="color: #d9534f; text-align: center; margin-top: 1rem; font-size: 1.1rem;"></div>
+        </section>
+    </main>
+
+</body>
+</html>
