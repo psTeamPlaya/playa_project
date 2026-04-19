@@ -27,9 +27,9 @@ app.include_router(auth_router)
 app.include_router(users_router)
 # app.include_router(fav_router)
 
-#@app.get("/")
-#def inicio():
-#    return {"mensaje": "API de recomendación de playas funcionando"}
+@app.get("/")
+def inicio():
+    return {"mensaje": "API de recomendación de playas funcionando"}
 
 @app.get("/recomendaciones")
 def obtener_recomendaciones(actividad: str, fecha: str, hora: str):
