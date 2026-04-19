@@ -1,10 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Mi día de Playa</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/login.css">
+    <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="login-page">
 
+    <header class="login-header">
+        <div class="logo">
+            <img src="/static/img/logo.png" alt="Logo">
+            <span>Mi día de Playa</span>
+        </div>
+        <div class="actions" style="margin-top: 0;">
+            <button class="btn-secondary" onclick="window.location.href='/login'">Inicio de sesión</button>
+            <button class="btn-primary" onclick="window.location.href='/'">Cancelar</button>
+        </div>
+    </header>
+
+    <main class="login-main container">
+        <section class="panel login-card">
+            <h2>Crear una cuenta nueva</h2>
+            <form id="registerForm">
+                <div class="field" style="margin-bottom: 1.5rem;">
+                    <label for="name">Nombre</label>
+                    <input type="text" id="name" required placeholder="Tu nombre o apodo">
+                </div>
+
+                <div class="field" style="margin-bottom: 1.5rem;">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" required placeholder="tu@correo.com">
+                </div>
+
+                <div class="field" style="margin-bottom: 1.5rem;">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" required placeholder="********">
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn-primary" style="width: 100%;">Registrarme</button>
+                </div>
+
+                <div id="statusMessage" class="status" style="text-align: center; margin-top: 1rem; font-size: 1.1rem;"></div>
+            </form>
+        </section>
+    </main>
+
+    <script src="/static/js/register.js"></script>
 </body>
 </html>
