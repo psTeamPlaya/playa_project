@@ -1,7 +1,5 @@
 from sqlalchemy import Column, Integer, Float, ForeignKey, DateTime, Enum, UniqueConstraint
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
+from backend.db import Base
 
 class BeachCondition(Base):
     __tablename__ = "beach_conditions"
@@ -18,7 +16,7 @@ class BeachCondition(Base):
     rain_probability = Column(Integer)
     sea_level = Column(Float)
 
-    tide_type = Column(Enum("low", "medium", "high"))
+    tide_type = Column(Enum("low", "medium", "high", name="tide_enum"))
 
     # Para no poner duplicados
     __table_args__ = (

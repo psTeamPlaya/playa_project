@@ -1,8 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import declarative_base
-
-# 'Base' de superclase indica a SQLAlchemy que la clase heredera es una tabla
-Base = declarative_base()
+from backend.db import Base
 
 class User(Base):
     __tablename__ = "users"

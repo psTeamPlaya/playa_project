@@ -1,8 +1,10 @@
-from sqlalchemy import create_engine, text  #  create_engine para crear la conexión con la db; text para ejecutar SQL escrito como texto
-from sqlalchemy.orm import sessionmaker # Para crear sesiones de db para consultar tablas, insertar registros, actualizar datos,...
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
 from backend.config import settings
+from sqlalchemy.orm import declarative_base
 
+Base = declarative_base()
 engine = create_engine(settings.DATABASE_URL, future=True)
 
 SessionLocal = sessionmaker(
@@ -18,7 +20,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
 
 def check_database_connection() -> bool:
     try:
