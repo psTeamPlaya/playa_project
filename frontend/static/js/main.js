@@ -461,6 +461,100 @@ function formatearServicios(servicios) {
 }
 
 // =========================================================
+// Login
+// =========================================================
+
+async function login(email, password) {
+    const response = await fetch("/auth/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+    });
+
+    if (!response.ok) {
+        throw new Error("Login failed");
+    }
+
+    return response.json();
+}
+
+function authFetch(url, options = {}) {
+    const token = localStorage.getItem("token");
+
+    return fetch(url, {
+        ...options,
+        headers: {
+            ...(options.headers || {}),
+            "Authorization": `Bearer ${token}`
+        }
+    });
+}
+
+async function handleLogin() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        const data = await login(email, password);
+        localStorage.setItem("token", data.access_token);
+        alert("Logged in!");
+        document.querySelectorAll(".loggedOut").forEach(el => {
+            el.classList.add("hidden");
+        });
+        document.querySelectorAll(".loggedIn").forEach(el => {
+            el.classList.remove("hidden");
+        });
+    } catch {
+        alert("Login failed");
+    }
+    loadCurrentUser();
+}
+
+async function loadCurrentUser() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        document.getElementById("userInfo").textContent = `No user logged in.`;
+        return;
+    }
+
+    try {
+        const response = await fetch("/auth/me", {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        document.getElementById("userInfo").textContent = `Logged in as: ${data.email}`;
+
+    } catch (e) {
+        console.error("Failed to load user");
+    }
+}
+
+function logout() {
+    localStorage.removeItem("token");
+
+    loadCurrentUser();
+    document.querySelectorAll(".loggedIn").forEach(el => {
+        el.classList.add("hidden");
+    });
+    document.querySelectorAll(".loggedOut").forEach(el => {
+        el.classList.remove("hidden");
+    });
+
+    alert("Logged out");
+}
+
+
+
+// =========================================================
 // ARRANQUE
 // =========================================================
 
@@ -468,3 +562,4 @@ seleccionarActividadPorDefecto();
 configurarFechaPorDefecto();
 actualizarHorasDisponibles();
 configurarHoraPorDefecto();
+loadCurrentUser();

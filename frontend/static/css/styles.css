@@ -186,6 +186,7 @@
         display: flex;
         gap: 1rem;
         flex-wrap: wrap;
+        justify-content: center;
     }
 
     button {
@@ -439,6 +440,11 @@
         font-size: 1.5rem;
     }
 
+    .date-icon,
+    .date-display {
+        display: none;
+    }
+
     .hour-wheel-wrapper {
         position: relative;
         height: 5rem;
@@ -511,4 +517,25 @@
         }
 
 
+    }
+
+    .auth-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .login, .logout {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .login input {
+        padding: 6px 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .hidden {
+       display: none;
     }
