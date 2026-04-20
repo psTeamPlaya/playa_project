@@ -3,18 +3,27 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 
+import backend.models       # NO BORRAR, SE USA AUNQUE PONGA QUE NO
 from backend.config import settings
 from backend.routes.api import router as api_router
 from backend.routes.views import router as views_router
 from backend.engine_recomendation import recomendar_playas
+from backend.db import engine
+from contextlib import asynccontextmanager
+from backend.db import Base
 
-app = FastAPI(title=settings.APP_NAME)
+# Crea las tablas al arrancar el servidor
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
+
+app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "frontend" / "static"
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
 app.include_router(api_router)
 app.include_router(views_router)
 
@@ -39,4 +48,3 @@ def obtener_recomendaciones(actividad: str, fecha: str, hora: str):
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
