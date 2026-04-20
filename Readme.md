@@ -191,3 +191,18 @@ playa_project/
     * mostrar resultados sin recargar la página;
     * abrir o cerrar menús;
     * actualizar favoritos en pantalla.
+
+## IntegraciÃ³n con Open-Meteo
+
+La recomendaciÃ³n puede obtener condiciones meteorolÃ³gicas y marinas en tiempo real usando Open-Meteo a partir de la latitud, longitud, fecha y hora de cada playa.
+
+- Variables atmosfÃ©ricas: `temperature_2m`, `wind_speed_10m`, `cloud_cover`, `precipitation_probability`
+- Variables marinas: `wave_height`, `sea_surface_temperature`, `sea_level_height_msl`
+- Si la consulta remota falla o no devuelve la hora solicitada, el backend usa como fallback `backend/condiciones_playas.json`
+
+ConfiguraciÃ³n:
+
+- `WEATHER_PROVIDER=openmeteo` activa la consulta remota
+- `WEATHER_PROVIDER=local` fuerza el uso del JSON local
+- `OPEN_METEO_TIMEZONE=Atlantic/Canary` controla la zona horaria enviada a Open-Meteo
+- `OPEN_METEO_TIMEOUT_SECONDS=10` ajusta el timeout HTTP
