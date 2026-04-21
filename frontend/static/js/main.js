@@ -8,6 +8,7 @@ const buscarBtn = document.getElementById("buscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
 const hourWheel = document.getElementById("hourWheel");
+const cantidadSelect = document.getElementById("cantidad");
 
 let hourOptions = [];
 let actividadSeleccionada = "";
@@ -370,8 +371,11 @@ buscarBtn.addEventListener("click", async () => {
         }
 
         const data = await response.json();
-        pintarResultados(data.resultados);
-        statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
+        const cantidad = Number(cantidadSelect.value) || 3;
+        const resultadosLimitados = data.resultados.slice(0, cantidad);
+
+        pintarResultados(resultadosLimitados);
+        statusEl.textContent = `Mostrando ${resultadosLimitados.length} de ${data.resultados.length} playas recomendadas para ${actividadSeleccionada.replace("_", " ")}.`;
     } catch (error) {
         console.error(error);
         statusEl.textContent = "Ha ocurrido un error al consultar la API.";
