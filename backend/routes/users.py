@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/users", tags=["Users"])
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(
         email=user.email,
-        password_hash=hash_password(user.password)
+        hashed_password=hash_password(user.password)
     )
 
     db.add(new_user)
