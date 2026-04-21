@@ -16,7 +16,8 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user = User(email=user.email, hashed_password=hash_password(user.password))
     db.add(db_user)
     db.commit()
-    return {"msg": "registered"}
+    return {"msg": "registered"} 
+
 
 @router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
