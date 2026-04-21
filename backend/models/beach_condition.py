@@ -16,7 +16,7 @@ class BeachCondition(Base):
     rain_probability = Column(Integer)
     sea_level = Column(Float)
 
-    tide_type = Column(Enum("low", "medium", "high"))
+    tide_type = Column(Enum("low", "medium", "high", name="tide_enum"))
 
     # Para no poner duplicados
     __table_args__ = (
