@@ -9,5 +9,5 @@ class Activity(Base):
                        'surf', 
                        'windsurf', 
                        'paddlesurf', 
-                       'kayak'
-                       ), nullable=False, unique=True)
+                       'kayak',
+                        name="activity_enum"), nullable=False, unique=True)
