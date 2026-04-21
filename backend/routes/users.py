@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+import os
 
 from backend.db import get_db
 from backend.models.user import User
@@ -13,7 +14,7 @@ router = APIRouter(prefix="/api/users", tags=["Users"])
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(
         email=user.email,
-        hashed_password=hash_password(user.password)
+        password_hash=hash_password(user.password)
     )
 
     db.add(new_user)
@@ -24,4 +25,19 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         "id": new_user.id,
         "email": new_user.email
     }
+
+
+@router.get("")
+def list_users(db: Session = Depends(get_db)):
+    print(f"Using DATABASE_URL: {os.getenv('DATABASE_URL')}")
+
+    users = db.query(User).all()
+
+    return [
+        {
+            "id": user.id,
+            "email": user.email
+        }
+        for user in users
+    ]
 

@@ -492,26 +492,6 @@ function authFetch(url, options = {}) {
     });
 }
 
-async function handleLogin() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-        const data = await login(email, password);
-        localStorage.setItem("token", data.access_token);
-        alert("Logged in!");
-        document.querySelectorAll(".loggedOut").forEach(el => {
-            el.classList.add("hidden");
-        });
-        document.querySelectorAll(".loggedIn").forEach(el => {
-            el.classList.remove("hidden");
-        });
-    } catch {
-        alert("Login failed");
-    }
-    loadCurrentUser();
-}
-
 async function loadCurrentUser() {
     const token = localStorage.getItem("token");
 
@@ -552,14 +532,30 @@ function logout() {
     alert("Logged out");
 }
 
+function actualizarBotonesSesion() {
+    const token = localStorage.getItem("token");
 
+    const loginDiv = document.querySelector(".login");
+    const logoutDiv = document.querySelector(".logout");
+
+    if (token) {
+        if (loginDiv) loginDiv.style.display = "none";
+        if (logoutDiv) logoutDiv.style.display = "flex";
+    } else {
+        if (loginDiv) loginDiv.style.display = "flex";
+        if (logoutDiv) logoutDiv.style.display = "none";
+    }
+}
 
 // =========================================================
 // ARRANQUE
 // =========================================================
 
-seleccionarActividadPorDefecto();
-configurarFechaPorDefecto();
-actualizarHorasDisponibles();
-configurarHoraPorDefecto();
+if (document.getElementById("fecha")) {
+    seleccionarActividadPorDefecto();
+    configurarFechaPorDefecto();
+    actualizarHorasDisponibles();
+    configurarHoraPorDefecto();
+}
 loadCurrentUser();
+actualizarBotonesSesion();
