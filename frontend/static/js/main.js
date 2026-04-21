@@ -375,10 +375,10 @@ buscarBtn.addEventListener("click", async () => {
 
         const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&limit=${cantidad}`;
 
-        const resultadosLimitados = data.resultados.slice(0, cantidad);
-
         pintarResultados(resultadosLimitados);
-        statusEl.textContent = `Mostrando ${resultadosLimitados.length} de ${data.resultados.length} playas recomendadas para ${actividadSeleccionada.replace("_", " ")}.`;
+        statusEl.textContent =
+          `Mostrando ${data.resultados.length} playas recomendadas para ${actividadSeleccionada.replace("_", " ")}.`;
+
     } catch (error) {
         console.error(error);
         statusEl.textContent = "Ha ocurrido un error al consultar la API.";
