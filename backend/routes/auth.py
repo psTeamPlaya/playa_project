@@ -9,6 +9,10 @@ router = APIRouter(prefix="/auth", tags=["AUTH"])
 
 @router.post("/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):
+    db_user_exist = db.query(User).filter(User.email == user.email).first()
+    if db_user_exist:
+        raise HTTPException(status_code=400, detail="Este correo ya está registrado.")
+
     db_user = User(email=user.email, hashed_password=hash_password(user.password))
     db.add(db_user)
     db.commit()
