@@ -19,14 +19,15 @@
                 <h1>Mi día de Playa</h1>
             </div>
             <section class="auth-container">
-              <div class="login loggedOut">     <!-- Logged OUT -->
-                <input id="email">
-                <input id="password" type="password">
-                <button onclick="handleLogin()">Login</button>
+              <div class="login loggedOut">
+                <button class="btn-primary" onclick="window.location.href='/login'">Iniciar sesión</button>
+                <button class="btn-secondary" onclick="window.location.href='/register'">Registrarse</button>
               </div>
-              <div class="logout loggedIn">   <!-- Logged IN -->
-                <button id="logoutBtn" onclick="logout()">Logout</button>
+
+              <div class="logout loggedIn ">
+                <button class="btn-secondary" id="logoutBtn" onclick="logout()">Cerrar sesión</button>
               </div>
+
               <div id="userInfo"></div>
             </section>
 
@@ -121,6 +122,6 @@
   </main>
   
   <!-- Me aseguro que la página está totalmente cargada antes de iniciar el script-->
-  <script src="static/js/main.js"></script>
+  <script src="/static/js/main.js"></script>
 </body>
 </html>
