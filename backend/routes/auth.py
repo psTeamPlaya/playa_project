@@ -9,7 +9,7 @@ router = APIRouter(prefix="/auth", tags=["AUTH"])
 
 @router.post("/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = User(email=user.email, hashed_password=hash_password(user.password))
+    db_user = User(email=user.email, password_hash=hash_password(user.password))
     db.add(db_user)
     db.commit()
     return {"msg": "registered"}
@@ -18,7 +18,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
 
-    if not db_user or not verify_password(user.password, db_user.hashed_password):
+    if not db_user or not verify_password(user.password, db_user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     token = create_token(db_user.id)
