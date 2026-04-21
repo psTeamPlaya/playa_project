@@ -6,6 +6,8 @@
   <title>Mi día de Playa</title>
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
   <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/localization.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -108,8 +110,24 @@
     </section>
 
     <section class="panel">
+      <h2>3. ¿Dónde quieres ir?</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="locationInput">Ciudad / Ubicación</label>
+          <input type="text" id="locationInput" placeholder="Ej: Las Palmas">
+          <div id="suggestions" class="suggestions-dropdown"></div> 
+        </div>
+        <div class="actions">
+          <button class="btn-secondary" id="btnGeolocalizar">📍 Mi ubicación</button>
+          <button class="btn-secondary" id="btnMapa">🗺️ Elegir en mapa</button>
+        </div>
+      </div>
+      <div id="locationHistory" class="mini-chip-container"></div>
+    </section>
+
+    <section class="panel">
       <div class="results-header">
-        <h2>3. Top-3 de playas recomendadas</h2>
+        <h2>4. Top-3 de playas recomendadas</h2>
       </div>
 
       <div id="resultsContainer" class="results-grid">
@@ -120,8 +138,21 @@
     </section>
 
   </main>
-  
-  <!-- Me aseguro que la página está totalmente cargada antes de iniciar el script-->
+
+  <div id="mapModal" class="map-modal hidden">
+  <div class="map-container">
+    <button id="closeMap">✖</button>
+    <div id="map" style="height: 400px;"></div>
+    <button id="confirmLocation" class="btn-primary">Seleccionar ubicación</button>
+  </div>
+</div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>  
   <script src="/static/js/main.js"></script>
+  <script src="/static/js/localization.js"></script>
+
+
+  
+
 </body>
 </html>
