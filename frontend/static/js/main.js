@@ -372,6 +372,9 @@ buscarBtn.addEventListener("click", async () => {
 
         const data = await response.json();
         const cantidad = Number(cantidadSelect.value) || 3;
+
+        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&limit=${cantidad}`;
+
         const resultadosLimitados = data.resultados.slice(0, cantidad);
 
         pintarResultados(resultadosLimitados);

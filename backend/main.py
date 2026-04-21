@@ -34,13 +34,13 @@ def inicio():
     return {"mensaje": "API de recomendación de playas funcionando"}
 
 @app.get("/recomendaciones")
-def obtener_recomendaciones(actividad: str, fecha: str, hora: str):
+def obtener_recomendaciones(actividad: str, fecha: str, hora: str, limit: int = 3):
     try:
         resultados = recomendar_playas(
             actividad=actividad,
             fecha=fecha,
             hora=hora,
-            top_n=3
+            top_n=limit
         )
         return {
             "actividad": actividad,
