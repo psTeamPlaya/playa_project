@@ -8,6 +8,7 @@ const buscarBtn = document.getElementById("buscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
 const hourWheel = document.getElementById("hourWheel");
+const sunAlertEl = document.getElementById("sunAlert");
 
 let hourOptions = [];
 let actividadSeleccionada = "";
@@ -16,6 +17,7 @@ let horaSeleccionada = "";
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
     statusEl.textContent = "";
+    ocultarAvisoSolar();
 }
 
 // =========================================================
@@ -69,6 +71,24 @@ function obtenerHoraMinimaPermitida() {
 function obtenerHoraTexto(hourNumber) {
     const horaNormalizada = Math.min(hourNumber, 23);
     return `${String(horaNormalizada).padStart(2, "0")}:00`;
+}
+
+function mostrarAvisoSolar(mensaje) {
+    if (!sunAlertEl) {
+        return;
+    }
+
+    sunAlertEl.textContent = mensaje;
+    sunAlertEl.hidden = false;
+}
+
+function ocultarAvisoSolar() {
+    if (!sunAlertEl) {
+        return;
+    }
+
+    sunAlertEl.textContent = "";
+    sunAlertEl.hidden = true;
 }
 
 function obtenerHorasDisponiblesParaFecha(fechaTexto) {
@@ -348,6 +368,7 @@ fechaInput.addEventListener("change", () => {
 buscarBtn.addEventListener("click", async () => {
     const fecha = fechaInput.value;
     const hora = horaSeleccionada;
+    ocultarAvisoSolar();
 
     if (!actividadSeleccionada) {
         statusEl.textContent = "Debes seleccionar una actividad.";
@@ -387,6 +408,12 @@ buscarBtn.addEventListener("click", async () => {
 
         const data = await response.json();
         pintarResultados(data.resultados);
+        if (data.aviso_sol?.mensaje) {
+            mostrarAvisoSolar(data.aviso_sol.mensaje);
+            statusEl.textContent = "";
+            return;
+        }
+
         statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
     } catch (error) {
         console.error(error);
