@@ -13,6 +13,11 @@ let hourOptions = [];
 let actividadSeleccionada = "";
 let horaSeleccionada = "";
 
+function limpiarResultadosPorCambioDeFiltros() {
+    resultsContainer.innerHTML = "";
+    statusEl.textContent = "";
+}
+
 // =========================================================
 // UTILIDADES DE FECHA Y HORA
 // =========================================================
@@ -94,13 +99,19 @@ function renderizarWheelHoras(fechaTexto) {
 
     hourOptions.forEach(option => {
         option.addEventListener("click", () => {
+            const horaAnterior = horaSeleccionada;
+
             option.scrollIntoView({
                 block: "center",
                 behavior: "smooth"
             });
 
             horaSeleccionada = option.dataset.hour;
-            statusEl.textContent = "";
+            if (horaSeleccionada !== horaAnterior) {
+                limpiarResultadosPorCambioDeFiltros();
+            } else {
+                statusEl.textContent = "";
+            }
             setTimeout(actualizarHoraActiva, 180);
         });
     });
@@ -235,8 +246,14 @@ function actualizarHoraActiva() {
     });
 
     if (opcionMasCercana) {
+        const horaAnterior = horaSeleccionada;
         horaSeleccionada = opcionMasCercana.dataset.hour;
-        statusEl.textContent = "";
+
+        if (horaSeleccionada !== horaAnterior) {
+            limpiarResultadosPorCambioDeFiltros();
+        } else {
+            statusEl.textContent = "";
+        }
     }
 }
 
@@ -249,31 +266,23 @@ hourWheel.addEventListener("scroll", () => {
         const activa = [...hourOptions].find(option => option.classList.contains("active"));
 
         if (activa) {
+            const horaAnterior = horaSeleccionada;
+
             activa.scrollIntoView({
                 block: "center",
                 behavior: "smooth"
             });
             horaSeleccionada = activa.dataset.hour;
-            statusEl.textContent = "";
+
+            if (horaSeleccionada !== horaAnterior) {
+                limpiarResultadosPorCambioDeFiltros();
+            } else {
+                statusEl.textContent = "";
+            }
         } else {
             asegurarHoraValidaSeleccionada();
         }
     }, 120);
-});
-
-hourOptions.forEach(option => {
-    option.addEventListener("click", () => {
-
-
-        option.scrollIntoView({
-            block: "center",
-            behavior: "smooth"
-        });
-
-        horaSeleccionada = option.dataset.hour;
-        statusEl.textContent = "";
-        setTimeout(actualizarHoraActiva, 180);
-    });
 });
 
 function fijarHoraInicial(valor = "12:00") {
@@ -296,10 +305,17 @@ function fijarHoraInicial(valor = "12:00") {
 
 activityCards.forEach(card => {
     card.addEventListener("click", () => {
+        const actividadAnterior = actividadSeleccionada;
+
         activityCards.forEach(c => c.classList.remove("selected"));
         card.classList.add("selected");
         actividadSeleccionada = card.dataset.activity;
-        statusEl.textContent = "";
+
+        if (actividadSeleccionada !== actividadAnterior) {
+            limpiarResultadosPorCambioDeFiltros();
+        } else {
+            statusEl.textContent = "";
+        }
     });
 });
 
@@ -322,7 +338,7 @@ fechaInput.addEventListener("change", () => {
     actualizarTextoFecha();
     actualizarHorasDisponibles();
     asegurarHoraValidaSeleccionada();
-    statusEl.textContent = "";
+    limpiarResultadosPorCambioDeFiltros();
 });
 
 // =========================================================
@@ -528,8 +544,6 @@ function logout() {
     document.querySelectorAll(".loggedOut").forEach(el => {
         el.classList.remove("hidden");
     });
-
-    alert("Logged out");
 }
 
 function actualizarBotonesSesion() {

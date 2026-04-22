@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, DECIMAL
+from sqlalchemy import Column, Integer, String, Text, DECIMAL
 from backend.db import Base
 
 class Beach(Base):
@@ -11,5 +11,5 @@ class Beach(Base):
     type = Column(String)
     latitude = Column(DECIMAL, nullable=False)
     longitude = Column(DECIMAL, nullable=False)
-    accessibility = Column(Boolean)
+    accessibility = Column(String)
     image = Column(String)
