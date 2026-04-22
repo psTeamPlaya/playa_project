@@ -226,6 +226,17 @@
         min-height: 1.2rem;
     }
 
+    .sun-alert {
+        margin-top: 1rem;
+        padding: 0.9rem 1.1rem;
+        border-radius: 14px;
+        border: 1px solid #e8d48a;
+        background: #fff2b8;
+        color: #111111;
+        font-size: 1.2rem;
+        line-height: 1.35;
+    }
+
     .results-header {
         display: flex;
         justify-content: space-between;
