@@ -6,6 +6,7 @@
   <title>Mi dia de Playa</title>
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
   <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -16,10 +17,30 @@
       <div class="hero-brand">
         <section class="auth-container">
           <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
-            <span class="auth-trigger-icon" id="authActionIcon" aria-hidden="true">⇥</span>
-            <span id="authActionText">Acceder</span>
+            <span class="auth-trigger-icon" aria-hidden="true">
+              <i class="bi bi-box-arrow-in-left" id="authActionIcon"></i>
+            </span>
           </button>
-          <div id="userInfo"></div>
+          <div class="preferences-panel" id="preferencesPanel" hidden>
+            <h3>Preferencias</h3>
+            <div class="preferences-user" id="preferencesUserInfo"></div>
+            <label class="preference-item">
+              <input type="checkbox" id="rememberActivityPreference">
+              <span>Recordar ultima actividad</span>
+            </label>
+            <label class="preference-item">
+              <input type="checkbox" id="rememberSchedulePreference">
+              <span>Recordar fecha y hora</span>
+            </label>
+            <label class="preference-item">
+              <input type="checkbox" id="expandResultsPreference">
+              <span>Abrir resultados desplegados</span>
+            </label>
+            <div class="preferences-divider"></div>
+            <button class="preferences-logout" id="preferencesLogoutBtn" type="button" aria-label="Cerrar sesion">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
         </section>
 
         <div class="hero-logo">

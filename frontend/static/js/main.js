@@ -12,7 +12,6 @@ const sunAlertEl = document.getElementById("sunAlert");
 const loginModalEl = document.getElementById("loginModal");
 const authActionBtn = document.getElementById("authActionBtn");
 const authActionIcon = document.getElementById("authActionIcon");
-const authActionText = document.getElementById("authActionText");
 const closeLoginModalBtn = document.getElementById("closeLoginModal");
 const loginModalForm = document.getElementById("loginModalForm");
 const loginEmailInput = document.getElementById("loginEmail");
@@ -21,16 +20,128 @@ const loginErrorMessageEl = document.getElementById("loginErrorMessage");
 const authSubmitBtn = document.getElementById("authSubmitBtn");
 const authModeHint = document.getElementById("authModeHint");
 const toggleAuthModeBtn = document.getElementById("toggleAuthModeBtn");
+const preferencesPanel = document.getElementById("preferencesPanel");
+const preferencesUserInfo = document.getElementById("preferencesUserInfo");
+const preferencesLogoutBtn = document.getElementById("preferencesLogoutBtn");
+const rememberActivityPreference = document.getElementById("rememberActivityPreference");
+const rememberSchedulePreference = document.getElementById("rememberSchedulePreference");
+const expandResultsPreference = document.getElementById("expandResultsPreference");
 
 let hourOptions = [];
 let actividadSeleccionada = "";
 let horaSeleccionada = "";
 let authMode = "login";
+let preferencesCloseTimeout;
+
+const STORAGE_KEYS = {
+    rememberActivity: "preferences.rememberActivity",
+    rememberSchedule: "preferences.rememberSchedule",
+    expandResults: "preferences.expandResults",
+    savedActivity: "preferences.savedActivity",
+    savedDate: "preferences.savedDate",
+    savedHour: "preferences.savedHour"
+};
 
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
     statusEl.textContent = "";
     ocultarAvisoSolar();
+}
+
+function leerPreferencia(clave) {
+    return localStorage.getItem(clave) === "true";
+}
+
+function guardarPreferencia(clave, valor) {
+    localStorage.setItem(clave, valor ? "true" : "false");
+}
+
+function cargarPreferenciasUI() {
+    if (rememberActivityPreference) {
+        rememberActivityPreference.checked = leerPreferencia(STORAGE_KEYS.rememberActivity);
+    }
+
+    if (rememberSchedulePreference) {
+        rememberSchedulePreference.checked = leerPreferencia(STORAGE_KEYS.rememberSchedule);
+    }
+
+    if (expandResultsPreference) {
+        expandResultsPreference.checked = leerPreferencia(STORAGE_KEYS.expandResults);
+    }
+}
+
+function cerrarPanelPreferencias() {
+    if (preferencesPanel) {
+        preferencesPanel.classList.remove("is-open");
+        clearTimeout(preferencesCloseTimeout);
+        preferencesCloseTimeout = setTimeout(() => {
+            preferencesPanel.hidden = true;
+        }, 220);
+    }
+}
+
+function abrirPanelPreferencias() {
+    if (!preferencesPanel) {
+        return;
+    }
+
+    clearTimeout(preferencesCloseTimeout);
+    preferencesPanel.hidden = false;
+    requestAnimationFrame(() => {
+        preferencesPanel.classList.add("is-open");
+    });
+}
+
+function guardarActividadRecordada() {
+    if (!rememberActivityPreference?.checked || !actividadSeleccionada) {
+        localStorage.removeItem(STORAGE_KEYS.savedActivity);
+        return;
+    }
+
+    localStorage.setItem(STORAGE_KEYS.savedActivity, actividadSeleccionada);
+}
+
+function guardarHorarioRecordado() {
+    if (!rememberSchedulePreference?.checked || !fechaInput.value || !horaSeleccionada) {
+        localStorage.removeItem(STORAGE_KEYS.savedDate);
+        localStorage.removeItem(STORAGE_KEYS.savedHour);
+        return;
+    }
+
+    localStorage.setItem(STORAGE_KEYS.savedDate, fechaInput.value);
+    localStorage.setItem(STORAGE_KEYS.savedHour, horaSeleccionada);
+}
+
+function obtenerActividadInicial() {
+    const actividadGuardada = localStorage.getItem(STORAGE_KEYS.savedActivity);
+    if (rememberActivityPreference?.checked && actividadGuardada) {
+        return actividadGuardada;
+    }
+
+    return "tomar_sol";
+}
+
+function obtenerHorarioInicial() {
+    if (!rememberSchedulePreference?.checked) {
+        return null;
+    }
+
+    const fechaGuardada = localStorage.getItem(STORAGE_KEYS.savedDate);
+    const horaGuardada = localStorage.getItem(STORAGE_KEYS.savedHour);
+    const hoy = formatearFechaLocal(new Date());
+
+    if (!fechaGuardada || !horaGuardada || fechaGuardada < hoy) {
+        return null;
+    }
+
+    if (fechaGuardada === hoy && esHoraPasadaParaFecha(fechaGuardada, horaGuardada)) {
+        return null;
+    }
+
+    return {
+        fecha: fechaGuardada,
+        hora: horaGuardada
+    };
 }
 
 // =========================================================
@@ -140,6 +251,7 @@ function renderizarWheelHoras(fechaTexto) {
             });
 
             horaSeleccionada = option.dataset.hour;
+            guardarHorarioRecordado();
             if (horaSeleccionada !== horaAnterior) {
                 limpiarResultadosPorCambioDeFiltros();
             } else {
@@ -155,6 +267,7 @@ function renderizarWheelHoras(fechaTexto) {
 
     if (horaSeleccionada) {
         fijarHoraInicial(horaSeleccionada);
+        guardarHorarioRecordado();
     }
 }
 
@@ -162,54 +275,77 @@ function esFechaHoy(fechaTexto) {
     return fechaTexto === formatearFechaLocal(new Date());
 }
 
-function esHoraPasadaParaHoy(horaTexto) {
-    if (!esFechaHoy(fechaInput.value)) {
+function esHoraPasadaParaFecha(fechaTexto, horaTexto) {
+    if (fechaTexto !== formatearFechaLocal(new Date())) {
         return false;
     }
 
     const horaNumero = Number(horaTexto.split(":")[0]);
-    const horaMinima = obtenerHoraMinimaPermitida();
+    return horaNumero < obtenerHoraMinimaPermitida();
+}
 
-    return horaNumero < horaMinima;
+function esHoraPasadaParaHoy(horaTexto) {
+    return esHoraPasadaParaFecha(fechaInput.value, horaTexto);
 }
 
 // ============================================================
 // CONFIGURACIÓN INICIAL POR DEFECTO: actividad, fecha y hora
 // ============================================================
 
-function seleccionarActividadPorDefecto() {
-    const cardTomarSol = document.querySelector('.activity-card[data-activity="tomar_sol"]');
+function seleccionarActividad(actividad, limpiarResultados = false) {
+    const card = document.querySelector(`.activity-card[data-activity="${actividad}"]`);
 
-    if (cardTomarSol) {
-        activityCards.forEach(c => c.classList.remove("selected"));
-        cardTomarSol.classList.add("selected");
-        actividadSeleccionada = "tomar_sol";
-    }
-}
-
-function configurarFechaPorDefecto() {
-    const hoy = new Date();
-    const fechaHoy = formatearFechaLocal(hoy);
-
-    fechaInput.value = fechaHoy;
-    fechaInput.min = fechaHoy;
-    actualizarTextoFecha();
-}
-
-function configurarHoraPorDefecto() {
-    const horaMinima = obtenerHoraMinimaPermitida();
-
-    if (horaMinima > 23) {
-        // Si ya no quedan horas disponibles hoy, saltamos a mañana a las 00:00
-        const manana = new Date();
-        manana.setDate(manana.getDate() + 1);
-
-        fechaInput.value = formatearFechaLocal(manana);
-        fijarHoraInicial("00:00");
+    if (!card) {
         return;
     }
 
-    fijarHoraInicial(obtenerHoraTexto(horaMinima));
+    const actividadAnterior = actividadSeleccionada;
+
+    activityCards.forEach(c => c.classList.remove("selected"));
+    card.classList.add("selected");
+    actividadSeleccionada = actividad;
+    guardarActividadRecordada();
+
+    if (limpiarResultados && actividadSeleccionada !== actividadAnterior) {
+        limpiarResultadosPorCambioDeFiltros();
+    }
+}
+
+function configurarFechaYHoraIniciales() {
+    const hoy = new Date();
+    const fechaHoy = formatearFechaLocal(hoy);
+    const horarioInicial = obtenerHorarioInicial();
+
+    fechaInput.min = fechaHoy;
+    fechaInput.value = horarioInicial?.fecha || fechaHoy;
+    actualizarTextoFecha();
+    actualizarHorasDisponibles();
+
+    if (horarioInicial?.hora && obtenerHorasDisponiblesParaFecha(fechaInput.value).includes(horarioInicial.hora)) {
+        fijarHoraInicial(horarioInicial.hora);
+        guardarHorarioRecordado();
+        return;
+    }
+
+    const horaMinima = obtenerHoraMinimaPermitida();
+
+    if (fechaInput.value === fechaHoy && horaMinima > 23) {
+        const manana = new Date();
+        manana.setDate(manana.getDate() + 1);
+        fechaInput.value = formatearFechaLocal(manana);
+        actualizarTextoFecha();
+        actualizarHorasDisponibles();
+        fijarHoraInicial("00:00");
+        guardarHorarioRecordado();
+        return;
+    }
+
+    const horaInicial = fechaInput.value === fechaHoy
+        ? obtenerHoraTexto(horaMinima)
+        : "00:00";
+
+    fijarHoraInicial(horaInicial);
+    guardarHorarioRecordado();
 }
 
 // =========================================================
@@ -283,6 +419,7 @@ function actualizarHoraActiva() {
         horaSeleccionada = opcionMasCercana.dataset.hour;
 
         if (horaSeleccionada !== horaAnterior) {
+            guardarHorarioRecordado();
             limpiarResultadosPorCambioDeFiltros();
         } else {
             statusEl.textContent = "";
@@ -306,6 +443,7 @@ hourWheel.addEventListener("scroll", () => {
                 behavior: "smooth"
             });
             horaSeleccionada = activa.dataset.hour;
+            guardarHorarioRecordado();
 
             if (horaSeleccionada !== horaAnterior) {
                 limpiarResultadosPorCambioDeFiltros();
@@ -328,6 +466,7 @@ function fijarHoraInicial(valor = "12:00") {
         });
 
         horaSeleccionada = valor;
+        guardarHorarioRecordado();
         setTimeout(actualizarHoraActiva, 50);
     }
 }
@@ -338,17 +477,7 @@ function fijarHoraInicial(valor = "12:00") {
 
 activityCards.forEach(card => {
     card.addEventListener("click", () => {
-        const actividadAnterior = actividadSeleccionada;
-
-        activityCards.forEach(c => c.classList.remove("selected"));
-        card.classList.add("selected");
-        actividadSeleccionada = card.dataset.activity;
-
-        if (actividadSeleccionada !== actividadAnterior) {
-            limpiarResultadosPorCambioDeFiltros();
-        } else {
-            statusEl.textContent = "";
-        }
+        seleccionarActividad(card.dataset.activity, true);
     });
 });
 
@@ -371,6 +500,7 @@ fechaInput.addEventListener("change", () => {
     actualizarTextoFecha();
     actualizarHorasDisponibles();
     asegurarHoraValidaSeleccionada();
+    guardarHorarioRecordado();
     limpiarResultadosPorCambioDeFiltros();
 });
 
@@ -453,12 +583,14 @@ function pintarResultados(resultados) {
         return;
     }
 
+    const expandirResultados = expandResultsPreference?.checked;
+
     resultsContainer.innerHTML = resultados.map((playa, index) => {
         const servicios = formatearServicios(playa.servicios);
         const condiciones = playa.condiciones;
 
         return `
-            <details class="beach-card desplegable">
+            <details class="beach-card desplegable"${expandirResultados ? " open" : ""}>
             <summary class="beach-summary">
                 <div class="beach-summary-left">
                 <div class="ranking-badge">#${index + 1}</div>
@@ -622,11 +754,10 @@ function authFetch(url, options = {}) {
 
 async function loadCurrentUser() {
     const token = localStorage.getItem("token");
-    const userInfoEl = document.getElementById("userInfo");
 
     if (!token) {
-        if (userInfoEl) {
-            userInfoEl.textContent = "";
+        if (preferencesUserInfo) {
+            preferencesUserInfo.textContent = "";
         }
         return;
     }
@@ -640,8 +771,8 @@ async function loadCurrentUser() {
 
         if (!response.ok) {
             localStorage.removeItem("token");
-            if (userInfoEl) {
-                userInfoEl.textContent = "";
+            if (preferencesUserInfo) {
+                preferencesUserInfo.textContent = "";
             }
             actualizarBotonesSesion();
             return;
@@ -649,8 +780,8 @@ async function loadCurrentUser() {
 
         const data = await response.json();
 
-        if (userInfoEl) {
-            userInfoEl.textContent = data.email;
+        if (preferencesUserInfo) {
+            preferencesUserInfo.textContent = data.email;
         }
 
     } catch (e) {
@@ -663,31 +794,42 @@ function logout() {
 
     loadCurrentUser();
     actualizarBotonesSesion();
+    cerrarPanelPreferencias();
 }
 
 function actualizarBotonesSesion() {
     const token = localStorage.getItem("token");
 
-    if (!authActionBtn || !authActionText || !authActionIcon) {
+    if (!authActionBtn || !authActionIcon) {
         return;
     }
 
     if (token) {
-        authActionText.textContent = "Cerrar sesion";
-        authActionIcon.textContent = "⎋";
-        authActionBtn.setAttribute("aria-label", "Cerrar sesion");
+        authActionBtn.hidden = false;
+        authActionBtn.setAttribute("aria-label", "Preferencias");
+        authActionIcon.className = "bi bi-person-circle";
         return;
     }
 
-    authActionText.textContent = "Acceder";
-    authActionIcon.textContent = "⇥";
+    authActionIcon.className = "bi bi-box-arrow-in-left";
+    authActionBtn.hidden = false;
     authActionBtn.setAttribute("aria-label", "Acceder");
+    cerrarPanelPreferencias();
 }
 
 if (authActionBtn) {
     authActionBtn.addEventListener("click", () => {
         if (localStorage.getItem("token")) {
-            logout();
+            if (!preferencesPanel) {
+                return;
+            }
+
+            if (preferencesPanel.hidden) {
+                abrirPanelPreferencias();
+                return;
+            }
+
+            cerrarPanelPreferencias();
             return;
         }
 
@@ -706,6 +848,19 @@ if (loginModalEl) {
         }
     });
 }
+
+document.addEventListener("click", (event) => {
+    if (!preferencesPanel || preferencesPanel.hidden) {
+        return;
+    }
+
+    const clickDentroPanel = preferencesPanel.contains(event.target);
+    const clickEnToggle = authActionBtn?.contains(event.target);
+
+    if (!clickDentroPanel && !clickEnToggle) {
+        cerrarPanelPreferencias();
+    }
+});
 
 if (loginModalForm) {
     loginModalForm.addEventListener("submit", async (event) => {
@@ -755,9 +910,43 @@ if (toggleAuthModeBtn) {
     });
 }
 
+if (rememberActivityPreference) {
+    rememberActivityPreference.addEventListener("change", () => {
+        guardarPreferencia(STORAGE_KEYS.rememberActivity, rememberActivityPreference.checked);
+        guardarActividadRecordada();
+    });
+}
+
+if (rememberSchedulePreference) {
+    rememberSchedulePreference.addEventListener("change", () => {
+        guardarPreferencia(STORAGE_KEYS.rememberSchedule, rememberSchedulePreference.checked);
+        guardarHorarioRecordado();
+    });
+}
+
+if (expandResultsPreference) {
+    expandResultsPreference.addEventListener("change", () => {
+        guardarPreferencia(STORAGE_KEYS.expandResults, expandResultsPreference.checked);
+    });
+}
+
+if (preferencesLogoutBtn) {
+    preferencesLogoutBtn.addEventListener("click", () => {
+        logout();
+    });
+}
+
 document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && loginModalEl && !loginModalEl.hidden) {
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    if (loginModalEl && !loginModalEl.hidden) {
         cerrarModalLogin();
+    }
+
+    if (preferencesPanel && !preferencesPanel.hidden) {
+        cerrarPanelPreferencias();
     }
 });
 
@@ -765,11 +954,11 @@ document.addEventListener("keydown", (event) => {
 // ARRANQUE
 // =========================================================
 
+cargarPreferenciasUI();
+
 if (document.getElementById("fecha")) {
-    seleccionarActividadPorDefecto();
-    configurarFechaPorDefecto();
-    actualizarHorasDisponibles();
-    configurarHoraPorDefecto();
+    seleccionarActividad(obtenerActividadInicial());
+    configurarFechaYHoraIniciales();
 }
 loadCurrentUser();
 actualizarBotonesSesion();
