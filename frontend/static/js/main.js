@@ -9,10 +9,23 @@ const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
 const hourWheel = document.getElementById("hourWheel");
 const sunAlertEl = document.getElementById("sunAlert");
+const loginModalEl = document.getElementById("loginModal");
+const authActionBtn = document.getElementById("authActionBtn");
+const authActionIcon = document.getElementById("authActionIcon");
+const authActionText = document.getElementById("authActionText");
+const closeLoginModalBtn = document.getElementById("closeLoginModal");
+const loginModalForm = document.getElementById("loginModalForm");
+const loginEmailInput = document.getElementById("loginEmail");
+const loginPasswordInput = document.getElementById("loginPassword");
+const loginErrorMessageEl = document.getElementById("loginErrorMessage");
+const authSubmitBtn = document.getElementById("authSubmitBtn");
+const authModeHint = document.getElementById("authModeHint");
+const toggleAuthModeBtn = document.getElementById("toggleAuthModeBtn");
 
 let hourOptions = [];
 let actividadSeleccionada = "";
 let horaSeleccionada = "";
+let authMode = "login";
 
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
@@ -523,6 +536,78 @@ async function login(email, password) {
     return response.json();
 }
 
+async function registerUser(email, password) {
+    const response = await fetch("/auth/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.detail || "Error al crear la cuenta.");
+    }
+
+    return data;
+}
+
+function aplicarModoAuth() {
+    if (!authModeHint || !toggleAuthModeBtn || !authSubmitBtn) {
+        return;
+    }
+
+    const titleEl = document.getElementById("loginModalTitle");
+
+    if (authMode === "register") {
+        if (titleEl) titleEl.textContent = "Registrarse";
+        authSubmitBtn.textContent = "Crear cuenta";
+        authModeHint.textContent = "Ya tienes cuenta?";
+        toggleAuthModeBtn.textContent = "Iniciar sesion";
+        return;
+    }
+
+    if (titleEl) titleEl.textContent = "Iniciar sesion";
+    authSubmitBtn.textContent = "Entrar a mi cuenta";
+    authModeHint.textContent = "Todavia no tienes cuenta?";
+    toggleAuthModeBtn.textContent = "Registrarse";
+}
+
+function mostrarMensajeAuth(mensaje, tipo = "error") {
+    if (!loginErrorMessageEl) {
+        return;
+    }
+
+    loginErrorMessageEl.textContent = mensaje;
+    loginErrorMessageEl.classList.remove("success", "error");
+    loginErrorMessageEl.classList.add(tipo);
+}
+
+function abrirModalLogin() {
+    if (!loginModalEl) {
+        return;
+    }
+
+    authMode = "login";
+    aplicarModoAuth();
+    loginModalEl.hidden = false;
+    mostrarMensajeAuth("", "error");
+    loginModalForm.reset();
+    setTimeout(() => loginEmailInput?.focus(), 0);
+}
+
+function cerrarModalLogin() {
+    if (!loginModalEl) {
+        return;
+    }
+
+    loginModalEl.hidden = true;
+    mostrarMensajeAuth("", "error");
+    loginModalForm.reset();
+}
+
 function authFetch(url, options = {}) {
     const token = localStorage.getItem("token");
 
@@ -537,9 +622,12 @@ function authFetch(url, options = {}) {
 
 async function loadCurrentUser() {
     const token = localStorage.getItem("token");
+    const userInfoEl = document.getElementById("userInfo");
 
     if (!token) {
-        document.getElementById("userInfo").textContent = `No user logged in.`;
+        if (userInfoEl) {
+            userInfoEl.textContent = "";
+        }
         return;
     }
 
@@ -550,11 +638,20 @@ async function loadCurrentUser() {
             }
         });
 
-        if (!response.ok) return;
+        if (!response.ok) {
+            localStorage.removeItem("token");
+            if (userInfoEl) {
+                userInfoEl.textContent = "";
+            }
+            actualizarBotonesSesion();
+            return;
+        }
 
         const data = await response.json();
 
-        document.getElementById("userInfo").textContent = `Logged in as: ${data.email}`;
+        if (userInfoEl) {
+            userInfoEl.textContent = data.email;
+        }
 
     } catch (e) {
         console.error("Failed to load user");
@@ -565,28 +662,104 @@ function logout() {
     localStorage.removeItem("token");
 
     loadCurrentUser();
-    document.querySelectorAll(".loggedIn").forEach(el => {
-        el.classList.add("hidden");
-    });
-    document.querySelectorAll(".loggedOut").forEach(el => {
-        el.classList.remove("hidden");
-    });
+    actualizarBotonesSesion();
 }
 
 function actualizarBotonesSesion() {
     const token = localStorage.getItem("token");
 
-    const loginDiv = document.querySelector(".login");
-    const logoutDiv = document.querySelector(".logout");
+    if (!authActionBtn || !authActionText || !authActionIcon) {
+        return;
+    }
 
     if (token) {
-        if (loginDiv) loginDiv.style.display = "none";
-        if (logoutDiv) logoutDiv.style.display = "flex";
-    } else {
-        if (loginDiv) loginDiv.style.display = "flex";
-        if (logoutDiv) logoutDiv.style.display = "none";
+        authActionText.textContent = "Cerrar sesion";
+        authActionIcon.textContent = "⎋";
+        authActionBtn.setAttribute("aria-label", "Cerrar sesion");
+        return;
     }
+
+    authActionText.textContent = "Acceder";
+    authActionIcon.textContent = "⇥";
+    authActionBtn.setAttribute("aria-label", "Acceder");
 }
+
+if (authActionBtn) {
+    authActionBtn.addEventListener("click", () => {
+        if (localStorage.getItem("token")) {
+            logout();
+            return;
+        }
+
+        abrirModalLogin();
+    });
+}
+
+if (closeLoginModalBtn) {
+    closeLoginModalBtn.addEventListener("click", cerrarModalLogin);
+}
+
+if (loginModalEl) {
+    loginModalEl.addEventListener("click", (event) => {
+        if (event.target === loginModalEl) {
+            cerrarModalLogin();
+        }
+    });
+}
+
+if (loginModalForm) {
+    loginModalForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const email = loginEmailInput.value.trim();
+        const password = loginPasswordInput.value;
+
+        if (!email || !password) {
+            mostrarMensajeAuth("Debes indicar correo y contrasena.");
+            return;
+        }
+
+        mostrarMensajeAuth(
+            authMode === "register" ? "Creando cuenta..." : "Accediendo...",
+            "success",
+        );
+
+        try {
+            if (authMode === "register") {
+                await registerUser(email, password);
+                authMode = "login";
+                aplicarModoAuth();
+                mostrarMensajeAuth("Cuenta creada. Ya puedes iniciar sesion.", "success");
+                loginPasswordInput.value = "";
+                return;
+            }
+
+            const data = await login(email, password);
+            localStorage.setItem("token", data.access_token);
+            await loadCurrentUser();
+            actualizarBotonesSesion();
+            cerrarModalLogin();
+        } catch (error) {
+            console.error(error);
+            mostrarMensajeAuth(error.message || "No se pudo completar la operacion.");
+        }
+    });
+}
+
+if (toggleAuthModeBtn) {
+    toggleAuthModeBtn.addEventListener("click", () => {
+        authMode = authMode === "login" ? "register" : "login";
+        aplicarModoAuth();
+        mostrarMensajeAuth("", "error");
+        loginPasswordInput.value = "";
+    });
+}
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && loginModalEl && !loginModalEl.hidden) {
+        cerrarModalLogin();
+    }
+});
 
 // =========================================================
 // ARRANQUE
