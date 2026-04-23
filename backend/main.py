@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 
 import backend.models       # NO BORRAR, SE USA AUNQUE PONGA QUE NO
 from backend.config import settings
-from backend.routes import api_router, views_router, auth_router, users_router 
+from backend.routes import api_router, views_router, auth_router, users_router, favourites_router
 from backend.engine_recomendation import recomendar_playas
 from backend.db import engine
 from contextlib import asynccontextmanager
@@ -27,7 +27,7 @@ app.include_router(api_router)
 app.include_router(views_router)
 app.include_router(auth_router)
 app.include_router(users_router)
-# app.include_router(fav_router)
+app.include_router(favourites_router)
 
 @app.get("/")
 def inicio():
