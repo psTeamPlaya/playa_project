@@ -2,13 +2,18 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import sys
 
 from sqlalchemy import text
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from backend.db import SessionLocal, engine
 from backend.models.beach import Beach
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR = Path(__file__).resolve().parent
 PLAYAS_FILE = BASE_DIR / "playas.json"
 
 
@@ -19,6 +24,21 @@ def cargar_playas() -> list[dict]:
 
 def asegurar_esquema_beaches() -> None:
     with engine.begin() as conn:
+        column_type = conn.execute(
+            text(
+                """
+                SELECT data_type
+                FROM information_schema.columns
+                WHERE table_schema = current_schema()
+                  AND table_name = 'beaches'
+                  AND column_name = 'accessibility'
+                """
+            )
+        ).scalar_one_or_none()
+
+        if column_type != "boolean":
+            return
+
         conn.execute(
             text(
                 """
