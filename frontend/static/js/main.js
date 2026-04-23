@@ -703,7 +703,7 @@ function aplicarModoAuth() {
 
     if (titleEl) titleEl.textContent = "Iniciar sesion";
     authSubmitBtn.textContent = "Entrar a mi cuenta";
-    authModeHint.textContent = "Todavia no tienes cuenta?";
+    authModeHint.textContent = "¿Todavía no tienes cuenta?";
     toggleAuthModeBtn.textContent = "Registrarse";
 }
 
@@ -870,7 +870,7 @@ if (loginModalForm) {
         const password = loginPasswordInput.value;
 
         if (!email || !password) {
-            mostrarMensajeAuth("Debes indicar correo y contrasena.");
+            mostrarMensajeAuth("Debes indicar correo y contraseña.");
             return;
         }
 
