@@ -377,7 +377,7 @@ buscarBtn.addEventListener("click", async () => {
 
         const data = await response.json();
 
-        pintarResultados(resultadosLimitados);
+        pintarResultados(data.resultados);
         statusEl.textContent =
           `Mostrando ${data.resultados.length} playas recomendadas para ${actividadSeleccionada.replace("_", " ")}.`;
 
