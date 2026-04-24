@@ -1,31 +1,33 @@
 from pathlib import Path
-
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 
+import backend.models       # NO BORRAR, SE USA AUNQUE PONGA QUE NO
 from backend.config import settings
-from backend.routes import api_router, views_router, auth_router, users_router 
 from backend.engine_recomendation import cargar_playas, recomendar_playas
 from backend.db import engine, Base
 from backend.sunlight_provider import SunlightError, obtener_aviso_luz_solar
-import backend.models
-from backend.routes import auth_router
 # from backend.routes.favourites import router as fav_router
+from backend.routes import api_router, views_router, auth_router, users_router, services_router 
+from contextlib import asynccontextmanager
 
+# Crea las tablas al arrancar el servidor
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
 
-Base.metadata.create_all(bind=engine)   # create tables
-
-app = FastAPI(title=settings.APP_NAME)
+app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "frontend" / "static"
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
 app.include_router(api_router)
 app.include_router(views_router)
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(services_router)
 # app.include_router(fav_router)
 
 @app.get("/")
@@ -73,4 +75,3 @@ def obtener_recomendaciones(actividad: str, fecha: str, hora: str):
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
