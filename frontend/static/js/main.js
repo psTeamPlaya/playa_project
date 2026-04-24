@@ -8,7 +8,6 @@ const buscarBtn = document.getElementById("buscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
 const hourWheel = document.getElementById("hourWheel");
-const cantidadSelect = document.getElementById("cantidad");
 
 let hourOptions = [];
 let actividadSeleccionada = "";
@@ -16,6 +15,11 @@ let horaSeleccionada = "";
 
 const cantidadInput = document.getElementById("cantidad");
 const cantidadValor = document.getElementById("cantidadValor");
+
+const cantidadWheel = document.getElementById("cantidadWheel");
+
+let cantidadSeleccionada = "3";
+let cantidadOptions = [];
 
 // =========================================================
 // UTILIDADES DE FECHA Y HORA
@@ -116,6 +120,34 @@ function renderizarWheelHoras(fechaTexto) {
     if (horaSeleccionada) {
         fijarHoraInicial(horaSeleccionada);
     }
+}
+
+function renderizarWheelCantidad() {
+    const cantidades = [];
+
+    for (let i = 1; i <= 10; i++) {
+        cantidades.push(String(i));
+    }
+
+    cantidadWheel.innerHTML = cantidades
+        .map(num => `<div class="hour-option" data-value="${num}">${num}</div>`)
+        .join("");
+
+    cantidadOptions = [...cantidadWheel.querySelectorAll(".hour-option")];
+
+    cantidadOptions.forEach(option => {
+        option.addEventListener("click", () => {
+            option.scrollIntoView({
+                block: "center",
+                behavior: "smooth"
+            });
+
+            cantidadSeleccionada = option.dataset.value;
+            setTimeout(actualizarCantidadActiva, 150);
+        });
+    });
+
+    fijarCantidadInicial(cantidadSeleccionada);
 }
 
 function esFechaHoy(fechaTexto) {
@@ -295,6 +327,81 @@ function fijarHoraInicial(valor = "12:00") {
 }
 
 // =========================================================
+// RUEDA DE CANTIDAD
+// =========================================================
+
+function actualizarCantidadActiva() {
+    const wheelRect = cantidadWheel.getBoundingClientRect();
+    const wheelCenter = wheelRect.top + wheelRect.height / 2;
+
+    let opcionMasCercana = null;
+    let distanciaMinima = Infinity;
+
+    cantidadOptions.forEach(option => {
+        const rect = option.getBoundingClientRect();
+        const optionCenter = rect.top + rect.height / 2;
+        const distancia = Math.abs(wheelCenter - optionCenter);
+
+        option.classList.remove("active", "near");
+
+        if (distancia < distanciaMinima) {
+            distanciaMinima = distancia;
+            opcionMasCercana = option;
+        }
+    });
+
+    cantidadOptions.forEach(option => {
+        const rect = option.getBoundingClientRect();
+        const optionCenter = rect.top + rect.height / 2;
+        const distancia = Math.abs(wheelCenter - optionCenter);
+
+        if (distancia < 18) {
+            option.classList.add("active");
+        } else if (distancia < 54) {
+            option.classList.add("near");
+        }
+    });
+
+    if (opcionMasCercana) {
+        cantidadSeleccionada = opcionMasCercana.dataset.value;
+    }
+}
+
+let scrollCantidadTimeout;
+
+cantidadWheel.addEventListener("scroll", () => {
+    actualizarCantidadActiva();
+
+    clearTimeout(scrollCantidadTimeout);
+    scrollCantidadTimeout = setTimeout(() => {
+        const activa = cantidadOptions.find(o => o.classList.contains("active"));
+
+        if (activa) {
+            activa.scrollIntoView({
+                block: "center",
+                behavior: "smooth"
+            });
+
+            cantidadSeleccionada = activa.dataset.value;
+        }
+    }, 120);
+});
+
+function fijarCantidadInicial(valor = "3") {
+    const option = cantidadWheel.querySelector(`[data-value="${valor}"]`);
+
+    if (option) {
+        option.scrollIntoView({
+            block: "center",
+            behavior: "auto"
+        });
+
+        cantidadSeleccionada = valor;
+        setTimeout(actualizarCantidadActiva, 50);
+    }
+}
+
+// =========================================================
 // EVENTOS DE ACTIVIDAD Y FECHA
 // =========================================================
 
@@ -370,7 +477,7 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
-        const cantidad = Number(cantidadSelect.value) || 3;
+        const cantidad = Number(cantidadSeleccionada) || 3;
 
         const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&limit=${cantidad}`;
 
@@ -580,3 +687,4 @@ actualizarHorasDisponibles();
 configurarHoraPorDefecto();
 loadCurrentUser();
 cantidadValor.textContent = cantidadInput.value;
+renderizarWheelCantidad();
