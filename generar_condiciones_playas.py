@@ -7,8 +7,8 @@ from typing import Any
 
 import requests
 
-START_ISO = "2026-04-10T00:00"
-END_ISO = "2026-04-20T23:00"
+START_ISO = "2026-04-20T00:00"
+END_ISO = "2026-04-27T23:00"
 TIMEZONE = "Atlantic/Canary"
 
 # Catálogo base de playas usado en el proyecto
