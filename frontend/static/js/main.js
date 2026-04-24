@@ -13,9 +13,6 @@ let hourOptions = [];
 let actividadSeleccionada = "";
 let horaSeleccionada = "";
 
-const cantidadInput = document.getElementById("cantidad");
-const cantidadValor = document.getElementById("cantidadValor");
-
 const cantidadWheel = document.getElementById("cantidadWheel");
 
 let cantidadSeleccionada = "3";
@@ -98,7 +95,7 @@ function renderizarWheelHoras(fechaTexto) {
         .map(hora => `<div class="hour-option" data-hour="${hora}">${hora}</div>`)
         .join("");
 
-    hourOptions = [...document.querySelectorAll(".hour-option")];
+    hourOptions = [...hourWheel.querySelectorAll(".hour-option")];
 
     hourOptions.forEach(option => {
         option.addEventListener("click", () => {
@@ -436,10 +433,6 @@ fechaInput.addEventListener("change", () => {
     statusEl.textContent = "";
 });
 
-cantidadInput.addEventListener("input", () => {
-    cantidadValor.textContent = cantidadInput.value;
-});
-
 // =========================================================
 // BÚSQUEDA
 // =========================================================
@@ -686,5 +679,4 @@ configurarFechaPorDefecto();
 actualizarHorasDisponibles();
 configurarHoraPorDefecto();
 loadCurrentUser();
-cantidadValor.textContent = cantidadInput.value;
 renderizarWheelCantidad();
