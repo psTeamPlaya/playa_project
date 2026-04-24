@@ -363,7 +363,9 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
-        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}`;
+        const cantidad = Number(cantidadSelect.value) || 3;
+
+        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&limit=${cantidad}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -371,9 +373,6 @@ buscarBtn.addEventListener("click", async () => {
         }
 
         const data = await response.json();
-        const cantidad = Number(cantidadSelect.value) || 3;
-
-        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&limit=${cantidad}`;
 
         pintarResultados(resultadosLimitados);
         statusEl.textContent =
