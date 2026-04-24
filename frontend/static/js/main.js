@@ -366,6 +366,9 @@ buscarBtn.addEventListener("click", async () => {
         const cantidad = Number(cantidadSelect.value) || 3;
 
         const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&limit=${cantidad}`;
+
+        console.log(url);
+
         const response = await fetch(url);
 
         if (!response.ok) {
