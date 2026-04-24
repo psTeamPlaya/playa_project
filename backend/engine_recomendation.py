@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import unicodedata
 from pathlib import Path
 from typing import Any
 
 from backend.config import settings
+from backend.db import SessionLocal
+from backend.models.beach import Beach
 from backend.weather_provider import OpenMeteoError, obtener_condiciones_open_meteo
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -22,11 +25,105 @@ def cargar_json(ruta: Path) -> list[dict[str, Any]]:
 
 
 def cargar_playas() -> list[dict[str, Any]]:
-    return cargar_json(PLAYAS_FILE)
+    playas_locales = cargar_json(PLAYAS_FILE)
+    playas_db = cargar_playas_desde_db()
+
+    if not playas_db:
+        return playas_locales
+
+    return fusionar_playas(playas_locales, playas_db)
 
 
 def cargar_condiciones() -> list[dict[str, Any]]:
     return cargar_json(CONDICIONES_FILE)
+
+
+def _normalizar_identificador_texto(valor: str | None) -> str:
+    if not valor:
+        return ""
+
+    normalizado = unicodedata.normalize("NFKD", valor)
+    ascii_only = normalizado.encode("ascii", "ignore").decode("ascii")
+    return " ".join(ascii_only.lower().split())
+
+
+def cargar_playas_desde_db() -> list[dict[str, Any]]:
+    session = SessionLocal()
+
+    try:
+        playas = session.query(Beach).order_by(Beach.id.asc()).all()
+    except Exception:
+        return []
+    finally:
+        session.close()
+
+    return [
+        {
+            "id": playa.id,
+            "nombre": playa.name,
+            "ubicacion": playa.location,
+            "latitud": float(playa.latitude),
+            "longitud": float(playa.longitude),
+            "tipo": playa.type,
+            "descripcion": playa.description,
+            "imagen": playa.image,
+            "accesibilidad": playa.accessibility,
+        }
+        for playa in playas
+    ]
+
+
+def fusionar_playas(
+    playas_locales: list[dict[str, Any]],
+    playas_db: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    playas_por_id = {
+        playa["id"]: dict(playa)
+        for playa in playas_locales
+    }
+    playas_por_nombre = {
+        _normalizar_identificador_texto(playa.get("nombre")): playa["id"]
+        for playa in playas_locales
+    }
+
+    siguiente_id = max(playas_por_id, default=0) + 1
+
+    for playa_db in playas_db:
+        playa_id = playa_db.get("id")
+        playa_local = playas_por_id.get(playa_id)
+
+        if playa_local is None:
+            nombre_normalizado = _normalizar_identificador_texto(playa_db.get("nombre"))
+            playa_local_id = playas_por_nombre.get(nombre_normalizado)
+            playa_local = playas_por_id.get(playa_local_id) if playa_local_id is not None else None
+
+        if playa_local is None:
+            playa_nueva = {
+                "id": playa_id if playa_id is not None else siguiente_id,
+                "nombre": playa_db.get("nombre") or "Playa sin nombre",
+                "ubicacion": playa_db.get("ubicacion") or "",
+                "latitud": playa_db.get("latitud"),
+                "longitud": playa_db.get("longitud"),
+                "tipo": playa_db.get("tipo") or "desconocido",
+                "descripcion": playa_db.get("descripcion") or "",
+                "actividades_ideales": [],
+                "servicios": {},
+                "imagen": playa_db.get("imagen") or "",
+                "accesibilidad": playa_db.get("accesibilidad"),
+            }
+            playas_por_id[playa_nueva["id"]] = playa_nueva
+            playas_por_nombre[_normalizar_identificador_texto(playa_nueva["nombre"])] = playa_nueva["id"]
+            siguiente_id = max(siguiente_id, playa_nueva["id"] + 1)
+            continue
+
+        for campo, valor in playa_db.items():
+            if valor is not None:
+                playa_local[campo] = valor
+
+    return [
+        playas_por_id[playa_id]
+        for playa_id in sorted(playas_por_id)
+    ]
 
 
 def cargar_condiciones_locales_filtradas(fecha: str, hora: str) -> list[dict[str, Any]]:
