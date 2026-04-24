@@ -539,3 +539,13 @@
     .hidden {
        display: none;
     }
+
+    #cantidad {
+        width: 100%;
+    }
+
+    #cantidadValor {
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }

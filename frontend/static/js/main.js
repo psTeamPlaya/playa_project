@@ -14,6 +14,9 @@ let hourOptions = [];
 let actividadSeleccionada = "";
 let horaSeleccionada = "";
 
+const cantidadInput = document.getElementById("cantidad");
+const cantidadValor = document.getElementById("cantidadValor");
+
 // =========================================================
 // UTILIDADES DE FECHA Y HORA
 // =========================================================
@@ -326,6 +329,10 @@ fechaInput.addEventListener("change", () => {
     statusEl.textContent = "";
 });
 
+cantidadInput.addEventListener("input", () => {
+    cantidadValor.textContent = cantidadInput.value;
+});
+
 // =========================================================
 // BÚSQUEDA
 // =========================================================
@@ -572,3 +579,4 @@ configurarFechaPorDefecto();
 actualizarHorasDisponibles();
 configurarHoraPorDefecto();
 loadCurrentUser();
+cantidadValor.textContent = cantidadInput.value;
