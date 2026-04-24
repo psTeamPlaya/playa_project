@@ -125,7 +125,7 @@ def generar_condiciones() -> list[dict[str, Any]]:
             m = marine_map[timestamp]
 
             resultado.append({
-                "playa_id": playa["id"],
+                "beach_id": playa["id"],
                 "nombre_playa": playa["nombre"],
                 "fecha": dt.strftime("%Y-%m-%d"),
                 "hora": dt.strftime("%H:%M"),

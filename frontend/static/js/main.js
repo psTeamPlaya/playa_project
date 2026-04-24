@@ -1,3 +1,6 @@
+import { login } from "./auth/login.js";
+import { registerUser } from "./auth/register.js";
+
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
 
@@ -651,40 +654,6 @@ function formatearServicios(servicios) {
 // =========================================================
 // Login
 // =========================================================
-
-async function login(email, password) {
-    const response = await fetch("/auth/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-    });
-
-    if (!response.ok) {
-        throw new Error("Login failed");
-    }
-
-    return response.json();
-}
-
-async function registerUser(email, password) {
-    const response = await fetch("/auth/register", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-        throw new Error(data.detail || "Error al crear la cuenta.");
-    }
-
-    return data;
-}
 
 function aplicarModoAuth() {
     if (!authModeHint || !toggleAuthModeBtn || !authSubmitBtn) {
