@@ -83,7 +83,7 @@ def obtener_condicion_open_meteo(
     dt = datetime.fromisoformat(f"{fecha}T{hora}")
 
     return {
-        "playa_id": playa["id"],
+        "beach_id": playa["id"],
         "nombre_playa": playa["nombre"],
         "fecha": dt.strftime("%Y-%m-%d"),
         "hora": dt.strftime("%H:%M"),
