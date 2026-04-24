@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mi día de Playa</title>
+  <title>Mi dia de Playa</title>
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
   <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,39 +14,54 @@
 <body>
   <header class="container">
     <section class="hero">
-        <div class="hero-brand">
-            <div class="hero-logo">
-                <img src="/static/img/logo.png" alt="Logo Mi día de Playa">
-                <h1>Mi día de Playa</h1>
-            </div>
-            <section class="auth-container">
-              <div class="login loggedOut">
-                <button class="btn-primary" onclick="window.location.href='/login'">Iniciar sesión</button>
-                <button class="btn-secondary" onclick="window.location.href='/register'">Registrarse</button>
-              </div>
+      <div class="hero-brand">
+        <section class="auth-container">
+          <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
+            <span class="auth-trigger-icon" aria-hidden="true">
+              <i class="bi bi-box-arrow-in-left" id="authActionIcon"></i>
+            </span>
+          </button>
+          <div class="preferences-panel" id="preferencesPanel" hidden>
+            <h3>Preferencias</h3>
+            <div class="preferences-user" id="preferencesUserInfo"></div>
+            <label class="preference-item">
+              <input type="checkbox" id="rememberActivityPreference">
+              <span>Playas favoritas</span>
+            </label>
+            <label class="preference-item">
+              <input type="checkbox" id="rememberSchedulePreference">
+              <span>Filtros personalizados</span>
+            </label>
+            <label class="preference-item">
+              <input type="checkbox" id="expandResultsPreference">
+              <span>Configurar alertas</span>
+            </label>
+            <div class="preferences-divider"></div>
+            <button class="preferences-logout" id="preferencesLogoutBtn" type="button" aria-label="Cerrar sesion">
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </section>
 
-              <div class="logout loggedIn ">
-                <button class="btn-secondary" id="logoutBtn" onclick="logout()">Cerrar sesión</button>
-              </div>
-
-              <div id="userInfo"></div>
-            </section>
-
-            <div>
-                <p>
-                    Selecciona una actividad, una fecha y una hora para obtener un top-3 de playas
-                    recomendadas según nuestro catálogo de playas de Gran Canaria y condiciones atmosféricas/marítimas simuladas.
-                </p>
-            </div>
+        <div class="hero-logo">
+          <img src="/static/img/logo.png" alt="Logo Mi dia de Playa">
+          <h1>Mi dia de Playa</h1>
         </div>
+
+        <div>
+          <p>
+            Selecciona una actividad, una fecha y una hora para obtener un top-3 de playas
+            recomendadas segun nuestro catalogo de playas de Gran Canaria y condiciones atmosfericas/maritimas simuladas.
+          </p>
+        </div>
+      </div>
     </section>
   </header>
 
   <main class="container">
     <section class="panel">
-      <h2>1. ¿Qué quieres hacer en tu día de playa?</h2>
+      <h2>1. Que quieres hacer en tu dia de playa?</h2>
       <div class="activities-grid" id="activitiesGrid">
-
         <div class="activity-card" data-activity="tomar_sol">
           <span class="activity-icon">☀️</span>
           <span class="activity-name">Tomar el sol</span>
@@ -79,8 +95,8 @@
     </section>
 
     <section class="panel">
-      <h2>2. ¿Cuándo tienes pensado ir?</h2>
-      
+      <h2>2. Cuando tienes pensado ir?</h2>
+
       <div class="form-grid">
         <div class="field">
           <label for="fecha">Fecha</label>
@@ -95,15 +111,14 @@
           <label for="hourWheel">Hora</label>
           <div class="hour-wheel-wrapper">
             <div class="hour-wheel-highlight"></div>
-              <div class="hour-wheel" id="hourWheel"></div>
-            </div>
+            <div class="hour-wheel" id="hourWheel"></div>
           </div>
         </div>
       </div>
       <div class="actions">
         <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
-        
       </div>
+      <div class="sun-alert" id="sunAlert" hidden></div>
       <div class="status" id="status"></div>
     </section>
 
@@ -114,14 +129,40 @@
 
       <div id="resultsContainer" class="results-grid">
         <div class="empty-state">
-          Por ahora no hay ninguna recomendación de playas.
+          Por ahora no hay ninguna recomendacion de playas.
         </div>
       </div>
     </section>
-
   </main>
-  
-  <!-- Me aseguro que la página está totalmente cargada antes de iniciar el script-->
+
+  <div class="modal-backdrop" id="loginModal" hidden>
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+      <button class="modal-close" id="closeLoginModal" type="button" aria-label="Cerrar">×</button>
+      <h2 id="loginModalTitle">Iniciar sesion</h2>
+
+      <form id="loginModalForm">
+        <div class="field auth-field">
+          <label for="loginEmail">Correo electronico</label>
+          <input id="loginEmail" type="email" placeholder="tu@correo.com" required>
+        </div>
+
+        <div class="field auth-field">
+          <label for="loginPassword">Contraseña</label>
+          <input id="loginPassword" type="password" placeholder="********" required>
+        </div>
+
+        <button class="btn-primary auth-submit" id="authSubmitBtn" type="submit">Entrar a mi cuenta</button>
+      </form>
+
+      <div class="auth-error" id="loginErrorMessage"></div>
+
+      <div class="auth-register-row">
+        <span id="authModeHint">¿Sin cuenta?</span>
+        <button class="btn-secondary" id="toggleAuthModeBtn" type="button">Registrarse</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/static/js/main.js"></script>
 </body>
 </html>
