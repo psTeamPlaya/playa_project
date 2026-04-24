@@ -370,6 +370,17 @@ buscarBtn.addEventListener("click", async () => {
         }
 
         const data = await response.json();
+        const favorites = await getFavoriteBeachIds();
+        console.log("favs: ", favorites);  // TODO for debug
+
+        const favoriteIds = favorites.map(f => f.beach_id);
+        console.log("fav ids:", favoriteIds);  // TODO for debug
+
+        data.resultados.forEach(playa => {
+            playa.isFavorite = favoriteIds.includes(playa.playa_id);
+        });
+        console.log("Resultados obtenidos:", data.resultados);  // TODO for debug
+
         pintarResultados(data.resultados);
         statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
     } catch (error) {
@@ -386,6 +397,23 @@ buscarBtn.addEventListener("click", async () => {
 // =========================================================
 // RESULTADOS
 // =========================================================
+
+
+async function getFavoriteBeachIds() {
+    const token = localStorage.getItem("token");
+    if (!token) {   // user not logged in
+        return [];
+    }
+
+    try {
+        const response = await authFetch("/api/favorites");
+        if (!response.ok) return [];
+        return await response.json();
+    } catch (e) {
+        console.error("Failed to load favorites");
+        return [];
+    }
+}
 
 function pintarResultados(resultados) {
     if (!resultados || resultados.length === 0) {
@@ -414,8 +442,11 @@ function pintarResultados(resultados) {
                 </div>
 
                 <div class="beach-summary-right">
-                <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
-                <div class="expand-hint">Ver detalle</div>
+                    <div class="favorite-btn" data-id="${playa.playa_id}">
+                        ${playa.isFavorite ? '❤️' : '🤍'}
+                    </div>
+                    <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
+                    <div class="expand-hint">Ver detalle</div>
                 </div>
             </summary>
 
