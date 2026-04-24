@@ -38,6 +38,7 @@ def add_favorite(
 
     return {"message": "added to favorites"}
 
+
 @router.get("")
 def list_favorites(
     db: Session = Depends(get_db),
@@ -49,3 +50,22 @@ def list_favorites(
     if not favorites:
         return {"message": "no favorites found"}
     return [{"beach_id": fav.beach_id} for fav in favorites]
+
+
+@router.delete("/{beach_id}")
+def remove_favorite( beach_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    if (not is_logged_in):
+        return {"message": "not logged in"}
+
+    fav = db.query(FavoriteBeaches).filter_by(
+        user_id=user.id,
+        beach_id=beach_id
+    ).first()
+
+    if not fav:
+        return {"message": "favorite not found"}
+
+    db.delete(fav)
+    db.commit()
+
+    return {"message": "removed from favorites"}
