@@ -3,7 +3,7 @@ async function handleLogin() {
     const password = document.getElementById("password").value;
     const errorDiv = document.getElementById("errorMessage");
 
-    errorDiv.textContent = ""; 
+    errorDiv.textContent = "";
 
     try {
         const response = await fetch("/auth/login", {
@@ -11,7 +11,7 @@ async function handleLogin() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ email: email, password: password }) 
+            body: JSON.stringify({ email: email, password: password })
         });
 
         const data = await response.json();
@@ -19,7 +19,7 @@ async function handleLogin() {
         if (response.ok) {
             localStorage.setItem("token", data.access_token);
 
-            window.location.href = "/"; 
+            window.location.href = "/";
         } else {
             errorDiv.textContent = data.detail || "Login fallido. Revisa tus credenciales.";
         }
