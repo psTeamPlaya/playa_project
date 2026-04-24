@@ -394,6 +394,36 @@ buscarBtn.addEventListener("click", async () => {
     }
 });
 
+resultsContainer.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".favorite-btn");
+
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    console.log("btn pressed:", btn);
+
+    const beachId = Number(btn.dataset.id);
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Please log in");
+        return;
+    }
+
+    const isFavorite = btn.innerText === "❤️";
+    const method = isFavorite ? "DELETE" : "POST";
+
+    await authFetch(`/api/favorites/${beachId}`, {
+        method
+    });
+
+    btn.innerText = isFavorite ? "🤍" : "❤️";   // backward order because we changed it
+});
+
+
 // =========================================================
 // RESULTADOS
 // =========================================================
@@ -442,9 +472,9 @@ function pintarResultados(resultados) {
                 </div>
 
                 <div class="beach-summary-right">
-                    <div class="favorite-btn" data-id="${playa.playa_id}">
+                    <button class="favorite-btn" data-id="${playa.playa_id}">
                         ${playa.isFavorite ? '❤️' : '🤍'}
-                    </div>
+                    </button>
                     <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
                     <div class="expand-hint">Ver detalle</div>
                 </div>
