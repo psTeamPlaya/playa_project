@@ -5,24 +5,27 @@ from backend.models.user import User
 from backend.schemas.user import UserCreate, UserLogin
 from backend.auth.auth import get_current_user, hash_password, verify_password, create_token
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+import os
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()
 
 router = APIRouter(prefix="/auth", tags=["AUTH"])
 
-# Configuración de correo
 conf = ConnectionConfig(
-    MAIL_USERNAME = "midiadeplaya@gmail.com",
-    MAIL_PASSWORD = "uexytfxsajksaxkq", # No es tu clave normal
-    MAIL_FROM = "midiadeplaya@gmail.com",
-    MAIL_PORT = 465,
-    MAIL_SERVER = "smtp.gmail.com",
-    MAIL_STARTTLS = False,
-    MAIL_SSL_TLS = True,
-    USE_CREDENTIALS = True,
-    VALIDATE_CERTS = True
+    MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
+    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
+    MAIL_FROM=os.getenv("MAIL_USERNAME"),
+    MAIL_PORT=465,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_STARTTLS=False,
+    MAIL_SSL_TLS=True,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True
 )
 
-def send_welcome_email(email: str):
+async def send_welcome_email(email: str):
     message = MessageSchema(
         subject="¡Bienvenido a Playas App!",
         recipients=[email],
@@ -30,12 +33,15 @@ def send_welcome_email(email: str):
         subtype=MessageType.html
     )
     fm = FastMail(conf)
-    # Aquí se envía de forma asíncrona
-    import asyncio
-    asyncio.run(fm.send_message(message))
+    try:
+        await fm.send_message(message)
+        print(f" Correo enviado a {email}")
+    except Exception as e:
+        print(f" Error enviando correo: {e}")
+
 
 @router.post("/register")
-def register(user: UserCreate, db: Session = Depends(get_db)):
+async def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user_exist = db.query(User).filter(User.email == user.email).first()
     if db_user_exist:
         raise HTTPException(status_code=400, detail="Este correo ya está registrado.")
@@ -43,10 +49,11 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user = User(email=user.email, hashed_password=hash_password(user.password))
     db.add(db_user)
     db.commit()
+    db.refresh(db_user)
 
-    background_tasks.add_task(send_welcome_email, user.email)
+    asyncio.create_task(send_welcome_email(user.email))
 
-    return {"msg": "registered"} 
+    return {"msg": "registered", "user_id": db_user.id}
 
 
 @router.post("/login")
@@ -59,10 +66,10 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     token = create_token(db_user.id)
     return {"access_token": token}
 
+
 @router.get("/me")
 def me(current_user=Depends(get_current_user)):
     return {
         "id": current_user.id,
         "email": current_user.email
     }
-
