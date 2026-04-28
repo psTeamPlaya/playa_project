@@ -122,8 +122,13 @@ function renderizarWheelHoras(fechaTexto) {
 function renderizarWheelCantidad() {
     const cantidades = [];
 
-    for (let i = 1; i <= 10; i++) {
-        cantidades.push(String(i));
+    for (let i = 1; i <= 11; i++) {
+        if (i == 11)
+        {
+            cantidades.push(String("10+"));
+        } else {
+            cantidades.push(String(i));
+        }
     }
 
     cantidadWheel.innerHTML = cantidades
