@@ -23,7 +23,6 @@ const searchCache = new Map();
 const locationInput = document.getElementById("locationInput");
 const btnGeolocalizar = document.getElementById("btnGeolocalizar");
 const suggestionsEl = document.getElementById("suggestions");
-const locationHistoryEl = document.getElementById("locationHistory");
 
 /**
  * ============================================
@@ -202,7 +201,7 @@ btnGeolocalizar.addEventListener("click", async () => {
     }
 
     navigator.geolocation.getCurrentPosition(
-        async (pos) => {  // 🔥 TU DODAJESZ async
+        async (pos) => {
             const { latitude, longitude } = pos.coords;
 
             const name = await reverseGeocode(latitude, longitude);
@@ -236,36 +235,7 @@ function saveToHistory(city) {
 
     localStorage.setItem("locHistory", JSON.stringify(history));
 
-    renderHistory();
 }
-
-/**
- * Render history as clickable tags
- */
-function renderHistory() {
-    if (!locationHistoryEl) return;
-
-    const history = JSON.parse(localStorage.getItem("locHistory") || "[]");
-
-    locationHistoryEl.innerHTML = "";
-
-    history.forEach(city => {
-        const tag = document.createElement("span");
-        tag.className = "location-tag";
-        tag.textContent = city;
-
-        tag.addEventListener("click", () => {
-            selectLocation(city, null);
-        });
-
-        locationHistoryEl.appendChild(tag);
-    });
-}
-
-/**
- * Initialize history on page load
- */
-renderHistory();
 
 /**
  * ============================================

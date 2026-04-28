@@ -4,6 +4,7 @@ import json
 import unicodedata
 from pathlib import Path
 from typing import Any
+import math
 
 from backend.config import settings
 from backend.db import SessionLocal
@@ -508,18 +509,24 @@ def calcular_score_final(
 # RECOMENDACIÓN PRINCIPAL
 # =========================================================
 
-def recomendar_playas(
-    actividad: str,
-    fecha: str,
-    hora: str,
-    top_n: int = 3
-) -> list[dict[str, Any]]:
+def recomendar_playas(actividad, fecha, hora, lat_usuario, lon_usuario, radio_km, top_n=3) -> list[dict[str, Any]]:
     playas = cargar_playas()
     condiciones = cargar_condiciones_para_busqueda(playas, fecha, hora)
 
     resultados: list[dict[str, Any]] = []
 
     for playa in playas:
+        def calcular_distancia(lat1, lon1, lat2, lon2):
+            R = 6371 
+            dlat = math.radians(lat2 - lat1)
+            dlon = math.radians(lon2 - lon1)
+            a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            return R * c
+        distancia = calcular_distancia(lat_usuario, lon_usuario, playa["latitud"], playa["longitud"])
+        if distancia > radio_km:
+            continue
+
         condicion = buscar_condicion(
             condiciones=condiciones,
             beach_id=playa["id"],
