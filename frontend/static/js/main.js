@@ -589,6 +589,10 @@ function logout() {
     document.querySelectorAll(".loggedOut").forEach(el => {
         el.classList.remove("hidden");
     });
+    document.querySelectorAll(".favorite-btn").forEach(btn => {
+        btn.innerText = "🤍";
+    });
+    console.log("favorites reset after logout");  // TODO for debug
 
     alert("Logged out");
 }
