@@ -40,7 +40,7 @@ def obtener_recomendaciones(actividad: str, fecha: str, hora: str, limit: int = 
             actividad=actividad,
             fecha=fecha,
             hora=hora,
-            top_n=None if limit == -1 else limit
+            top_n=limit
         )
         return {
             "actividad": actividad,
