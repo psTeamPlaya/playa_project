@@ -475,7 +475,8 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
-        const cantidad = Number(cantidadSeleccionada) || 3;
+        const isLogged = !!localStorage.getItem("token");
+        const cantidad = isLogged ? Number(cantidadSeleccionada) : 3;
 
         const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&limit=${cantidad}`;
 

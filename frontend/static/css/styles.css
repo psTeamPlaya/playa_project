@@ -537,7 +537,7 @@
     }
 
     .hidden {
-       display: none;
+       display: none !important;
     }
 
     .cantidad-wheel-container {
