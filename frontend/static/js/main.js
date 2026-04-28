@@ -1,3 +1,6 @@
+import { login } from "./auth/login.js";
+import { registerUser } from "./auth/register.js";
+
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
 
@@ -8,10 +11,141 @@ const buscarBtn = document.getElementById("buscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
 const hourWheel = document.getElementById("hourWheel");
+const sunAlertEl = document.getElementById("sunAlert");
+const loginModalEl = document.getElementById("loginModal");
+const authActionBtn = document.getElementById("authActionBtn");
+const authActionIcon = document.getElementById("authActionIcon");
+const closeLoginModalBtn = document.getElementById("closeLoginModal");
+const loginModalForm = document.getElementById("loginModalForm");
+const loginEmailInput = document.getElementById("loginEmail");
+const loginPasswordInput = document.getElementById("loginPassword");
+const loginErrorMessageEl = document.getElementById("loginErrorMessage");
+const authSubmitBtn = document.getElementById("authSubmitBtn");
+const authModeHint = document.getElementById("authModeHint");
+const toggleAuthModeBtn = document.getElementById("toggleAuthModeBtn");
+const preferencesPanel = document.getElementById("preferencesPanel");
+const preferencesUserInfo = document.getElementById("preferencesUserInfo");
+const preferencesLogoutBtn = document.getElementById("preferencesLogoutBtn");
+const rememberActivityPreference = document.getElementById("rememberActivityPreference");
+const rememberSchedulePreference = document.getElementById("rememberSchedulePreference");
+const expandResultsPreference = document.getElementById("expandResultsPreference");
 
 let hourOptions = [];
 let actividadSeleccionada = "";
 let horaSeleccionada = "";
+let authMode = "login";
+let preferencesCloseTimeout;
+
+const STORAGE_KEYS = {
+    rememberActivity: "preferences.rememberActivity",
+    rememberSchedule: "preferences.rememberSchedule",
+    expandResults: "preferences.expandResults",
+    savedActivity: "preferences.savedActivity",
+    savedDate: "preferences.savedDate",
+    savedHour: "preferences.savedHour"
+};
+
+function limpiarResultadosPorCambioDeFiltros() {
+    resultsContainer.innerHTML = "";
+    statusEl.textContent = "";
+    ocultarAvisoSolar();
+}
+
+function leerPreferencia(clave) {
+    return localStorage.getItem(clave) === "true";
+}
+
+function guardarPreferencia(clave, valor) {
+    localStorage.setItem(clave, valor ? "true" : "false");
+}
+
+function cargarPreferenciasUI() {
+    if (rememberActivityPreference) {
+        rememberActivityPreference.checked = leerPreferencia(STORAGE_KEYS.rememberActivity);
+    }
+
+    if (rememberSchedulePreference) {
+        rememberSchedulePreference.checked = leerPreferencia(STORAGE_KEYS.rememberSchedule);
+    }
+
+    if (expandResultsPreference) {
+        expandResultsPreference.checked = leerPreferencia(STORAGE_KEYS.expandResults);
+    }
+}
+
+function cerrarPanelPreferencias() {
+    if (preferencesPanel) {
+        preferencesPanel.classList.remove("is-open");
+        clearTimeout(preferencesCloseTimeout);
+        preferencesCloseTimeout = setTimeout(() => {
+            preferencesPanel.hidden = true;
+        }, 220);
+    }
+}
+
+function abrirPanelPreferencias() {
+    if (!preferencesPanel) {
+        return;
+    }
+
+    clearTimeout(preferencesCloseTimeout);
+    preferencesPanel.hidden = false;
+    requestAnimationFrame(() => {
+        preferencesPanel.classList.add("is-open");
+    });
+}
+
+function guardarActividadRecordada() {
+    if (!rememberActivityPreference?.checked || !actividadSeleccionada) {
+        localStorage.removeItem(STORAGE_KEYS.savedActivity);
+        return;
+    }
+
+    localStorage.setItem(STORAGE_KEYS.savedActivity, actividadSeleccionada);
+}
+
+function guardarHorarioRecordado() {
+    if (!rememberSchedulePreference?.checked || !fechaInput.value || !horaSeleccionada) {
+        localStorage.removeItem(STORAGE_KEYS.savedDate);
+        localStorage.removeItem(STORAGE_KEYS.savedHour);
+        return;
+    }
+
+    localStorage.setItem(STORAGE_KEYS.savedDate, fechaInput.value);
+    localStorage.setItem(STORAGE_KEYS.savedHour, horaSeleccionada);
+}
+
+function obtenerActividadInicial() {
+    const actividadGuardada = localStorage.getItem(STORAGE_KEYS.savedActivity);
+    if (rememberActivityPreference?.checked && actividadGuardada) {
+        return actividadGuardada;
+    }
+
+    return "tomar_sol";
+}
+
+function obtenerHorarioInicial() {
+    if (!rememberSchedulePreference?.checked) {
+        return null;
+    }
+
+    const fechaGuardada = localStorage.getItem(STORAGE_KEYS.savedDate);
+    const horaGuardada = localStorage.getItem(STORAGE_KEYS.savedHour);
+    const hoy = formatearFechaLocal(new Date());
+
+    if (!fechaGuardada || !horaGuardada || fechaGuardada < hoy) {
+        return null;
+    }
+
+    if (fechaGuardada === hoy && esHoraPasadaParaFecha(fechaGuardada, horaGuardada)) {
+        return null;
+    }
+
+    return {
+        fecha: fechaGuardada,
+        hora: horaGuardada
+    };
+}
 
 // =========================================================
 // UTILIDADES DE FECHA Y HORA
@@ -66,6 +200,24 @@ function obtenerHoraTexto(hourNumber) {
     return `${String(horaNormalizada).padStart(2, "0")}:00`;
 }
 
+function mostrarAvisoSolar(mensaje) {
+    if (!sunAlertEl) {
+        return;
+    }
+
+    sunAlertEl.textContent = mensaje;
+    sunAlertEl.hidden = false;
+}
+
+function ocultarAvisoSolar() {
+    if (!sunAlertEl) {
+        return;
+    }
+
+    sunAlertEl.textContent = "";
+    sunAlertEl.hidden = true;
+}
+
 function obtenerHorasDisponiblesParaFecha(fechaTexto) {
     const horas = [];
     const hoy = formatearFechaLocal(new Date());
@@ -94,13 +246,20 @@ function renderizarWheelHoras(fechaTexto) {
 
     hourOptions.forEach(option => {
         option.addEventListener("click", () => {
+            const horaAnterior = horaSeleccionada;
+
             option.scrollIntoView({
                 block: "center",
                 behavior: "smooth"
             });
 
             horaSeleccionada = option.dataset.hour;
-            statusEl.textContent = "";
+            guardarHorarioRecordado();
+            if (horaSeleccionada !== horaAnterior) {
+                limpiarResultadosPorCambioDeFiltros();
+            } else {
+                statusEl.textContent = "";
+            }
             setTimeout(actualizarHoraActiva, 180);
         });
     });
@@ -111,6 +270,7 @@ function renderizarWheelHoras(fechaTexto) {
 
     if (horaSeleccionada) {
         fijarHoraInicial(horaSeleccionada);
+        guardarHorarioRecordado();
     }
 }
 
@@ -118,54 +278,77 @@ function esFechaHoy(fechaTexto) {
     return fechaTexto === formatearFechaLocal(new Date());
 }
 
-function esHoraPasadaParaHoy(horaTexto) {
-    if (!esFechaHoy(fechaInput.value)) {
+function esHoraPasadaParaFecha(fechaTexto, horaTexto) {
+    if (fechaTexto !== formatearFechaLocal(new Date())) {
         return false;
     }
 
     const horaNumero = Number(horaTexto.split(":")[0]);
-    const horaMinima = obtenerHoraMinimaPermitida();
+    return horaNumero < obtenerHoraMinimaPermitida();
+}
 
-    return horaNumero < horaMinima;
+function esHoraPasadaParaHoy(horaTexto) {
+    return esHoraPasadaParaFecha(fechaInput.value, horaTexto);
 }
 
 // ============================================================
 // CONFIGURACIÓN INICIAL POR DEFECTO: actividad, fecha y hora
 // ============================================================
 
-function seleccionarActividadPorDefecto() {
-    const cardTomarSol = document.querySelector('.activity-card[data-activity="tomar_sol"]');
+function seleccionarActividad(actividad, limpiarResultados = false) {
+    const card = document.querySelector(`.activity-card[data-activity="${actividad}"]`);
 
-    if (cardTomarSol) {
-        activityCards.forEach(c => c.classList.remove("selected"));
-        cardTomarSol.classList.add("selected");
-        actividadSeleccionada = "tomar_sol";
-    }
-}
-
-function configurarFechaPorDefecto() {
-    const hoy = new Date();
-    const fechaHoy = formatearFechaLocal(hoy);
-
-    fechaInput.value = fechaHoy;
-    fechaInput.min = fechaHoy;
-    actualizarTextoFecha();
-}
-
-function configurarHoraPorDefecto() {
-    const horaMinima = obtenerHoraMinimaPermitida();
-
-    if (horaMinima > 23) {
-        // Si ya no quedan horas disponibles hoy, saltamos a mañana a las 00:00
-        const manana = new Date();
-        manana.setDate(manana.getDate() + 1);
-
-        fechaInput.value = formatearFechaLocal(manana);
-        fijarHoraInicial("00:00");
+    if (!card) {
         return;
     }
 
-    fijarHoraInicial(obtenerHoraTexto(horaMinima));
+    const actividadAnterior = actividadSeleccionada;
+
+    activityCards.forEach(c => c.classList.remove("selected"));
+    card.classList.add("selected");
+    actividadSeleccionada = actividad;
+    guardarActividadRecordada();
+
+    if (limpiarResultados && actividadSeleccionada !== actividadAnterior) {
+        limpiarResultadosPorCambioDeFiltros();
+    }
+}
+
+function configurarFechaYHoraIniciales() {
+    const hoy = new Date();
+    const fechaHoy = formatearFechaLocal(hoy);
+    const horarioInicial = obtenerHorarioInicial();
+
+    fechaInput.min = fechaHoy;
+    fechaInput.value = horarioInicial?.fecha || fechaHoy;
+    actualizarTextoFecha();
+    actualizarHorasDisponibles();
+
+    if (horarioInicial?.hora && obtenerHorasDisponiblesParaFecha(fechaInput.value).includes(horarioInicial.hora)) {
+        fijarHoraInicial(horarioInicial.hora);
+        guardarHorarioRecordado();
+        return;
+    }
+
+    const horaMinima = obtenerHoraMinimaPermitida();
+
+    if (fechaInput.value === fechaHoy && horaMinima > 23) {
+        const manana = new Date();
+        manana.setDate(manana.getDate() + 1);
+        fechaInput.value = formatearFechaLocal(manana);
+        actualizarTextoFecha();
+        actualizarHorasDisponibles();
+        fijarHoraInicial("00:00");
+        guardarHorarioRecordado();
+        return;
+    }
+
+    const horaInicial = fechaInput.value === fechaHoy
+        ? obtenerHoraTexto(horaMinima)
+        : "00:00";
+
+    fijarHoraInicial(horaInicial);
+    guardarHorarioRecordado();
 }
 
 // =========================================================
@@ -235,8 +418,15 @@ function actualizarHoraActiva() {
     });
 
     if (opcionMasCercana) {
+        const horaAnterior = horaSeleccionada;
         horaSeleccionada = opcionMasCercana.dataset.hour;
-        statusEl.textContent = "";
+
+        if (horaSeleccionada !== horaAnterior) {
+            guardarHorarioRecordado();
+            limpiarResultadosPorCambioDeFiltros();
+        } else {
+            statusEl.textContent = "";
+        }
     }
 }
 
@@ -249,31 +439,24 @@ hourWheel.addEventListener("scroll", () => {
         const activa = [...hourOptions].find(option => option.classList.contains("active"));
 
         if (activa) {
+            const horaAnterior = horaSeleccionada;
+
             activa.scrollIntoView({
                 block: "center",
                 behavior: "smooth"
             });
             horaSeleccionada = activa.dataset.hour;
-            statusEl.textContent = "";
+            guardarHorarioRecordado();
+
+            if (horaSeleccionada !== horaAnterior) {
+                limpiarResultadosPorCambioDeFiltros();
+            } else {
+                statusEl.textContent = "";
+            }
         } else {
             asegurarHoraValidaSeleccionada();
         }
     }, 120);
-});
-
-hourOptions.forEach(option => {
-    option.addEventListener("click", () => {
-
-
-        option.scrollIntoView({
-            block: "center",
-            behavior: "smooth"
-        });
-
-        horaSeleccionada = option.dataset.hour;
-        statusEl.textContent = "";
-        setTimeout(actualizarHoraActiva, 180);
-    });
 });
 
 function fijarHoraInicial(valor = "12:00") {
@@ -286,6 +469,7 @@ function fijarHoraInicial(valor = "12:00") {
         });
 
         horaSeleccionada = valor;
+        guardarHorarioRecordado();
         setTimeout(actualizarHoraActiva, 50);
     }
 }
@@ -296,10 +480,7 @@ function fijarHoraInicial(valor = "12:00") {
 
 activityCards.forEach(card => {
     card.addEventListener("click", () => {
-        activityCards.forEach(c => c.classList.remove("selected"));
-        card.classList.add("selected");
-        actividadSeleccionada = card.dataset.activity;
-        statusEl.textContent = "";
+        seleccionarActividad(card.dataset.activity, true);
     });
 });
 
@@ -322,7 +503,8 @@ fechaInput.addEventListener("change", () => {
     actualizarTextoFecha();
     actualizarHorasDisponibles();
     asegurarHoraValidaSeleccionada();
-    statusEl.textContent = "";
+    guardarHorarioRecordado();
+    limpiarResultadosPorCambioDeFiltros();
 });
 
 // =========================================================
@@ -332,6 +514,7 @@ fechaInput.addEventListener("change", () => {
 buscarBtn.addEventListener("click", async () => {
     const fecha = fechaInput.value;
     const hora = horaSeleccionada;
+    ocultarAvisoSolar();
 
     if (!actividadSeleccionada) {
         statusEl.textContent = "Debes seleccionar una actividad.";
@@ -371,6 +554,12 @@ buscarBtn.addEventListener("click", async () => {
 
         const data = await response.json();
         pintarResultados(data.resultados);
+        if (data.aviso_sol?.mensaje) {
+            mostrarAvisoSolar(data.aviso_sol.mensaje);
+            statusEl.textContent = "";
+            return;
+        }
+
         statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
     } catch (error) {
         console.error(error);
@@ -397,12 +586,14 @@ function pintarResultados(resultados) {
         return;
     }
 
+    const expandirResultados = expandResultsPreference?.checked;
+
     resultsContainer.innerHTML = resultados.map((playa, index) => {
         const servicios = formatearServicios(playa.servicios);
         const condiciones = playa.condiciones;
 
         return `
-            <details class="beach-card desplegable">
+            <details class="beach-card desplegable"${expandirResultados ? " open" : ""}>
             <summary class="beach-summary">
                 <div class="beach-summary-left">
                 <div class="ranking-badge">#${index + 1}</div>
@@ -464,20 +655,58 @@ function formatearServicios(servicios) {
 // Login
 // =========================================================
 
-async function login(email, password) {
-    const response = await fetch("/auth/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-    });
-
-    if (!response.ok) {
-        throw new Error("Login failed");
+function aplicarModoAuth() {
+    if (!authModeHint || !toggleAuthModeBtn || !authSubmitBtn) {
+        return;
     }
 
-    return response.json();
+    const titleEl = document.getElementById("loginModalTitle");
+
+    if (authMode === "register") {
+        if (titleEl) titleEl.textContent = "Registrarse";
+        authSubmitBtn.textContent = "Crear cuenta";
+        authModeHint.textContent = "Ya tienes cuenta?";
+        toggleAuthModeBtn.textContent = "Iniciar sesion";
+        return;
+    }
+
+    if (titleEl) titleEl.textContent = "Iniciar sesion";
+    authSubmitBtn.textContent = "Entrar a mi cuenta";
+    authModeHint.textContent = "¿Todavía no tienes cuenta?";
+    toggleAuthModeBtn.textContent = "Registrarse";
+}
+
+function mostrarMensajeAuth(mensaje, tipo = "error") {
+    if (!loginErrorMessageEl) {
+        return;
+    }
+
+    loginErrorMessageEl.textContent = mensaje;
+    loginErrorMessageEl.classList.remove("success", "error");
+    loginErrorMessageEl.classList.add(tipo);
+}
+
+function abrirModalLogin() {
+    if (!loginModalEl) {
+        return;
+    }
+
+    authMode = "login";
+    aplicarModoAuth();
+    loginModalEl.hidden = false;
+    mostrarMensajeAuth("", "error");
+    loginModalForm.reset();
+    setTimeout(() => loginEmailInput?.focus(), 0);
+}
+
+function cerrarModalLogin() {
+    if (!loginModalEl) {
+        return;
+    }
+
+    loginModalEl.hidden = true;
+    mostrarMensajeAuth("", "error");
+    loginModalForm.reset();
 }
 
 function authFetch(url, options = {}) {
@@ -496,7 +725,9 @@ async function loadCurrentUser() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-        document.getElementById("userInfo").textContent = `No user logged in.`;
+        if (preferencesUserInfo) {
+            preferencesUserInfo.textContent = "";
+        }
         return;
     }
 
@@ -507,11 +738,20 @@ async function loadCurrentUser() {
             }
         });
 
-        if (!response.ok) return;
+        if (!response.ok) {
+            localStorage.removeItem("token");
+            if (preferencesUserInfo) {
+                preferencesUserInfo.textContent = "";
+            }
+            actualizarBotonesSesion();
+            return;
+        }
 
         const data = await response.json();
 
-        document.getElementById("userInfo").textContent = `Logged in as: ${data.email}`;
+        if (preferencesUserInfo) {
+            preferencesUserInfo.textContent = data.email;
+        }
 
     } catch (e) {
         console.error("Failed to load user");
@@ -522,40 +762,172 @@ function logout() {
     localStorage.removeItem("token");
 
     loadCurrentUser();
-    document.querySelectorAll(".loggedIn").forEach(el => {
-        el.classList.add("hidden");
-    });
-    document.querySelectorAll(".loggedOut").forEach(el => {
-        el.classList.remove("hidden");
-    });
-
-    alert("Logged out");
+    actualizarBotonesSesion();
+    cerrarPanelPreferencias();
 }
 
 function actualizarBotonesSesion() {
     const token = localStorage.getItem("token");
 
-    const loginDiv = document.querySelector(".login");
-    const logoutDiv = document.querySelector(".logout");
+    if (!authActionBtn || !authActionIcon) {
+        return;
+    }
 
     if (token) {
-        if (loginDiv) loginDiv.style.display = "none";
-        if (logoutDiv) logoutDiv.style.display = "flex";
-    } else {
-        if (loginDiv) loginDiv.style.display = "flex";
-        if (logoutDiv) logoutDiv.style.display = "none";
+        authActionBtn.hidden = false;
+        authActionBtn.setAttribute("aria-label", "Preferencias");
+        authActionIcon.className = "bi bi-person-circle";
+        return;
     }
+
+    authActionIcon.className = "bi bi-box-arrow-in-left";
+    authActionBtn.hidden = false;
+    authActionBtn.setAttribute("aria-label", "Acceder");
+    cerrarPanelPreferencias();
 }
+
+if (authActionBtn) {
+    authActionBtn.addEventListener("click", () => {
+        if (localStorage.getItem("token")) {
+            if (!preferencesPanel) {
+                return;
+            }
+
+            if (preferencesPanel.hidden) {
+                abrirPanelPreferencias();
+                return;
+            }
+
+            cerrarPanelPreferencias();
+            return;
+        }
+
+        abrirModalLogin();
+    });
+}
+
+if (closeLoginModalBtn) {
+    closeLoginModalBtn.addEventListener("click", cerrarModalLogin);
+}
+
+if (loginModalEl) {
+    loginModalEl.addEventListener("click", (event) => {
+        if (event.target === loginModalEl) {
+            cerrarModalLogin();
+        }
+    });
+}
+
+document.addEventListener("click", (event) => {
+    if (!preferencesPanel || preferencesPanel.hidden) {
+        return;
+    }
+
+    const clickDentroPanel = preferencesPanel.contains(event.target);
+    const clickEnToggle = authActionBtn?.contains(event.target);
+
+    if (!clickDentroPanel && !clickEnToggle) {
+        cerrarPanelPreferencias();
+    }
+});
+
+if (loginModalForm) {
+    loginModalForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const email = loginEmailInput.value.trim();
+        const password = loginPasswordInput.value;
+
+        if (!email || !password) {
+            mostrarMensajeAuth("Debes indicar correo y contraseña.");
+            return;
+        }
+
+        mostrarMensajeAuth(
+            authMode === "register" ? "Creando cuenta..." : "Accediendo...",
+            "success",
+        );
+
+        try {
+            if (authMode === "register") {
+                await registerUser(email, password);
+                authMode = "login";
+                aplicarModoAuth();
+                mostrarMensajeAuth("Cuenta creada. Ya puedes iniciar sesion.", "success");
+                loginPasswordInput.value = "";
+                return;
+            }
+
+            const data = await login(email, password);
+            localStorage.setItem("token", data.access_token);
+            await loadCurrentUser();
+            actualizarBotonesSesion();
+            cerrarModalLogin();
+        } catch (error) {
+            console.error(error);
+            mostrarMensajeAuth(error.message || "No se pudo completar la operacion.");
+        }
+    });
+}
+
+if (toggleAuthModeBtn) {
+    toggleAuthModeBtn.addEventListener("click", () => {
+        authMode = authMode === "login" ? "register" : "login";
+        aplicarModoAuth();
+        mostrarMensajeAuth("", "error");
+        loginPasswordInput.value = "";
+    });
+}
+
+if (rememberActivityPreference) {
+    rememberActivityPreference.addEventListener("change", () => {
+        guardarPreferencia(STORAGE_KEYS.rememberActivity, rememberActivityPreference.checked);
+        guardarActividadRecordada();
+    });
+}
+
+if (rememberSchedulePreference) {
+    rememberSchedulePreference.addEventListener("change", () => {
+        guardarPreferencia(STORAGE_KEYS.rememberSchedule, rememberSchedulePreference.checked);
+        guardarHorarioRecordado();
+    });
+}
+
+if (expandResultsPreference) {
+    expandResultsPreference.addEventListener("change", () => {
+        guardarPreferencia(STORAGE_KEYS.expandResults, expandResultsPreference.checked);
+    });
+}
+
+if (preferencesLogoutBtn) {
+    preferencesLogoutBtn.addEventListener("click", () => {
+        logout();
+    });
+}
+
+document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    if (loginModalEl && !loginModalEl.hidden) {
+        cerrarModalLogin();
+    }
+
+    if (preferencesPanel && !preferencesPanel.hidden) {
+        cerrarPanelPreferencias();
+    }
+});
 
 // =========================================================
 // ARRANQUE
 // =========================================================
 
+cargarPreferenciasUI();
+
 if (document.getElementById("fecha")) {
-    seleccionarActividadPorDefecto();
-    configurarFechaPorDefecto();
-    actualizarHorasDisponibles();
-    configurarHoraPorDefecto();
+    seleccionarActividad(obtenerActividadInicial());
+    configurarFechaYHoraIniciales();
 }
 loadCurrentUser();
 actualizarBotonesSesion();
