@@ -479,7 +479,7 @@ buscarBtn.addEventListener("click", async () => {
         let cantidad;
 
         if (cantidadSeleccionada === "all") {
-            cantidad = -1;
+            cantidad = 100;
         } else {
             cantidad = Number(cantidadSeleccionada) || 3;
         }
