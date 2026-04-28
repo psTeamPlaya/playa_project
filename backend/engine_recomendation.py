@@ -5,6 +5,7 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 import math
+import logging
 
 from backend.config import settings
 from backend.db import SessionLocal
@@ -15,6 +16,8 @@ BASE_DIR = Path(__file__).resolve().parent
 PLAYAS_FILE = BASE_DIR / "playas.json"
 CONDICIONES_FILE = BASE_DIR / "condiciones_playas.json"
 
+
+logger = logging.getLogger(__name__)
 
 # =========================================================
 # CARGA DE DATOS
@@ -525,6 +528,7 @@ def recomendar_playas(actividad, fecha, hora, lat_usuario, lon_usuario, radio_km
             return R * c
         distancia = calcular_distancia(lat_usuario, lon_usuario, playa["latitud"], playa["longitud"])
         if distancia > radio_km:
+            logger.debug(f"Playa '{playa['nombre']}' descartada por distancia: {distancia:.2f} km")
             continue
 
         condicion = buscar_condicion(

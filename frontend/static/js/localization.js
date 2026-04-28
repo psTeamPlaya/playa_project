@@ -184,7 +184,7 @@ function selectLocation(name, coords) {
     saveToHistory(name);
 
     console.log("Selected location:", name, coords);
-
+    selectedCoords = coords;
     // You can store coords globally here if needed
 }
 
@@ -208,8 +208,7 @@ btnGeolocalizar.addEventListener("click", async () => {
 
             locationInput.value = name;
 
-            // keep consistent format [lat, lon]
-            selectedCoords = [latitude, longitude];
+            selectLocation(name, [longitude, latitude]);
         },
         (err) => {
             console.error("Geolocation error:", err);
