@@ -122,17 +122,18 @@ function renderizarWheelHoras(fechaTexto) {
 function renderizarWheelCantidad() {
     const cantidades = [];
 
-    for (let i = 1; i <= 11; i++) {
-        if (i == 11)
-        {
-            cantidades.push(String("10+"));
-        } else {
-            cantidades.push(String(i));
-        }
+    for (let i = 1; i <= 10; i++) {
+        cantidades.push(String(i));
     }
 
+    // 👇 añadimos opción especial
+    cantidades.push("all");
+
     cantidadWheel.innerHTML = cantidades
-        .map(num => `<div class="hour-option" data-value="${num}">${num}</div>`)
+        .map(num => {
+            const label = num === "all" ? "+10" : num;
+            return `<div class="hour-option" data-value="${num}">${label}</div>`;
+        })
         .join("");
 
     cantidadOptions = [...cantidadWheel.querySelectorAll(".hour-option")];
@@ -475,9 +476,13 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
-        const isLogged = !!localStorage.getItem("token");
-        const cantidad = isLogged ? Number(cantidadSeleccionada) : 3;
+        let cantidad;
 
+        if (cantidadSeleccionada === "all") {
+            cantidad = -1;
+        } else {
+            cantidad = Number(cantidadSeleccionada) || 3;
+        }
         const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&limit=${cantidad}`;
 
         console.log(url);
