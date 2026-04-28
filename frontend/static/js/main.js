@@ -524,6 +524,9 @@ buscarBtn.addEventListener("click", async () => {
     if (typeof selectedCoords !== 'undefined' && selectedCoords) {
         lon = selectedCoords[0];
         lat = selectedCoords[1];
+    } else{
+        statusEl.textContent = "Indroduzca información de localización.";
+        return;
     }
     if (!actividadSeleccionada) {
         statusEl.textContent = "Debes seleccionar una actividad.";
