@@ -7,8 +7,8 @@ from typing import Any
 
 import requests
 
-START_ISO = "2026-04-10T00:00"
-END_ISO = "2026-04-20T23:00"
+START_ISO = "2026-04-20T00:00"
+END_ISO = "2026-04-27T23:00"
 TIMEZONE = "Atlantic/Canary"
 
 # Catálogo base de playas usado en el proyecto
@@ -125,7 +125,7 @@ def generar_condiciones() -> list[dict[str, Any]]:
             m = marine_map[timestamp]
 
             resultado.append({
-                "playa_id": playa["id"],
+                "beach_id": playa["id"],
                 "nombre_playa": playa["nombre"],
                 "fecha": dt.strftime("%Y-%m-%d"),
                 "hora": dt.strftime("%H:%M"),

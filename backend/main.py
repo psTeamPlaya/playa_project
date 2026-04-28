@@ -1,15 +1,14 @@
 from pathlib import Path
-
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 
 import backend.models       # NO BORRAR, SE USA AUNQUE PONGA QUE NO
 from backend.config import settings
-from backend.routes import api_router, views_router, auth_router, users_router 
-from backend.engine_recomendation import recomendar_playas
-from backend.db import engine
+from backend.routes import api_router, views_router, auth_router, users_router, favourites_router, services_router
+from backend.engine_recomendation import cargar_playas, recomendar_playas
+from backend.db import engine, Base
+from backend.sunlight_provider import SunlightError, obtener_aviso_luz_solar
 from contextlib import asynccontextmanager
-from backend.db import Base
 
 # Crea las tablas al arrancar el servidor
 @asynccontextmanager
@@ -27,26 +26,55 @@ app.include_router(api_router)
 app.include_router(views_router)
 app.include_router(auth_router)
 app.include_router(users_router)
-# app.include_router(fav_router)
+app.include_router(favourites_router)
+app.include_router(services_router)
 
 @app.get("/")
 def inicio():
     return {"mensaje": "API de recomendación de playas funcionando"}
 
 @app.get("/recomendaciones")
-def obtener_recomendaciones(actividad: str, fecha: str, hora: str, limit: int = 3):
+
+def obtener_recomendaciones(actividad: str, fecha: str, hora: str, lat: float, lon: float, radius: int, limit: int = 3):
     try:
+        playas = cargar_playas()
+
+        try:
+            aviso_sol = obtener_aviso_luz_solar(
+                actividad=actividad,
+                playas=playas,
+                fecha=fecha,
+                hora=hora,
+                timezone=settings.OPEN_METEO_TIMEZONE,
+                timeout_seconds=settings.OPEN_METEO_TIMEOUT_SECONDS,
+            )
+        except SunlightError:
+            aviso_sol = None
+
+        if aviso_sol is not None:
+            return {
+                "actividad": actividad,
+                "fecha": fecha,
+                "hora": hora,
+                "resultados": [],
+                "aviso_sol": aviso_sol,
+            }
+
         resultados = recomendar_playas(
             actividad=actividad,
             fecha=fecha,
             hora=hora,
+            lat_usuario=lat,
+            lon_usuario=lon,
+            radio_km=radius,
             top_n=limit
         )
         return {
             "actividad": actividad,
             "fecha": fecha,
             "hora": hora,
-            "resultados": resultados
+            "resultados": resultados,
+            "aviso_sol": None,
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

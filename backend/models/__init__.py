@@ -6,5 +6,5 @@ from backend.models.beach import Beach
 from backend.models.default_activity_weight import DefaultActivityWeight
 from backend.models.service import Service
 from backend.models.user_activity_preference import UserActivityPreference
-from backend.models.user_favourite_beaches import UserFavoriteBeaches
+from backend.models.user_favorite_beaches import UserFavoriteBeaches
 from backend.models.user import User
