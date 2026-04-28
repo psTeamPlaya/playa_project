@@ -749,3 +749,23 @@
     .hidden {
        display: none;
      }
+CSS
+/* Esto arregla el diseño (uno debajo de otro) pero permite que se oculte */
+#confirmPasswordGroup:not(.hidden) {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    margin-bottom: 1rem;
+}
+
+/* Aseguramos que el input dentro del grupo ocupe todo el ancho */
+#confirmPasswordGroup input {
+    width: 100% !important;
+    display: block !important;
+}
+
+/* Esto garantiza que cuando tenga la clase hidden, desaparezca de verdad */
+.hidden {
+    display: none !important;
+}
