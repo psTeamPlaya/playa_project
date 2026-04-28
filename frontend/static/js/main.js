@@ -1,5 +1,6 @@
 import { login } from "./auth/login.js";
 import { registerUser } from "./auth/register.js";
+import { selectedCoords } from "./localization.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
