@@ -132,6 +132,19 @@
           <input type="text" id="locationInput" placeholder="Ej: Las Palmas">
           <div id="suggestions" class="suggestions-dropdown"></div> 
         </div>
+        <div class="field">
+      <label>Rango de búsqueda:</label>
+        <div class="range-selector">
+            <input type="radio" id="rango5" name="rango" value="5" checked>
+            <label for="rango5">5 km</label>
+        
+            <input type="radio" id="rango15" name="rango" value="15">
+            <label for="rango15">15 km</label>
+        
+            <input type="radio" id="rango50" name="rango" value="50">
+            <label for="rango50">50 km</label>
+        </div>
+      </div>
         <div class="actions">
           <button class="btn-secondary" id="btnGeolocalizar">📍 Mi ubicación</button>
           <button class="btn-secondary" id="btnMapa">🗺️ Elegir en mapa</button>

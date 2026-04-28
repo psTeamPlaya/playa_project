@@ -516,6 +516,14 @@ buscarBtn.addEventListener("click", async () => {
     const hora = horaSeleccionada;
     ocultarAvisoSolar();
 
+    const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
+    const rango = radioSeleccionado ? radioSeleccionado.value : "15";
+    let lat = "";
+    let lon = "";
+    if (typeof selectedCoords !== 'undefined' && selectedCoords) {
+        lon = selectedCoords[0];
+        lat = selectedCoords[1];
+    }
     if (!actividadSeleccionada) {
         statusEl.textContent = "Debes seleccionar una actividad.";
         return;
@@ -545,7 +553,7 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
-        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}`;
+        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&lat=${lat}&lon=${lon}&radio=${rango}`;
         const response = await fetch(url);
 
         if (!response.ok) {

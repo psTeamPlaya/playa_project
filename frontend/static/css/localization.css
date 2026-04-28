@@ -62,3 +62,27 @@
     width: 90%;
     max-width: 600px;
 }
+
+.range-selector {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.range-selector input[type="radio"] {
+    display: none; /* Ukrywamy standardowe kółka */
+}
+
+.range-selector label {
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.range-selector input[type="radio"]:checked + label {
+    background-color: #007bff; /* Kolor wybrany */
+    color: white;
+    border-color: #007bff;
+}
