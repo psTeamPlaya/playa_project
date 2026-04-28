@@ -1,0 +1,86 @@
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    position: relative;
+}
+
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 5px; 
+    box-shadow: var(--shadow);
+    max-height: 250px; 
+    overflow-y: auto; 
+    display: none;
+}
+
+.suggestion-item {
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 1.1rem;
+    font-family: 'Atma';
+}
+
+.suggestion-item:hover {
+    background: #f0f7ff;
+    color: var(--primary);
+}
+
+.suggestion-item:not(:last-child) {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.map-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.map-modal.hidden {
+    display: none;
+}
+
+.map-container {
+    background: white;
+    padding: 1rem;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+}
+
+.range-selector {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.range-selector input[type="radio"] {
+    display: none; 
+}
+
+.range-selector label {
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.range-selector input[type="radio"]:checked + label {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
