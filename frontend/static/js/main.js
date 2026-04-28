@@ -20,6 +20,8 @@ const closeLoginModalBtn = document.getElementById("closeLoginModal");
 const loginModalForm = document.getElementById("loginModalForm");
 const loginEmailInput = document.getElementById("loginEmail");
 const loginPasswordInput = document.getElementById("loginPassword");
+const confirmPasswordInput = document.getElementById("confirmPassword");
+const confirmPasswordGroup = document.getElementById("confirmPasswordGroup");
 const loginErrorMessageEl = document.getElementById("loginErrorMessage");
 const authSubmitBtn = document.getElementById("authSubmitBtn");
 const authModeHint = document.getElementById("authModeHint");
@@ -679,6 +681,10 @@ function aplicarModoAuth() {
         authSubmitBtn.textContent = "Crear cuenta";
         authModeHint.textContent = "Ya tienes cuenta?";
         toggleAuthModeBtn.textContent = "Iniciar sesion";
+
+        confirmPasswordGroup.style.display = "block";
+        confirmPasswordInput.required = true;
+
         return;
     }
 
@@ -686,6 +692,10 @@ function aplicarModoAuth() {
     authSubmitBtn.textContent = "Entrar a mi cuenta";
     authModeHint.textContent = "¿Todavía no tienes cuenta?";
     toggleAuthModeBtn.textContent = "Registrarse";
+
+    confirmPasswordGroup.style.display = "none";
+    confirmPasswordInput.required = false;
+    confirmPasswordInput.value = "";
 }
 
 function mostrarMensajeAuth(mensaje, tipo = "error") {
@@ -719,6 +729,9 @@ function cerrarModalLogin() {
     loginModalEl.hidden = true;
     mostrarMensajeAuth("", "error");
     loginModalForm.reset();
+
+    confirmPasswordGroup.style.display = "none";
+    mostrarMensajeAuth("", "error");
 }
 
 function authFetch(url, options = {}) {
@@ -855,6 +868,15 @@ if (loginModalForm) {
             return;
         }
 
+        if (authMode === "register") {
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (password !== confirmPassword) {
+                mostrarMensajeAuth("Las contraseñas no coinciden.");
+                return;
+            }
+        }
+
         mostrarMensajeAuth(
             authMode === "register" ? "Creando cuenta..." : "Accediendo...",
             "success",
@@ -867,6 +889,7 @@ if (loginModalForm) {
                 aplicarModoAuth();
                 mostrarMensajeAuth("Cuenta creada. Ya puedes iniciar sesion.", "success");
                 loginPasswordInput.value = "";
+                confirmPasswordInput.value = "";
                 return;
             }
 
