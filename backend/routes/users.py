@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+import os
 
 from backend.db import get_db
 from backend.models.user import User
@@ -24,4 +25,20 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         "id": new_user.id,
         "email": new_user.email
     }
+
+
+@router.get("") # TODO: remove after testing
+def list_users(db: Session = Depends(get_db)):
+    # TODO: Remove this debug print statement after confirming the correct database connection.
+    print(f"Using DATABASE_URL: {os.getenv('DATABASE_URL')}")
+
+    users = db.query(User).all()
+
+    return [
+        {
+            "id": user.id,
+            "email": user.email
+        }
+        for user in users
+    ]
 
