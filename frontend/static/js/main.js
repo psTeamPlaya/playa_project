@@ -150,6 +150,11 @@ function obtenerHorarioInicial() {
     };
 }
 
+const cantidadWheel = document.getElementById("cantidadWheel");
+
+let cantidadSeleccionada = "3";
+let cantidadOptions = [];
+
 // =========================================================
 // UTILIDADES DE FECHA Y HORA
 // =========================================================
@@ -245,7 +250,7 @@ function renderizarWheelHoras(fechaTexto) {
         .map(hora => `<div class="hour-option" data-hour="${hora}">${hora}</div>`)
         .join("");
 
-    hourOptions = [...document.querySelectorAll(".hour-option")];
+    hourOptions = [...hourWheel.querySelectorAll(".hour-option")];
 
     hourOptions.forEach(option => {
         option.addEventListener("click", () => {
@@ -275,6 +280,40 @@ function renderizarWheelHoras(fechaTexto) {
         fijarHoraInicial(horaSeleccionada);
         guardarHorarioRecordado();
     }
+}
+
+function renderizarWheelCantidad() {
+    const cantidades = [];
+
+    for (let i = 1; i <= 10; i++) {
+        cantidades.push(String(i));
+    }
+
+    // 👇 añadimos opción especial
+    cantidades.push("all");
+
+    cantidadWheel.innerHTML = cantidades
+        .map(num => {
+            const label = num === "all" ? "+10" : num;
+            return `<div class="hour-option" data-value="${num}">${label}</div>`;
+        })
+        .join("");
+
+    cantidadOptions = [...cantidadWheel.querySelectorAll(".hour-option")];
+
+    cantidadOptions.forEach(option => {
+        option.addEventListener("click", () => {
+            option.scrollIntoView({
+                block: "center",
+                behavior: "smooth"
+            });
+
+            cantidadSeleccionada = option.dataset.value;
+            setTimeout(actualizarCantidadActiva, 150);
+        });
+    });
+
+    fijarCantidadInicial(cantidadSeleccionada);
 }
 
 function esFechaHoy(fechaTexto) {
@@ -478,6 +517,81 @@ function fijarHoraInicial(valor = "12:00") {
 }
 
 // =========================================================
+// RUEDA DE CANTIDAD
+// =========================================================
+
+function actualizarCantidadActiva() {
+    const wheelRect = cantidadWheel.getBoundingClientRect();
+    const wheelCenter = wheelRect.top + wheelRect.height / 2;
+
+    let opcionMasCercana = null;
+    let distanciaMinima = Infinity;
+
+    cantidadOptions.forEach(option => {
+        const rect = option.getBoundingClientRect();
+        const optionCenter = rect.top + rect.height / 2;
+        const distancia = Math.abs(wheelCenter - optionCenter);
+
+        option.classList.remove("active", "near");
+
+        if (distancia < distanciaMinima) {
+            distanciaMinima = distancia;
+            opcionMasCercana = option;
+        }
+    });
+
+    cantidadOptions.forEach(option => {
+        const rect = option.getBoundingClientRect();
+        const optionCenter = rect.top + rect.height / 2;
+        const distancia = Math.abs(wheelCenter - optionCenter);
+
+        if (distancia < 18) {
+            option.classList.add("active");
+        } else if (distancia < 54) {
+            option.classList.add("near");
+        }
+    });
+
+    if (opcionMasCercana) {
+        cantidadSeleccionada = opcionMasCercana.dataset.value;
+    }
+}
+
+let scrollCantidadTimeout;
+
+cantidadWheel.addEventListener("scroll", () => {
+    actualizarCantidadActiva();
+
+    clearTimeout(scrollCantidadTimeout);
+    scrollCantidadTimeout = setTimeout(() => {
+        const activa = cantidadOptions.find(o => o.classList.contains("active"));
+
+        if (activa) {
+            activa.scrollIntoView({
+                block: "center",
+                behavior: "smooth"
+            });
+
+            cantidadSeleccionada = activa.dataset.value;
+        }
+    }, 120);
+});
+
+function fijarCantidadInicial(valor = "3") {
+    const option = cantidadWheel.querySelector(`[data-value="${valor}"]`);
+
+    if (option) {
+        option.scrollIntoView({
+            block: "center",
+            behavior: "auto"
+        });
+
+        cantidadSeleccionada = valor;
+        setTimeout(actualizarCantidadActiva, 50);
+    }
+}
+
+// =========================================================
 // EVENTOS DE ACTIVIDAD Y FECHA
 // =========================================================
 
@@ -559,7 +673,15 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
-        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&lat=${lat}&lon=${lon}&radius=${rango}`;
+        let cantidad;
+
+        if (cantidadSeleccionada === "all") {
+            cantidad = 100;
+        } else {
+            cantidad = Number(cantidadSeleccionada) || 3;
+        }
+
+        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&lat=${lat}&lon=${lon}&radius=${rango}&limit=${cantidad}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -1032,4 +1154,5 @@ if (document.getElementById("fecha")) {
     configurarFechaYHoraIniciales();
 }
 loadCurrentUser();
+renderizarWheelCantidad();
 actualizarBotonesSesion();
