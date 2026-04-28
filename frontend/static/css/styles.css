@@ -749,6 +749,9 @@
     .hidden {
        display: none;
      }
+    .cantidad-wheel-container {
+        min-width: 120px;
+    }
 CSS
 /* Esto arregla el diseño (uno debajo de otro) pero permite que se oculte */
 #confirmPasswordGroup:not(.hidden) {
