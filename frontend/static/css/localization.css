@@ -1,25 +1,24 @@
-/* Kontener pola musi być relatywny */
+
 .field {
     display: flex;
     flex-direction: column;
     gap: 0.45rem;
-    position: relative; /* To pozwala liście "przykleić się" do tego pola */
+    position: relative;
 }
 
-/* Lista podpowiedzi */
 .suggestions-dropdown {
     position: absolute;
-    top: 100%; /* Wyświetla się dokładnie pod inputem */
+    top: 100%;
     left: 0;
     right: 0;
-    z-index: 1000; /* Gwarantuje, że przykryje przyciski poniżej */
+    z-index: 1000;
     background: white;
     border: 1px solid var(--border);
     border-radius: 12px;
-    margin-top: 5px; /* Odstęp od krawędzi inputa */
-    box-shadow: var(--shadow); /* Używamy Twojego zdefiniowanego cienia */
-    max-height: 250px; /* Limit wysokości */
-    overflow-y: auto; /* Przewijanie długiej listy */
+    margin-top: 5px; 
+    box-shadow: var(--shadow);
+    max-height: 250px; 
+    overflow-y: auto; 
     display: none;
 }
 
@@ -36,7 +35,6 @@
     color: var(--primary);
 }
 
-/* Opcjonalnie: oddzielenie pozycji linią */
 .suggestion-item:not(:last-child) {
     border-bottom: 1px solid #f1f5f9;
 }
@@ -70,7 +68,7 @@
 }
 
 .range-selector input[type="radio"] {
-    display: none; /* Ukrywamy standardowe kółka */
+    display: none; 
 }
 
 .range-selector label {
@@ -82,7 +80,7 @@
 }
 
 .range-selector input[type="radio"]:checked + label {
-    background-color: #007bff; /* Kolor wybrany */
+    background-color: #007bff;
     color: white;
     border-color: #007bff;
 }
