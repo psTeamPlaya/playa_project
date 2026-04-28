@@ -246,7 +246,7 @@ function saveToHistory(city) {
 
 let map;
 let marker = null;
-let selectedCoords = null;
+export let selectedCoords = null;
 
 const mapModal = document.getElementById("mapModal");
 const btnMapa = document.getElementById("btnMapa");
