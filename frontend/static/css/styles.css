@@ -170,10 +170,12 @@
         border: 1px solid var(--border);
         border-radius: 12px;
         padding: 0 0.9rem;
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         background: white;
         outline: none;
         font-family: 'Atma';
+        width: 100%;
+        text-align: center;
     }
 
     .field input:focus,
@@ -409,8 +411,19 @@
     }
 
     .expand-hint {
-        font-size: 0.85rem;
-        color: var(--muted);
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #f3f7fa;
+        color: var(--primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1;
+        transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
     }
 
     .beach-detail {
@@ -424,8 +437,9 @@
     }
 
     .desplegable[open] .expand-hint {
-        color: var(--primary-dark);
-        font-weight: bold;
+        background: var(--primary);
+        color: #fff;
+        transform: rotate(45deg);
     }
 
     .meta-list,
@@ -747,5 +761,5 @@
     }
 
     .hidden {
-       display: none;
-     }
+        display: none;
+    }

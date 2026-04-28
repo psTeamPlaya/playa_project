@@ -586,14 +586,12 @@ function pintarResultados(resultados) {
         return;
     }
 
-    const expandirResultados = expandResultsPreference?.checked;
-
     resultsContainer.innerHTML = resultados.map((playa, index) => {
         const servicios = formatearServicios(playa.servicios);
         const condiciones = playa.condiciones;
 
         return `
-            <details class="beach-card desplegable"${expandirResultados ? " open" : ""}>
+            <details class="beach-card desplegable">
             <summary class="beach-summary">
                 <div class="beach-summary-left">
                 <div class="ranking-badge">#${index + 1}</div>
@@ -606,7 +604,7 @@ function pintarResultados(resultados) {
 
                 <div class="beach-summary-right">
                 <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
-                <div class="expand-hint">Ver detalle</div>
+                <span class="expand-hint" aria-hidden="true">+</span>
                 </div>
             </summary>
 
