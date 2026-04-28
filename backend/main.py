@@ -35,7 +35,7 @@ def inicio():
     return {"mensaje": "API de recomendación de playas funcionando"}
 
 @app.get("/recomendaciones")
-def obtener_recomendaciones(actividad: str, fecha: str, hora: str):
+def obtener_recomendaciones(actividad: str, fecha: str, hora: str, lat: float, lon: float, radius: int):
     try:
         playas = cargar_playas()
 
@@ -64,6 +64,9 @@ def obtener_recomendaciones(actividad: str, fecha: str, hora: str):
             actividad=actividad,
             fecha=fecha,
             hora=hora,
+            lat_usuario=lat,
+            lon_usuario=lon,
+            radio_km=radius,
             top_n=3
         )
         return {

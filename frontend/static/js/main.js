@@ -1,5 +1,6 @@
 import { login } from "./auth/login.js";
 import { registerUser } from "./auth/register.js";
+import { selectedCoords } from "./localization.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -516,6 +517,17 @@ buscarBtn.addEventListener("click", async () => {
     const hora = horaSeleccionada;
     ocultarAvisoSolar();
 
+    const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
+    const rango = radioSeleccionado ? radioSeleccionado.value : "15";
+    let lat = "";
+    let lon = "";
+    if (typeof selectedCoords !== 'undefined' && selectedCoords) {
+        lon = selectedCoords[0];
+        lat = selectedCoords[1];
+    } else{
+        statusEl.textContent = "Indroduzca información de localización.";
+        return;
+    }
     if (!actividadSeleccionada) {
         statusEl.textContent = "Debes seleccionar una actividad.";
         return;
@@ -545,7 +557,7 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
-        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}`;
+        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&lat=${lat}&lon=${lon}&radius=${rango}`;
         const response = await fetch(url);
 
         if (!response.ok) {
