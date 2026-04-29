@@ -1,5 +1,6 @@
 import { login } from "./auth/login.js";
 import { registerUser } from "./auth/register.js";
+import { selectedCoords } from "./localization.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -149,6 +150,11 @@ function obtenerHorarioInicial() {
     };
 }
 
+const cantidadWheel = document.getElementById("cantidadWheel");
+
+let cantidadSeleccionada = "3";
+let cantidadOptions = [];
+
 // =========================================================
 // UTILIDADES DE FECHA Y HORA
 // =========================================================
@@ -244,7 +250,7 @@ function renderizarWheelHoras(fechaTexto) {
         .map(hora => `<div class="hour-option" data-hour="${hora}">${hora}</div>`)
         .join("");
 
-    hourOptions = [...document.querySelectorAll(".hour-option")];
+    hourOptions = [...hourWheel.querySelectorAll(".hour-option")];
 
     hourOptions.forEach(option => {
         option.addEventListener("click", () => {
@@ -274,6 +280,40 @@ function renderizarWheelHoras(fechaTexto) {
         fijarHoraInicial(horaSeleccionada);
         guardarHorarioRecordado();
     }
+}
+
+function renderizarWheelCantidad() {
+    const cantidades = [];
+
+    for (let i = 1; i <= 10; i++) {
+        cantidades.push(String(i));
+    }
+
+    // 👇 añadimos opción especial
+    cantidades.push("all");
+
+    cantidadWheel.innerHTML = cantidades
+        .map(num => {
+            const label = num === "all" ? "+10" : num;
+            return `<div class="hour-option" data-value="${num}">${label}</div>`;
+        })
+        .join("");
+
+    cantidadOptions = [...cantidadWheel.querySelectorAll(".hour-option")];
+
+    cantidadOptions.forEach(option => {
+        option.addEventListener("click", () => {
+            option.scrollIntoView({
+                block: "center",
+                behavior: "smooth"
+            });
+
+            cantidadSeleccionada = option.dataset.value;
+            setTimeout(actualizarCantidadActiva, 150);
+        });
+    });
+
+    fijarCantidadInicial(cantidadSeleccionada);
 }
 
 function esFechaHoy(fechaTexto) {
@@ -477,6 +517,81 @@ function fijarHoraInicial(valor = "12:00") {
 }
 
 // =========================================================
+// RUEDA DE CANTIDAD
+// =========================================================
+
+function actualizarCantidadActiva() {
+    const wheelRect = cantidadWheel.getBoundingClientRect();
+    const wheelCenter = wheelRect.top + wheelRect.height / 2;
+
+    let opcionMasCercana = null;
+    let distanciaMinima = Infinity;
+
+    cantidadOptions.forEach(option => {
+        const rect = option.getBoundingClientRect();
+        const optionCenter = rect.top + rect.height / 2;
+        const distancia = Math.abs(wheelCenter - optionCenter);
+
+        option.classList.remove("active", "near");
+
+        if (distancia < distanciaMinima) {
+            distanciaMinima = distancia;
+            opcionMasCercana = option;
+        }
+    });
+
+    cantidadOptions.forEach(option => {
+        const rect = option.getBoundingClientRect();
+        const optionCenter = rect.top + rect.height / 2;
+        const distancia = Math.abs(wheelCenter - optionCenter);
+
+        if (distancia < 18) {
+            option.classList.add("active");
+        } else if (distancia < 54) {
+            option.classList.add("near");
+        }
+    });
+
+    if (opcionMasCercana) {
+        cantidadSeleccionada = opcionMasCercana.dataset.value;
+    }
+}
+
+let scrollCantidadTimeout;
+
+cantidadWheel.addEventListener("scroll", () => {
+    actualizarCantidadActiva();
+
+    clearTimeout(scrollCantidadTimeout);
+    scrollCantidadTimeout = setTimeout(() => {
+        const activa = cantidadOptions.find(o => o.classList.contains("active"));
+
+        if (activa) {
+            activa.scrollIntoView({
+                block: "center",
+                behavior: "smooth"
+            });
+
+            cantidadSeleccionada = activa.dataset.value;
+        }
+    }, 120);
+});
+
+function fijarCantidadInicial(valor = "3") {
+    const option = cantidadWheel.querySelector(`[data-value="${valor}"]`);
+
+    if (option) {
+        option.scrollIntoView({
+            block: "center",
+            behavior: "auto"
+        });
+
+        cantidadSeleccionada = valor;
+        setTimeout(actualizarCantidadActiva, 50);
+    }
+}
+
+// =========================================================
 // EVENTOS DE ACTIVIDAD Y FECHA
 // =========================================================
 
@@ -518,6 +633,17 @@ buscarBtn.addEventListener("click", async () => {
     const hora = horaSeleccionada;
     ocultarAvisoSolar();
 
+    const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
+    const rango = radioSeleccionado ? radioSeleccionado.value : "15";
+    let lat = "";
+    let lon = "";
+    if (typeof selectedCoords !== 'undefined' && selectedCoords) {
+        lon = selectedCoords[0];
+        lat = selectedCoords[1];
+    } else{
+        statusEl.textContent = "Indroduzca información de localización.";
+        return;
+    }
     if (!actividadSeleccionada) {
         statusEl.textContent = "Debes seleccionar una actividad.";
         return;
@@ -547,7 +673,15 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
-        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}`;
+        let cantidad;
+
+        if (cantidadSeleccionada === "all") {
+            cantidad = 100;
+        } else {
+            cantidad = Number(cantidadSeleccionada) || 3;
+        }
+
+        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&lat=${lat}&lon=${lon}&radius=${rango}&limit=${cantidad}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -555,6 +689,17 @@ buscarBtn.addEventListener("click", async () => {
         }
 
         const data = await response.json();
+        const favorites = await getFavoriteBeachIds();
+        console.log("favs: ", favorites);  // TODO for debug
+
+        const favoriteIds = favorites.map(f => f.beach_id);
+        console.log("fav ids:", favoriteIds);  // TODO for debug
+
+        data.resultados.forEach(playa => {
+            playa.isFavorite = favoriteIds.includes(playa.playa_id);
+        });
+        console.log("Resultados obtenidos:", data.resultados);  // TODO for debug
+
         pintarResultados(data.resultados);
         if (data.aviso_sol?.mensaje) {
             mostrarAvisoSolar(data.aviso_sol.mensaje);
@@ -574,9 +719,56 @@ buscarBtn.addEventListener("click", async () => {
     }
 });
 
+resultsContainer.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".favorite-btn");
+
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    console.log("btn pressed:", btn);
+
+    const beachId = Number(btn.dataset.id);
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Please log in");
+        return;
+    }
+
+    const isFavorite = btn.innerText === "❤️";
+    const method = isFavorite ? "DELETE" : "POST";
+
+    await authFetch(`/api/favorites/${beachId}`, {
+        method
+    });
+
+    btn.innerText = isFavorite ? "🤍" : "❤️";   // backward order because we changed it
+});
+
+
 // =========================================================
 // RESULTADOS
 // =========================================================
+
+
+async function getFavoriteBeachIds() {
+    const token = localStorage.getItem("token");
+    if (!token) {   // user not logged in
+        return [];
+    }
+
+    try {
+        const response = await authFetch("/api/favorites");
+        if (!response.ok) return [];
+        return await response.json();
+    } catch (e) {
+        console.error("Failed to load favorites");
+        return [];
+    }
+}
 
 function pintarResultados(resultados) {
     if (!resultados || resultados.length === 0) {
@@ -607,8 +799,11 @@ function pintarResultados(resultados) {
                 </div>
 
                 <div class="beach-summary-right">
-                <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
-                <div class="expand-hint">Ver detalle</div>
+                    <button class="favorite-btn" data-id="${playa.playa_id}">
+                        ${playa.isFavorite ? '❤️' : '🤍'}
+                    </button>
+                    <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
+                    <div class="expand-hint">Ver detalle</div>
                 </div>
             </summary>
 
@@ -775,6 +970,12 @@ function logout() {
     localStorage.removeItem("token");
 
     loadCurrentUser();
+  
+    document.querySelectorAll(".favorite-btn").forEach(btn => {
+        btn.innerText = "🤍";
+    });
+    console.log("favorites reset after logout");  // TODO for debug
+ 
     actualizarBotonesSesion();
     cerrarPanelPreferencias();
 }
@@ -953,4 +1154,5 @@ if (document.getElementById("fecha")) {
     configurarFechaYHoraIniciales();
 }
 loadCurrentUser();
+renderizarWheelCantidad();
 actualizarBotonesSesion();
