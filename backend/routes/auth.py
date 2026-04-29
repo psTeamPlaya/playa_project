@@ -69,6 +69,9 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
 @router.get("/me")
 def me(current_user=Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="User not found")
+
     return {
         "id": current_user.id,
         "email": current_user.email
