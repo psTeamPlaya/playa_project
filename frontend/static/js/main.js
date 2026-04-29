@@ -574,7 +574,7 @@ buscarBtn.addEventListener("click", async () => {
         console.log("fav ids:", favoriteIds);  // TODO for debug
 
         data.resultados.forEach(playa => {
-            playa.isFavorite = favoriteIds.includes(playa.playa_id);
+            playa.isFavorite = favoriteIds.includes(playa.beach_id);
         });
         console.log("Resultados obtenidos:", data.resultados);  // TODO for debug
 
@@ -677,7 +677,7 @@ function pintarResultados(resultados) {
                 </div>
 
                 <div class="beach-summary-right">
-                    <button class="favorite-btn" data-id="${playa.playa_id}">
+                    <button class="favorite-btn" data-id="${playa.beach_id}">
                         ${playa.isFavorite ? '❤️' : '🤍'}
                     </button>
                     <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
