@@ -523,6 +523,7 @@ function fijarHoraInicial(valor = "12:00") {
 
 function actualizarCantidadActiva() {
     const wheelRect = cantidadWheel.getBoundingClientRect();
+    /*if (wheelRect.height === 0) return;*/
     const wheelCenter = wheelRect.top + wheelRect.height / 2;
 
     let opcionMasCercana = null;
@@ -675,11 +676,16 @@ buscarBtn.addEventListener("click", async () => {
 
     try {
         let cantidad;
+        const token = localStorage.getItem("token");
 
-        if (cantidadSeleccionada === "all") {
-            cantidad = 100;
+        if (!token) {
+            cantidad = 3;
         } else {
-            cantidad = Number(cantidadSeleccionada) || 3;
+            if (cantidadSeleccionada === "all") {
+                cantidad = 100;
+            } else {
+                cantidad = Number(cantidadSeleccionada) || 3;
+            }
         }
 
         const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&lat=${lat}&lon=${lon}&radius=${rango}&limit=${cantidad}`;
