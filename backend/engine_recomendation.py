@@ -4,6 +4,8 @@ import json
 import unicodedata
 from pathlib import Path
 from typing import Any
+import math
+import logging
 
 from backend.config import settings
 from backend.db import SessionLocal
@@ -14,6 +16,8 @@ BASE_DIR = Path(__file__).resolve().parent
 PLAYAS_FILE = BASE_DIR / "playas.json"
 CONDICIONES_FILE = BASE_DIR / "condiciones_playas.json"
 
+
+logger = logging.getLogger(__name__)
 
 # =========================================================
 # CARGA DE DATOS
@@ -89,8 +93,8 @@ def fusionar_playas(
     siguiente_id = max(playas_por_id, default=0) + 1
 
     for playa_db in playas_db:
-        playa_id = playa_db.get("id")
-        playa_local = playas_por_id.get(playa_id)
+        beach_id = playa_db.get("id")
+        playa_local = playas_por_id.get(beach_id)
 
         if playa_local is None:
             nombre_normalizado = _normalizar_identificador_texto(playa_db.get("nombre"))
@@ -99,7 +103,7 @@ def fusionar_playas(
 
         if playa_local is None:
             playa_nueva = {
-                "id": playa_id if playa_id is not None else siguiente_id,
+                "id": beach_id if beach_id is not None else siguiente_id,
                 "nombre": playa_db.get("nombre") or "Playa sin nombre",
                 "ubicacion": playa_db.get("ubicacion") or "",
                 "latitud": playa_db.get("latitud"),
@@ -121,8 +125,8 @@ def fusionar_playas(
                 playa_local[campo] = valor
 
     return [
-        playas_por_id[playa_id]
-        for playa_id in sorted(playas_por_id)
+        playas_por_id[beach_id]
+        for beach_id in sorted(playas_por_id)
     ]
 
 
@@ -156,12 +160,12 @@ def cargar_condiciones_para_busqueda(
         return condiciones_locales
 
     condiciones_por_playa = {
-        condicion["playa_id"]: condicion
+        condicion["beach_id"]: condicion
         for condicion in condiciones_remotas
     }
 
     for condicion_local in condiciones_locales:
-        condiciones_por_playa.setdefault(condicion_local["playa_id"], condicion_local)
+        condiciones_por_playa.setdefault(condicion_local["beach_id"], condicion_local)
 
     return list(condiciones_por_playa.values())
 
@@ -214,13 +218,13 @@ def puntuacion_categorica(valor: str, mapa: dict[str, float]) -> float:
 
 def buscar_condicion(
     condiciones: list[dict[str, Any]],
-    playa_id: int,
+    beach_id: int,
     fecha: str,
     hora: str
 ) -> dict[str, Any] | None:
     for c in condiciones:
         if (
-            c["playa_id"] == playa_id
+            c["beach_id"] == beach_id
             and c["fecha"] == fecha
             and c["hora"] == hora
         ):
@@ -508,21 +512,28 @@ def calcular_score_final(
 # RECOMENDACIÓN PRINCIPAL
 # =========================================================
 
-def recomendar_playas(
-    actividad: str,
-    fecha: str,
-    hora: str,
-    top_n: int = 3
-) -> list[dict[str, Any]]:
+def recomendar_playas(actividad, fecha, hora, lat_usuario, lon_usuario, radio_km, top_n=3) -> list[dict[str, Any]]:
     playas = cargar_playas()
     condiciones = cargar_condiciones_para_busqueda(playas, fecha, hora)
 
     resultados: list[dict[str, Any]] = []
 
     for playa in playas:
+        def calcular_distancia(lat1, lon1, lat2, lon2):
+            R = 6371 
+            dlat = math.radians(lat2 - lat1)
+            dlon = math.radians(lon2 - lon1)
+            a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            return R * c
+        distancia = calcular_distancia(lat_usuario, lon_usuario, playa["latitud"], playa["longitud"])
+        if distancia > radio_km:
+            logger.debug(f"Playa '{playa['nombre']}' descartada por distancia: {distancia:.2f} km")
+            continue
+
         condicion = buscar_condicion(
             condiciones=condiciones,
-            playa_id=playa["id"],
+            beach_id=playa["id"],
             fecha=fecha,
             hora=hora,
         )
@@ -537,7 +548,7 @@ def recomendar_playas(
         )
 
         resultados.append({
-            "playa_id": playa["id"],
+            "beach_id": playa["id"],
             "nombre": playa["nombre"],
             "ubicacion": playa["ubicacion"],
             "latitud": playa["latitud"],
