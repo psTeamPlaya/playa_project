@@ -20,13 +20,13 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 3rem;
+    padding: 0.55rem 2rem;
     background-color: var(--bg-color);
     border-bottom: 1px solid #E5E0D8;
 }
 
 .login-header .logo {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: bold;
     display: flex;
     align-items: center;
@@ -34,8 +34,8 @@ body {
 }
 
 .login-header .logo img {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: 2px solid var(--text-dark);
 }
