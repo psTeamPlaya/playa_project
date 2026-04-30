@@ -283,13 +283,14 @@ function renderizarWheelHoras(fechaTexto) {
 }
 
 function renderizarWheelCantidad() {
+    if (!cantidadWheel) return;
+
     const cantidades = [];
 
     for (let i = 1; i <= 10; i++) {
         cantidades.push(String(i));
     }
 
-    // 👇 añadimos opción especial
     cantidades.push("all");
 
     cantidadWheel.innerHTML = cantidades
@@ -522,6 +523,7 @@ function fijarHoraInicial(valor = "12:00") {
 
 function actualizarCantidadActiva() {
     const wheelRect = cantidadWheel.getBoundingClientRect();
+    /*if (wheelRect.height === 0) return;*/
     const wheelCenter = wheelRect.top + wheelRect.height / 2;
 
     let opcionMasCercana = null;
@@ -674,11 +676,16 @@ buscarBtn.addEventListener("click", async () => {
 
     try {
         let cantidad;
+        const token = localStorage.getItem("token");
 
-        if (cantidadSeleccionada === "all") {
-            cantidad = 100;
+        if (!token) {
+            cantidad = 3;
         } else {
-            cantidad = Number(cantidadSeleccionada) || 3;
+            if (cantidadSeleccionada === "all") {
+                cantidad = 100;
+            } else {
+                cantidad = Number(cantidadSeleccionada) || 3;
+            }
         }
 
         const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&lat=${lat}&lon=${lon}&radius=${rango}&limit=${cantidad}`;
@@ -689,10 +696,18 @@ buscarBtn.addEventListener("click", async () => {
         }
 
         const data = await response.json();
-        const favorites = await getFavoriteBeachIds();
-        console.log("favs: ", favorites);  // TODO for debug
 
-        const favoriteIds = favorites.map(f => f.beach_id);
+        // Fetch the data just once
+        const favoritesData = await getFavoriteBeachIds();
+
+        // Ensure we are working with an array, even if the backend sends an object
+        const favoritesArray = Array.isArray(favoritesData) ? favoritesData : (favoritesData.favorites || []);
+
+        console.log("favs: ", favoritesArray);  // TODO for debug
+
+        // Now map will work safely
+        const favoriteIds = favoritesArray.map(f => f.beach_id);
+
         console.log("fav ids:", favoriteIds);  // TODO for debug
 
         data.resultados.forEach(playa => {
@@ -701,12 +716,22 @@ buscarBtn.addEventListener("click", async () => {
         console.log("Resultados obtenidos:", data.resultados);  // TODO for debug
 
         pintarResultados(data.resultados);
+
+        // 1. If there are NO beaches, hide the sun alert and stop.
+        if (!data.resultados || data.resultados.length === 0) {
+            ocultarAvisoSolar();
+            statusEl.textContent = "";
+            return;
+        }
+
+        // 2. If there ARE beaches AND there is a sun alert, show it.
         if (data.aviso_sol?.mensaje) {
             mostrarAvisoSolar(data.aviso_sol.mensaje);
             statusEl.textContent = "";
             return;
         }
 
+        // 3. If there are beaches but NO sun alert, just show the count.
         statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
     } catch (error) {
         console.error(error);
@@ -982,6 +1007,7 @@ function logout() {
 
 function actualizarBotonesSesion() {
     const token = localStorage.getItem("token");
+    const cantidadContainer = document.querySelector(".cantidad-wheel-container");
 
     if (!authActionBtn || !authActionIcon) {
         return;
@@ -991,13 +1017,16 @@ function actualizarBotonesSesion() {
         authActionBtn.hidden = false;
         authActionBtn.setAttribute("aria-label", "Preferencias");
         authActionIcon.className = "bi bi-person-circle";
-        return;
+         if (cantidadContainer) cantidadContainer.classList.remove("hidden");
     }
+    else {
+        authActionIcon.className = "bi bi-box-arrow-in-left";
+        authActionBtn.hidden = false;
+        authActionBtn.setAttribute("aria-label", "Acceder");
+        cerrarPanelPreferencias();
 
-    authActionIcon.className = "bi bi-box-arrow-in-left";
-    authActionBtn.hidden = false;
-    authActionBtn.setAttribute("aria-label", "Acceder");
-    cerrarPanelPreferencias();
+        if (cantidadContainer) cantidadContainer.classList.add("hidden");
+    }
 }
 
 if (authActionBtn) {
@@ -1148,6 +1177,7 @@ document.addEventListener("keydown", (event) => {
 // =========================================================
 
 cargarPreferenciasUI();
+
 
 if (document.getElementById("fecha")) {
     seleccionarActividad(obtenerActividadInicial());
