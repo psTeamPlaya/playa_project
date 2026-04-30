@@ -1,4 +1,4 @@
-from backend.engine_recomendation import fusionar_playas
+from backend.engine_recomendation import filtrar_resultados_recomendacion, fusionar_playas
 
 
 def test_fusionar_playas_sobrescribe_coordenadas_desde_db():
@@ -72,3 +72,93 @@ def test_fusionar_playas_agrega_playa_de_db_si_no_existe_en_json():
             "accesibilidad": False,
         }
     ]
+
+
+def test_filtrar_resultados_recomendacion_aplica_filtros_estaticos():
+    resultados = [
+        {"tipo": "arena", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 24, "nubosidad": 20, "velocidad_viento": 10, "altura_oleaje": 1.2}},
+        {"tipo": "piedra", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 21, "nubosidad": 15, "velocidad_viento": 12, "altura_oleaje": 0.8}},
+        {"tipo": "roca", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 20, "nubosidad": 10, "velocidad_viento": 8, "altura_oleaje": 0.6}},
+    ]
+
+    filtrados = filtrar_resultados_recomendacion(resultados, tipo_arena=True)
+
+    assert filtrados == [resultados[0]]
+
+
+def test_filtrar_resultados_recomendacion_aplica_filtros_dinamicos():
+    resultados = [
+        {"tipo": "arena", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 24, "nubosidad": 10, "velocidad_viento": 10, "altura_oleaje": 1.2}},
+        {"tipo": "arena", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 18, "nubosidad": 10, "velocidad_viento": 10, "altura_oleaje": 1.2}},
+        {"tipo": "arena", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 24, "nubosidad": 20, "velocidad_viento": 10, "altura_oleaje": 1.2}},
+        {"tipo": "arena", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 24, "nubosidad": 10, "velocidad_viento": 18, "altura_oleaje": 1.2}},
+        {"tipo": "arena", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 24, "nubosidad": 10, "velocidad_viento": 10, "altura_oleaje": 2.8}},
+    ]
+
+    filtrados = filtrar_resultados_recomendacion(
+        resultados,
+        min_temperatura_ambiente=20,
+        max_temperatura_ambiente=25,
+        min_nubosidad=5,
+        max_nubosidad=15,
+        min_velocidad_viento=5,
+        max_velocidad_viento=15,
+        min_altura_oleaje=0.5,
+        max_altura_oleaje=2,
+    )
+
+    assert filtrados == [resultados[0]]
+
+
+def test_filtrar_resultados_recomendacion_sin_filtros_devuelve_todos():
+    resultados = [
+        {"tipo": "arena", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 24, "nubosidad": 20, "velocidad_viento": 10, "altura_oleaje": 1.2}},
+        {"tipo": "piedra", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 21, "nubosidad": 15, "velocidad_viento": 12, "altura_oleaje": 0.8}},
+        {"tipo": "roca", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 20, "nubosidad": 10, "velocidad_viento": 8, "altura_oleaje": 0.6}},
+    ]
+
+    filtrados = filtrar_resultados_recomendacion(resultados)
+
+    assert filtrados == resultados
+
+
+def test_filtrar_resultados_recomendacion_aplica_filtros_por_servicio_y_actividad():
+    resultados = [
+        {
+            "tipo": "arena",
+            "servicios": {"restaurantes": True, "comida_para_llevar": True, "zona_deportiva": True},
+            "actividades_ideales": [{"actividad": "surf"}],
+            "condiciones": {"temperatura_ambiente": 24, "nubosidad": 20, "velocidad_viento": 10, "altura_oleaje": 1.2},
+        },
+        {
+            "tipo": "piedra",
+            "servicios": {"restaurantes": False, "comida_para_llevar": True, "zona_deportiva": False},
+            "actividades_ideales": [{"actividad": "windsurf"}],
+            "condiciones": {"temperatura_ambiente": 21, "nubosidad": 15, "velocidad_viento": 12, "altura_oleaje": 0.8},
+        },
+    ]
+
+    filtrados = filtrar_resultados_recomendacion(
+        resultados,
+        escuela_surf=True,
+        restaurantes=True,
+        zona_deportiva=True,
+        zona_beachvolley=True,
+    )
+
+    assert filtrados == [resultados[0]]
+
+
+def test_filtrar_resultados_recomendacion_escuela_kayak_sin_datos_no_devuelve_coincidencias():
+    resultados = [
+        {
+            "tipo": "arena",
+            "servicios": {"restaurantes": True, "comida_para_llevar": True, "zona_deportiva": True},
+            "actividades_ideales": [{"actividad": "surf"}],
+            "condiciones": {"temperatura_ambiente": 24, "nubosidad": 20, "velocidad_viento": 10, "altura_oleaje": 1.2},
+        }
+    ]
+
+    filtrados = filtrar_resultados_recomendacion(resultados, escuela_kayak=True)
+
+    assert filtrados == []
