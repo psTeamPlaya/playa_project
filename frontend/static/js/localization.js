@@ -341,3 +341,25 @@ confirmLocation.addEventListener("click", async () => {
 
     mapModal.classList.add("hidden");
 });
+
+// ============================================
+// UBICACIÓN POR DEFECTO AL CARGAR
+// ============================================
+
+const DEFAULT_LOCATION = {
+    name: "Las Palmas de Gran Canaria",
+    coords: [-15.4163, 28.0997]
+};
+
+function cargarUbicacionPorDefecto() {
+    if (locationInput.value.trim()) return;
+
+    if (selectedCoords) return;
+
+    locationInput.value = DEFAULT_LOCATION.name;
+    selectedCoords = DEFAULT_LOCATION.coords;
+
+    console.log("Ubicación por defecto cargada:", DEFAULT_LOCATION.name);
+}
+
+cargarUbicacionPorDefecto();
