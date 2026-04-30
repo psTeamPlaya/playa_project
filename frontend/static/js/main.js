@@ -717,21 +717,20 @@ buscarBtn.addEventListener("click", async () => {
 
         pintarResultados(data.resultados);
 
-        // 1. If there are NO beaches, hide the sun alert and stop.
+        // If there ARE beaches AND there is a sun alert, show it.
+        if (data.aviso_sol?.mensaje) {
+            mostrarAvisoSolar(data.aviso_sol.mensaje);
+            statusEl.textContent = "";
+            return;
+        }
+        // If there are NO beaches, hide the sun alert and stop.
         if (!data.resultados || data.resultados.length === 0) {
             ocultarAvisoSolar();
             statusEl.textContent = "";
             return;
         }
 
-        // 2. If there ARE beaches AND there is a sun alert, show it.
-        if (data.aviso_sol?.mensaje) {
-            mostrarAvisoSolar(data.aviso_sol.mensaje);
-            statusEl.textContent = "";
-            return;
-        }
-
-        // 3. If there are beaches but NO sun alert, just show the count.
+        // If there are beaches but NO sun alert, just show the count.
         statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
     } catch (error) {
         console.error(error);
