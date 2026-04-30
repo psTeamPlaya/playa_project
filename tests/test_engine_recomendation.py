@@ -126,14 +126,14 @@ def test_filtrar_resultados_recomendacion_aplica_filtros_por_servicio_y_activida
     resultados = [
         {
             "tipo": "arena",
-            "servicios": {"restaurantes": True, "comida_para_llevar": True, "zona_deportiva": True},
-            "actividades_ideales": [{"actividad": "surf"}],
+            "servicios": {"restaurantes": True, "comida_para_llevar": True, "zona_deportiva": True, "escuela_surf": True},
+            "actividades_ideales": [],
             "condiciones": {"temperatura_ambiente": 24, "nubosidad": 20, "velocidad_viento": 10, "altura_oleaje": 1.2},
         },
         {
             "tipo": "piedra",
-            "servicios": {"restaurantes": False, "comida_para_llevar": True, "zona_deportiva": False},
-            "actividades_ideales": [{"actividad": "windsurf"}],
+            "servicios": {"restaurantes": False, "comida_para_llevar": True, "zona_deportiva": False, "escuela_windsurf": True},
+            "actividades_ideales": [],
             "condiciones": {"temperatura_ambiente": 21, "nubosidad": 15, "velocidad_viento": 12, "altura_oleaje": 0.8},
         },
     ]
@@ -147,6 +147,33 @@ def test_filtrar_resultados_recomendacion_aplica_filtros_por_servicio_y_activida
     )
 
     assert filtrados == [resultados[0]]
+
+
+def test_filtrar_resultados_recomendacion_sitios_para_comer_acepta_cualquier_servicio_de_comida():
+    resultados = [
+        {
+            "tipo": "arena",
+            "servicios": {"restaurantes": True, "comida_para_llevar": False},
+            "actividades_ideales": [],
+            "condiciones": {"temperatura_ambiente": 24, "nubosidad": 20, "velocidad_viento": 10, "altura_oleaje": 1.2},
+        },
+        {
+            "tipo": "arena",
+            "servicios": {"restaurantes": False, "comida_para_llevar": True},
+            "actividades_ideales": [],
+            "condiciones": {"temperatura_ambiente": 21, "nubosidad": 15, "velocidad_viento": 12, "altura_oleaje": 0.8},
+        },
+        {
+            "tipo": "arena",
+            "servicios": {"restaurantes": False, "comida_para_llevar": False},
+            "actividades_ideales": [],
+            "condiciones": {"temperatura_ambiente": 22, "nubosidad": 10, "velocidad_viento": 8, "altura_oleaje": 0.6},
+        },
+    ]
+
+    filtrados = filtrar_resultados_recomendacion(resultados, sitios_para_comer=True)
+
+    assert filtrados == [resultados[0], resultados[1]]
 
 
 def test_filtrar_resultados_recomendacion_escuela_kayak_sin_datos_no_devuelve_coincidencias():
