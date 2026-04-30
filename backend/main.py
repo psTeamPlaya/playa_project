@@ -62,30 +62,21 @@ def obtener_recomendaciones(actividad: str, fecha: str, hora: str, lat: float, l
         )
 
 
-        #if aviso_sol is not None:
-        #    return {
-        #        "actividad": actividad,
-        #        "fecha": fecha,
-        #        "hora": hora,
-        #        "resultados": [],
-        #        "aviso_sol": aviso_sol,
-        #    }
+        if aviso_sol is not None:
+            return {
+                "actividad": actividad,
+                "fecha": fecha,
+                "hora": hora,
+                "resultados": [],
+                "aviso_sol": aviso_sol,
+            }
 
-        resultados = recomendar_playas(
-            actividad=actividad,
-            fecha=fecha,
-            hora=hora,
-            lat_usuario=lat,
-            lon_usuario=lon,
-            radio_km=radius,
-            top_n=limit
-        )
         return {
             "actividad": actividad,
             "fecha": fecha,
             "hora": hora,
             "resultados": resultados,
-            "aviso_sol": None,
+            "aviso_sol": aviso_sol,
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
