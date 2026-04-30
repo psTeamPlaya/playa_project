@@ -4,10 +4,11 @@ from fastapi.staticfiles import StaticFiles
 
 import backend.models       # NO BORRAR, SE USA AUNQUE PONGA QUE NO
 from backend.config import settings
-from backend.routes import api_router, views_router, auth_router, users_router, favourites_router, services_router
 from backend.engine_recomendation import cargar_playas, recomendar_playas
 from backend.db import engine, Base
 from backend.sunlight_provider import SunlightError, obtener_aviso_luz_solar
+# from backend.routes.favourites import router as fav_router
+from backend.routes import api_router, views_router, auth_router, users_router, services_router 
 from contextlib import asynccontextmanager
 
 # Crea las tablas al arrancar el servidor
@@ -26,8 +27,8 @@ app.include_router(api_router)
 app.include_router(views_router)
 app.include_router(auth_router)
 app.include_router(users_router)
-app.include_router(favourites_router)
 app.include_router(services_router)
+# app.include_router(fav_router)
 
 @app.get("/")
 def inicio():
@@ -72,17 +73,6 @@ def obtener_recomendaciones(
         except SunlightError:
             aviso_sol = None
 
-        resultados = recomendar_playas(
-            actividad=actividad,
-            fecha=fecha,
-            hora=hora,
-            lat_usuario=lat,
-            lon_usuario=lon,
-            radio_km=radius,
-            top_n=limit
-        )
-
-
         if aviso_sol is not None:
             return {
                 "actividad": actividad,
@@ -121,7 +111,7 @@ def obtener_recomendaciones(
             "fecha": fecha,
             "hora": hora,
             "resultados": resultados,
-            "aviso_sol": aviso_sol,
+            "aviso_sol": None,
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

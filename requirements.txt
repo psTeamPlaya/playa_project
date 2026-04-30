@@ -5,5 +5,3 @@ psycopg2-binary
 bcrypt>=5
 python-jose[cryptography]
 python-dotenv
-jinja2
-requests

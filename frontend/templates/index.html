@@ -6,8 +6,6 @@
   <title>Mi dia de Playa</title>
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
   <link rel="stylesheet" href="/static/css/styles.css">
-    <link rel="stylesheet" href="/static/css/localization.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -164,44 +162,6 @@
           </div>
         </div>
       </div>
-      <div class="cantidad-wheel-container loggedIn hidden">
-        <label>Cantidad</label>
-
-        <div class="hour-wheel-wrapper">
-          <div class="hour-wheel-highlight"></div>
-          <div class="hour-wheel" id="cantidadWheel"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel">
-      <h2>3. ¿Dónde quieres ir?</h2>
-      <div class="form-grid">
-        <div class="field">
-          <label for="locationInput">Ciudad / Ubicación</label>
-          <input type="text" id="locationInput" placeholder="Ej: Las Palmas">
-          <div id="suggestions" class="suggestions-dropdown"></div> 
-        </div>
-        <div class="field">
-      <label>Rango de búsqueda:</label>
-        <div class="range-selector">
-            <input type="radio" id="rango5" name="rango" value="5" checked>
-            <label for="rango5">5 km</label>
-        
-            <input type="radio" id="rango15" name="rango" value="15">
-            <label for="rango15">15 km</label>
-        
-            <input type="radio" id="rango50" name="rango" value="50">
-            <label for="rango50">50 km</label>
-        </div>
-      </div>
-        <div class="actions">
-          <button class="btn-secondary" id="btnGeolocalizar">📍 Mi ubicación</button>
-          <button class="btn-secondary" id="btnMapa">🗺️ Elegir en mapa</button>
-        </div>
-      </div>
-      <div id="locationHistory" class="mini-chip-container"></div>
-
       <div class="actions">
         <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
       </div>
@@ -211,7 +171,7 @@
 
     <section class="panel">
       <div class="results-header">
-        <h2>4. Top-3 de playas recomendadas</h2>
+        <h2>3. Top-3 de playas recomendadas</h2>
       </div>
 
       <div id="resultsContainer" class="results-grid">
@@ -222,14 +182,6 @@
     </section>
   </main>
   </div>
-
-  <div id="mapModal" class="map-modal hidden">
-  <div class="map-container">
-    <button id="closeMap">✖</button>
-    <div id="map" style="height: 400px;"></div>
-    <button id="confirmLocation" class="btn-primary">Seleccionar ubicación</button>
-  </div>
-</div>
 
   <div class="modal-backdrop" id="loginModal" hidden>
     <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
@@ -246,10 +198,6 @@
           <label for="loginPassword">Contraseña</label>
           <input id="loginPassword" type="password" placeholder="********" required>
         </div>
-        <div class="field auth-field" id="confirmPasswordGroup" style="display: none;">
-          <label for="confirmPassword">Confirmar contraseña</label>
-          <input id="confirmPassword" type="password" placeholder="********">
-        </div>
 
         <button class="btn-primary auth-submit" id="authSubmitBtn" type="submit">Entrar a mi cuenta</button>
       </form>
@@ -263,8 +211,6 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>  
   <script type="module" src="/static/js/main.js"></script>
-  <script type="module" src="/static/js/localization.js"></script>
 </body>
 </html>

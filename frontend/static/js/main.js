@@ -1,6 +1,5 @@
 import { login } from "./auth/login.js";
 import { registerUser } from "./auth/register.js";
-import { selectedCoords } from "./localization.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -20,8 +19,6 @@ const closeLoginModalBtn = document.getElementById("closeLoginModal");
 const loginModalForm = document.getElementById("loginModalForm");
 const loginEmailInput = document.getElementById("loginEmail");
 const loginPasswordInput = document.getElementById("loginPassword");
-const confirmPasswordInput = document.getElementById("confirmPassword");
-const confirmPasswordGroup = document.getElementById("confirmPasswordGroup");
 const loginErrorMessageEl = document.getElementById("loginErrorMessage");
 const authSubmitBtn = document.getElementById("authSubmitBtn");
 const authModeHint = document.getElementById("authModeHint");
@@ -282,10 +279,6 @@ function restablecerFiltroViento() {
     filterWindMax.value = String(WIND_FILTER_DEFAULTS.max);
     actualizarFiltroVientoUI();
 }
-const cantidadWheel = document.getElementById("cantidadWheel");
-
-let cantidadSeleccionada = "3";
-let cantidadOptions = [];
 
 // =========================================================
 // UTILIDADES DE FECHA Y HORA
@@ -382,7 +375,7 @@ function renderizarWheelHoras(fechaTexto) {
         .map(hora => `<div class="hour-option" data-hour="${hora}">${hora}</div>`)
         .join("");
 
-    hourOptions = [...hourWheel.querySelectorAll(".hour-option")];
+    hourOptions = [...document.querySelectorAll(".hour-option")];
 
     hourOptions.forEach(option => {
         option.addEventListener("click", () => {
@@ -412,41 +405,6 @@ function renderizarWheelHoras(fechaTexto) {
         fijarHoraInicial(horaSeleccionada);
         guardarHorarioRecordado();
     }
-}
-
-function renderizarWheelCantidad() {
-    if (!cantidadWheel) return;
-
-    const cantidades = [];
-
-    for (let i = 1; i <= 10; i++) {
-        cantidades.push(String(i));
-    }
-
-    cantidades.push("all");
-
-    cantidadWheel.innerHTML = cantidades
-        .map(num => {
-            const label = num === "all" ? "+10" : num;
-            return `<div class="hour-option" data-value="${num}">${label}</div>`;
-        })
-        .join("");
-
-    cantidadOptions = [...cantidadWheel.querySelectorAll(".hour-option")];
-
-    cantidadOptions.forEach(option => {
-        option.addEventListener("click", () => {
-            option.scrollIntoView({
-                block: "center",
-                behavior: "smooth"
-            });
-
-            cantidadSeleccionada = option.dataset.value;
-            setTimeout(actualizarCantidadActiva, 150);
-        });
-    });
-
-    fijarCantidadInicial(cantidadSeleccionada);
 }
 
 function esFechaHoy(fechaTexto) {
@@ -650,82 +608,6 @@ function fijarHoraInicial(valor = "12:00") {
 }
 
 // =========================================================
-// RUEDA DE CANTIDAD
-// =========================================================
-
-function actualizarCantidadActiva() {
-    const wheelRect = cantidadWheel.getBoundingClientRect();
-    /*if (wheelRect.height === 0) return;*/
-    const wheelCenter = wheelRect.top + wheelRect.height / 2;
-
-    let opcionMasCercana = null;
-    let distanciaMinima = Infinity;
-
-    cantidadOptions.forEach(option => {
-        const rect = option.getBoundingClientRect();
-        const optionCenter = rect.top + rect.height / 2;
-        const distancia = Math.abs(wheelCenter - optionCenter);
-
-        option.classList.remove("active", "near");
-
-        if (distancia < distanciaMinima) {
-            distanciaMinima = distancia;
-            opcionMasCercana = option;
-        }
-    });
-
-    cantidadOptions.forEach(option => {
-        const rect = option.getBoundingClientRect();
-        const optionCenter = rect.top + rect.height / 2;
-        const distancia = Math.abs(wheelCenter - optionCenter);
-
-        if (distancia < 18) {
-            option.classList.add("active");
-        } else if (distancia < 54) {
-            option.classList.add("near");
-        }
-    });
-
-    if (opcionMasCercana) {
-        cantidadSeleccionada = opcionMasCercana.dataset.value;
-    }
-}
-
-let scrollCantidadTimeout;
-
-cantidadWheel.addEventListener("scroll", () => {
-    actualizarCantidadActiva();
-
-    clearTimeout(scrollCantidadTimeout);
-    scrollCantidadTimeout = setTimeout(() => {
-        const activa = cantidadOptions.find(o => o.classList.contains("active"));
-
-        if (activa) {
-            activa.scrollIntoView({
-                block: "center",
-                behavior: "smooth"
-            });
-
-            cantidadSeleccionada = activa.dataset.value;
-        }
-    }, 120);
-});
-
-function fijarCantidadInicial(valor = "3") {
-    const option = cantidadWheel.querySelector(`[data-value="${valor}"]`);
-
-    if (option) {
-        option.scrollIntoView({
-            block: "center",
-            behavior: "auto"
-        });
-
-        cantidadSeleccionada = valor;
-        setTimeout(actualizarCantidadActiva, 50);
-    }
-}
-
-// =========================================================
 // EVENTOS DE ACTIVIDAD Y FECHA
 // =========================================================
 
@@ -767,17 +649,6 @@ buscarBtn.addEventListener("click", async () => {
     const hora = horaSeleccionada;
     ocultarAvisoSolar();
 
-    const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
-    const rango = radioSeleccionado ? radioSeleccionado.value : "15";
-    let lat = "";
-    let lon = "";
-    if (typeof selectedCoords !== 'undefined' && selectedCoords) {
-        lon = selectedCoords[0];
-        lat = selectedCoords[1];
-    } else{
-        statusEl.textContent = "Indroduzca información de localización.";
-        return;
-    }
     if (!actividadSeleccionada) {
         statusEl.textContent = "Debes seleccionar una actividad.";
         return;
@@ -815,20 +686,6 @@ buscarBtn.addEventListener("click", async () => {
         aplicarFiltrosAParametros(params);
 
         const url = `/recomendaciones?${params.toString()}`;
-        let cantidad;
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            cantidad = 3;
-        } else {
-            if (cantidadSeleccionada === "all") {
-                cantidad = 100;
-            } else {
-                cantidad = Number(cantidadSeleccionada) || 3;
-            }
-        }
-
-        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&lat=${lat}&lon=${lon}&radius=${rango}&limit=${cantidad}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -836,41 +693,13 @@ buscarBtn.addEventListener("click", async () => {
         }
 
         const data = await response.json();
-
-        // Fetch the data just once
-        const favoritesData = await getFavoriteBeachIds();
-
-        // Ensure we are working with an array, even if the backend sends an object
-        const favoritesArray = Array.isArray(favoritesData) ? favoritesData : (favoritesData.favorites || []);
-
-        console.log("favs: ", favoritesArray);  // TODO for debug
-
-        // Now map will work safely
-        const favoriteIds = favoritesArray.map(f => f.beach_id);
-
-        console.log("fav ids:", favoriteIds);  // TODO for debug
-
-        data.resultados.forEach(playa => {
-            playa.isFavorite = favoriteIds.includes(playa.beach_id);
-        });
-        console.log("Resultados obtenidos:", data.resultados);  // TODO for debug
-
         pintarResultados(data.resultados);
-
-        // If there ARE beaches AND there is a sun alert, show it.
         if (data.aviso_sol?.mensaje) {
             mostrarAvisoSolar(data.aviso_sol.mensaje);
             statusEl.textContent = "";
             return;
         }
-        // If there are NO beaches, hide the sun alert and stop.
-        if (!data.resultados || data.resultados.length === 0) {
-            ocultarAvisoSolar();
-            statusEl.textContent = "";
-            return;
-        }
 
-        // If there are beaches but NO sun alert, just show the count.
         statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
     } catch (error) {
         console.error(error);
@@ -883,56 +712,9 @@ buscarBtn.addEventListener("click", async () => {
     }
 });
 
-resultsContainer.addEventListener("click", async (e) => {
-    const btn = e.target.closest(".favorite-btn");
-
-    if (!btn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    console.log("btn pressed:", btn);
-
-    const beachId = Number(btn.dataset.id);
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        alert("Please log in");
-        return;
-    }
-
-    const isFavorite = btn.innerText === "❤️";
-    const method = isFavorite ? "DELETE" : "POST";
-
-    await authFetch(`/api/favorites/${beachId}`, {
-        method
-    });
-
-    btn.innerText = isFavorite ? "🤍" : "❤️";   // backward order because we changed it
-});
-
-
 // =========================================================
 // RESULTADOS
 // =========================================================
-
-
-async function getFavoriteBeachIds() {
-    const token = localStorage.getItem("token");
-    if (!token) {   // user not logged in
-        return [];
-    }
-
-    try {
-        const response = await authFetch("/api/favorites");
-        if (!response.ok) return [];
-        return await response.json();
-    } catch (e) {
-        console.error("Failed to load favorites");
-        return [];
-    }
-}
 
 function pintarResultados(resultados) {
     if (!resultados || resultados.length === 0) {
@@ -963,11 +745,6 @@ function pintarResultados(resultados) {
                 <div class="beach-summary-right">
                 <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
                 <span class="expand-hint" aria-hidden="true">+</span>
-                    <button class="favorite-btn" data-id="${playa.beach_id}">
-                        ${playa.isFavorite ? '❤️' : '🤍'}
-                    </button>
-                    <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
-                    <div class="expand-hint">Ver detalle</div>
                 </div>
             </summary>
 
@@ -1030,10 +807,6 @@ function aplicarModoAuth() {
         authSubmitBtn.textContent = "Crear cuenta";
         authModeHint.textContent = "Ya tienes cuenta?";
         toggleAuthModeBtn.textContent = "Iniciar sesion";
-
-        confirmPasswordGroup.style.display = "block";
-        confirmPasswordInput.required = true;
-
         return;
     }
 
@@ -1041,10 +814,6 @@ function aplicarModoAuth() {
     authSubmitBtn.textContent = "Entrar a mi cuenta";
     authModeHint.textContent = "¿Todavía no tienes cuenta?";
     toggleAuthModeBtn.textContent = "Registrarse";
-
-    confirmPasswordGroup.style.display = "none";
-    confirmPasswordInput.required = false;
-    confirmPasswordInput.value = "";
 }
 
 function mostrarMensajeAuth(mensaje, tipo = "error") {
@@ -1078,9 +847,6 @@ function cerrarModalLogin() {
     loginModalEl.hidden = true;
     mostrarMensajeAuth("", "error");
     loginModalForm.reset();
-
-    confirmPasswordGroup.style.display = "none";
-    mostrarMensajeAuth("", "error");
 }
 
 function authFetch(url, options = {}) {
@@ -1136,12 +902,6 @@ function logout() {
     localStorage.removeItem("token");
 
     loadCurrentUser();
-  
-    document.querySelectorAll(".favorite-btn").forEach(btn => {
-        btn.innerText = "🤍";
-    });
-    console.log("favorites reset after logout");  // TODO for debug
- 
     actualizarBotonesSesion();
     cerrarPanelPreferencias();
 }
@@ -1155,7 +915,6 @@ function actualizarBotonesSesion() {
     if (filtersSidebar) {
         filtersSidebar.hidden = !estaLogueado;
     }
-    const cantidadContainer = document.querySelector(".cantidad-wheel-container");
 
     if (!authActionBtn || !authActionIcon) {
         return;
@@ -1165,16 +924,13 @@ function actualizarBotonesSesion() {
         authActionBtn.hidden = false;
         authActionBtn.setAttribute("aria-label", "Preferencias");
         authActionIcon.className = "bi bi-person-circle";
-         if (cantidadContainer) cantidadContainer.classList.remove("hidden");
+        return;
     }
-    else {
-        authActionIcon.className = "bi bi-box-arrow-in-left";
-        authActionBtn.hidden = false;
-        authActionBtn.setAttribute("aria-label", "Acceder");
-        cerrarPanelPreferencias();
 
-        if (cantidadContainer) cantidadContainer.classList.add("hidden");
-    }
+    authActionIcon.className = "bi bi-box-arrow-in-left";
+    authActionBtn.hidden = false;
+    authActionBtn.setAttribute("aria-label", "Acceder");
+    cerrarPanelPreferencias();
 }
 
 if (authActionBtn) {
@@ -1234,15 +990,6 @@ if (loginModalForm) {
             return;
         }
 
-        if (authMode === "register") {
-            const confirmPassword = confirmPasswordInput.value;
-
-            if (password !== confirmPassword) {
-                mostrarMensajeAuth("Las contraseñas no coinciden.");
-                return;
-            }
-        }
-
         mostrarMensajeAuth(
             authMode === "register" ? "Creando cuenta..." : "Accediendo...",
             "success",
@@ -1255,7 +1002,6 @@ if (loginModalForm) {
                 aplicarModoAuth();
                 mostrarMensajeAuth("Cuenta creada. Ya puedes iniciar sesion.", "success");
                 loginPasswordInput.value = "";
-                confirmPasswordInput.value = "";
                 return;
             }
 
@@ -1373,11 +1119,9 @@ actualizarAlturaHeader();
 actualizarFiltroVientoUI();
 cargarPreferenciasUI();
 
-
 if (document.getElementById("fecha")) {
     seleccionarActividad(obtenerActividadInicial());
     configurarFechaYHoraIniciales();
 }
 loadCurrentUser();
-renderizarWheelCantidad();
 actualizarBotonesSesion();
