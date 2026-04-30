@@ -29,6 +29,10 @@ const preferencesLogoutBtn = document.getElementById("preferencesLogoutBtn");
 const rememberActivityPreference = document.getElementById("rememberActivityPreference");
 const rememberSchedulePreference = document.getElementById("rememberSchedulePreference");
 const expandResultsPreference = document.getElementById("expandResultsPreference");
+const appHeader = document.getElementById("appHeader");
+const filtersSidebar = document.getElementById("filtersSidebar");
+const filterSandBeach = document.getElementById("filterSandBeach");
+const filterStoneBeach = document.getElementById("filterStoneBeach");
 
 let hourOptions = [];
 let actividadSeleccionada = "";
@@ -57,6 +61,17 @@ function leerPreferencia(clave) {
 
 function guardarPreferencia(clave, valor) {
     localStorage.setItem(clave, valor ? "true" : "false");
+}
+
+function actualizarAlturaHeader() {
+    if (!appHeader) {
+        return;
+    }
+
+    document.documentElement.style.setProperty(
+        "--app-header-height",
+        `${appHeader.offsetHeight}px`
+    );
 }
 
 function cargarPreferenciasUI() {
@@ -145,6 +160,25 @@ function obtenerHorarioInicial() {
         fecha: fechaGuardada,
         hora: horaGuardada
     };
+}
+
+function obtenerFiltrosTipoPlaya() {
+    return {
+        tipoArena: Boolean(filterSandBeach?.checked),
+        tipoPiedra: Boolean(filterStoneBeach?.checked)
+    };
+}
+
+function aplicarFiltrosAParametros(params) {
+    const filtros = obtenerFiltrosTipoPlaya();
+
+    if (filtros.tipoArena) {
+        params.set("tipo_arena", "true");
+    }
+
+    if (filtros.tipoPiedra) {
+        params.set("tipo_piedra", "true");
+    }
 }
 
 // =========================================================
@@ -545,7 +579,14 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
-        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}`;
+        const params = new URLSearchParams({
+            actividad: actividadSeleccionada,
+            fecha,
+            hora
+        });
+        aplicarFiltrosAParametros(params);
+
+        const url = `/recomendaciones?${params.toString()}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -766,12 +807,19 @@ function logout() {
 
 function actualizarBotonesSesion() {
     const token = localStorage.getItem("token");
+    const estaLogueado = Boolean(token);
+
+    document.body.classList.toggle("is-authenticated", estaLogueado);
+
+    if (filtersSidebar) {
+        filtersSidebar.hidden = !estaLogueado;
+    }
 
     if (!authActionBtn || !authActionIcon) {
         return;
     }
 
-    if (token) {
+    if (estaLogueado) {
         authActionBtn.hidden = false;
         authActionBtn.setAttribute("aria-label", "Preferencias");
         authActionIcon.className = "bi bi-person-circle";
@@ -897,6 +945,14 @@ if (expandResultsPreference) {
     });
 }
 
+[filterSandBeach, filterStoneBeach].forEach(filterInput => {
+    if (!filterInput) {
+        return;
+    }
+
+    filterInput.addEventListener("change", limpiarResultadosPorCambioDeFiltros);
+});
+
 if (preferencesLogoutBtn) {
     preferencesLogoutBtn.addEventListener("click", () => {
         logout();
@@ -917,10 +973,18 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
+window.addEventListener("resize", actualizarAlturaHeader);
+
+if (appHeader && "ResizeObserver" in window) {
+    const headerObserver = new ResizeObserver(actualizarAlturaHeader);
+    headerObserver.observe(appHeader);
+}
+
 // =========================================================
 // ARRANQUE
 // =========================================================
 
+actualizarAlturaHeader();
 cargarPreferenciasUI();
 
 if (document.getElementById("fecha")) {
