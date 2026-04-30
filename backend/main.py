@@ -34,8 +34,29 @@ def inicio():
     return {"mensaje": "API de recomendación de playas funcionando"}
 
 @app.get("/recomendaciones")
-
-def obtener_recomendaciones(actividad: str, fecha: str, hora: str, lat: float, lon: float, radius: int, limit: int = 3):
+def obtener_recomendaciones(
+    actividad: str,
+    fecha: str,
+    hora: str,
+    tipo_arena: bool | None = None,
+    tipo_piedra: bool | None = None,
+    escuela_surf: bool | None = None,
+    escuela_windsurf: bool | None = None,
+    zona_beachvolley: bool | None = None,
+    zona_deportiva: bool | None = None,
+    escuela_kayak: bool | None = None,
+    sitios_para_comer: bool | None = None,
+    restaurantes: bool | None = None,
+    comida_para_llevar: bool | None = None,
+    min_temperatura_ambiente: float | None = None,
+    max_temperatura_ambiente: float | None = None,
+    min_nubosidad: float | None = None,
+    max_nubosidad: float | None = None,
+    min_velocidad_viento: float | None = None,
+    max_velocidad_viento: float | None = None,
+    min_altura_oleaje: float | None = None,
+    max_altura_oleaje: float | None = None,
+):
     try:
         playas = cargar_playas()
 
@@ -71,6 +92,30 @@ def obtener_recomendaciones(actividad: str, fecha: str, hora: str, lat: float, l
                 "aviso_sol": aviso_sol,
             }
 
+        resultados = recomendar_playas(
+            actividad=actividad,
+            fecha=fecha,
+            hora=hora,
+            top_n=3,
+            tipo_arena=tipo_arena,
+            tipo_piedra=tipo_piedra,
+            escuela_surf=escuela_surf,
+            escuela_windsurf=escuela_windsurf,
+            zona_beachvolley=zona_beachvolley,
+            zona_deportiva=zona_deportiva,
+            escuela_kayak=escuela_kayak,
+            sitios_para_comer=sitios_para_comer,
+            restaurantes=restaurantes,
+            comida_para_llevar=comida_para_llevar,
+            min_temperatura_ambiente=min_temperatura_ambiente,
+            max_temperatura_ambiente=max_temperatura_ambiente,
+            min_nubosidad=min_nubosidad,
+            max_nubosidad=max_nubosidad,
+            min_velocidad_viento=min_velocidad_viento,
+            max_velocidad_viento=max_velocidad_viento,
+            min_altura_oleaje=min_altura_oleaje,
+            max_altura_oleaje=max_altura_oleaje,
+        )
         return {
             "actividad": actividad,
             "fecha": fecha,
