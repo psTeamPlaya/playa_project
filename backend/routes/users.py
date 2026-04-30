@@ -27,9 +27,8 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     }
 
 
-@router.get("") # TODO: remove after testing
+@router.get("")
 def list_users(db: Session = Depends(get_db)):
-    # TODO: Remove this debug print statement after confirming the correct database connection.
     print(f"Using DATABASE_URL: {os.getenv('DATABASE_URL')}")
 
     users = db.query(User).all()
