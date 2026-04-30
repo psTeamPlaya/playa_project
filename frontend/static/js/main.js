@@ -32,12 +32,31 @@ const preferencesLogoutBtn = document.getElementById("preferencesLogoutBtn");
 const rememberActivityPreference = document.getElementById("rememberActivityPreference");
 const rememberSchedulePreference = document.getElementById("rememberSchedulePreference");
 const expandResultsPreference = document.getElementById("expandResultsPreference");
+const appHeader = document.getElementById("appHeader");
+const filtersSidebar = document.getElementById("filtersSidebar");
+const filterSandBeach = document.getElementById("filterSandBeach");
+const filterStoneBeach = document.getElementById("filterStoneBeach");
+const filterFoodPlaces = document.getElementById("filterFoodPlaces");
+const filterSurfSchool = document.getElementById("filterSurfSchool");
+const filterWindsurfSchool = document.getElementById("filterWindsurfSchool");
+const filterWindMin = document.getElementById("filterWindMin");
+const filterWindMax = document.getElementById("filterWindMax");
+const filterWindReset = document.getElementById("filterWindReset");
+const filterWindDisabled = document.getElementById("filterWindDisabled");
+const windRangeTrack = document.getElementById("windRangeTrack");
+const windMinValue = document.getElementById("windMinValue");
+const windMaxValue = document.getElementById("windMaxValue");
 
 let hourOptions = [];
 let actividadSeleccionada = "";
 let horaSeleccionada = "";
 let authMode = "login";
 let preferencesCloseTimeout;
+
+const WIND_FILTER_DEFAULTS = {
+    min: 5,
+    max: 15
+};
 
 const STORAGE_KEYS = {
     rememberActivity: "preferences.rememberActivity",
@@ -60,6 +79,17 @@ function leerPreferencia(clave) {
 
 function guardarPreferencia(clave, valor) {
     localStorage.setItem(clave, valor ? "true" : "false");
+}
+
+function actualizarAlturaHeader() {
+    if (!appHeader) {
+        return;
+    }
+
+    document.documentElement.style.setProperty(
+        "--app-header-height",
+        `${appHeader.offsetHeight}px`
+    );
 }
 
 function cargarPreferenciasUI() {
@@ -150,6 +180,108 @@ function obtenerHorarioInicial() {
     };
 }
 
+function obtenerFiltrosTipoPlaya() {
+    return {
+        tipoArena: Boolean(filterSandBeach?.checked),
+        tipoPiedra: Boolean(filterStoneBeach?.checked)
+    };
+}
+
+function estaSidebarFiltrosActiva() {
+    return Boolean(filtersSidebar && !filtersSidebar.hidden);
+}
+
+function obtenerFiltrosViento() {
+    return {
+        activo: estaSidebarFiltrosActiva() && !filterWindDisabled?.checked,
+        min: Number(filterWindMin?.value ?? WIND_FILTER_DEFAULTS.min),
+        max: Number(filterWindMax?.value ?? WIND_FILTER_DEFAULTS.max)
+    };
+}
+
+function aplicarFiltrosAParametros(params) {
+    if (!estaSidebarFiltrosActiva()) {
+        return;
+    }
+
+    const filtros = obtenerFiltrosTipoPlaya();
+
+    if (filtros.tipoArena) {
+        params.set("tipo_arena", "true");
+    }
+
+    if (filtros.tipoPiedra) {
+        params.set("tipo_piedra", "true");
+    }
+
+    if (filterFoodPlaces?.checked) {
+        params.set("sitios_para_comer", "true");
+    }
+
+    if (filterSurfSchool?.checked) {
+        params.set("escuela_surf", "true");
+    }
+
+    if (filterWindsurfSchool?.checked) {
+        params.set("escuela_windsurf", "true");
+    }
+
+    const filtrosViento = obtenerFiltrosViento();
+
+    if (filtrosViento.activo) {
+        params.set("min_velocidad_viento", String(filtrosViento.min));
+        params.set("max_velocidad_viento", String(filtrosViento.max));
+    }
+}
+
+function actualizarFiltroVientoUI() {
+    if (!filterWindMin || !filterWindMax) {
+        return;
+    }
+
+    let min = Number(filterWindMin.value);
+    let max = Number(filterWindMax.value);
+
+    if (min > max) {
+        [min, max] = [max, min];
+        filterWindMin.value = String(min);
+        filterWindMax.value = String(max);
+    }
+
+    if (windMinValue) {
+        windMinValue.textContent = String(min);
+    }
+
+    if (windMaxValue) {
+        windMaxValue.textContent = String(max);
+    }
+
+    if (windRangeTrack) {
+        const minPermitido = Number(filterWindMin.min);
+        const maxPermitido = Number(filterWindMin.max);
+        const total = maxPermitido - minPermitido;
+        const minPorcentaje = ((min - minPermitido) / total) * 100;
+        const maxPorcentaje = ((max - minPermitido) / total) * 100;
+
+        windRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
+        windRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
+        windRangeTrack.classList.toggle("is-disabled", Boolean(filterWindDisabled?.checked));
+    }
+
+    const desactivado = Boolean(filterWindDisabled?.checked);
+    filterWindMin.disabled = desactivado;
+    filterWindMax.disabled = desactivado;
+}
+
+function restablecerFiltroViento() {
+    if (!filterWindMin || !filterWindMax) {
+        return;
+    }
+
+    filterWindMin.value = String(WIND_FILTER_DEFAULTS.min);
+    filterWindMax.value = String(WIND_FILTER_DEFAULTS.max);
+    actualizarFiltroVientoUI();
+}
 const cantidadWheel = document.getElementById("cantidadWheel");
 
 let cantidadSeleccionada = "3";
@@ -675,6 +807,14 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
+        const params = new URLSearchParams({
+            actividad: actividadSeleccionada,
+            fecha,
+            hora
+        });
+        aplicarFiltrosAParametros(params);
+
+        const url = `/recomendaciones?${params.toString()}`;
         let cantidad;
         const token = localStorage.getItem("token");
 
@@ -804,14 +944,12 @@ function pintarResultados(resultados) {
         return;
     }
 
-    const expandirResultados = expandResultsPreference?.checked;
-
     resultsContainer.innerHTML = resultados.map((playa, index) => {
         const servicios = formatearServicios(playa.servicios);
         const condiciones = playa.condiciones;
 
         return `
-            <details class="beach-card desplegable"${expandirResultados ? " open" : ""}>
+            <details class="beach-card desplegable">
             <summary class="beach-summary">
                 <div class="beach-summary-left">
                 <div class="ranking-badge">#${index + 1}</div>
@@ -823,6 +961,8 @@ function pintarResultados(resultados) {
                 </div>
 
                 <div class="beach-summary-right">
+                <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
+                <span class="expand-hint" aria-hidden="true">+</span>
                     <button class="favorite-btn" data-id="${playa.beach_id}">
                         ${playa.isFavorite ? '❤️' : '🤍'}
                     </button>
@@ -863,7 +1003,9 @@ function formatearServicios(servicios) {
         restaurantes: "🍽️ Restaurantes",
         comida_para_llevar: "🥡 Comida para llevar",
         balneario: "🚿 Balneario",
-        zona_deportiva: "🏐 Zona deportiva"
+        zona_deportiva: "🏐 Zona deportiva",
+        escuela_surf: "🏄 Escuela de surf",
+        escuela_windsurf: "🌬️ Escuela de windsurf"
     };
 
     return Object.entries(servicios)
@@ -1006,13 +1148,20 @@ function logout() {
 
 function actualizarBotonesSesion() {
     const token = localStorage.getItem("token");
+    const estaLogueado = Boolean(token);
+
+    document.body.classList.toggle("is-authenticated", estaLogueado);
+
+    if (filtersSidebar) {
+        filtersSidebar.hidden = !estaLogueado;
+    }
     const cantidadContainer = document.querySelector(".cantidad-wheel-container");
 
     if (!authActionBtn || !authActionIcon) {
         return;
     }
 
-    if (token) {
+    if (estaLogueado) {
         authActionBtn.hidden = false;
         authActionBtn.setAttribute("aria-label", "Preferencias");
         authActionIcon.className = "bi bi-person-circle";
@@ -1151,6 +1300,44 @@ if (expandResultsPreference) {
     });
 }
 
+[filterSandBeach, filterStoneBeach, filterFoodPlaces, filterSurfSchool, filterWindsurfSchool].forEach(filterInput => {
+    if (!filterInput) {
+        return;
+    }
+
+    filterInput.addEventListener("change", limpiarResultadosPorCambioDeFiltros);
+});
+
+[filterWindMin, filterWindMax].forEach(filterInput => {
+    if (!filterInput) {
+        return;
+    }
+
+    filterInput.addEventListener("input", () => {
+        actualizarFiltroVientoUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+});
+
+if (filterWindReset) {
+    filterWindReset.addEventListener("change", () => {
+        if (!filterWindReset.checked) {
+            return;
+        }
+
+        restablecerFiltroViento();
+        limpiarResultadosPorCambioDeFiltros();
+        filterWindReset.checked = false;
+    });
+}
+
+if (filterWindDisabled) {
+    filterWindDisabled.addEventListener("change", () => {
+        actualizarFiltroVientoUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+}
+
 if (preferencesLogoutBtn) {
     preferencesLogoutBtn.addEventListener("click", () => {
         logout();
@@ -1171,10 +1358,19 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
+window.addEventListener("resize", actualizarAlturaHeader);
+
+if (appHeader && "ResizeObserver" in window) {
+    const headerObserver = new ResizeObserver(actualizarAlturaHeader);
+    headerObserver.observe(appHeader);
+}
+
 // =========================================================
 // ARRANQUE
 // =========================================================
 
+actualizarAlturaHeader();
+actualizarFiltroVientoUI();
 cargarPreferenciasUI();
 
 

@@ -25,7 +25,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": true,
-      "zona_deportiva": true
+      "zona_deportiva": true,
+      "escuela_surf": true,
+      "escuela_windsurf": false
     },
     "imagen": "las_canteras.jpg",
     "accesibilidad": "alta"
@@ -52,7 +54,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": true,
+      "escuela_windsurf": false
     },
     "imagen": "maspalomas.jpg",
     "accesibilidad": "alta"
@@ -75,7 +79,9 @@
       "restaurantes": false,
       "comida_para_llevar": false,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "el_confital.jpg",
     "accesibilidad": "media"
@@ -98,7 +104,9 @@
       "restaurantes": false,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": true,
+      "escuela_windsurf": true
     },
     "imagen": "pozo_izquierdo.jpg",
     "accesibilidad": "media"
@@ -125,7 +133,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "amadores.jpg",
     "accesibilidad": "alta"
@@ -152,7 +162,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": true
+      "zona_deportiva": true,
+      "escuela_surf": true,
+      "escuela_windsurf": false
     },
     "imagen": "playa_del_ingles.jpg",
     "accesibilidad": "alta"
@@ -179,7 +191,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "puerto_rico.jpg",
     "accesibilidad": "alta"
@@ -206,7 +220,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "anfi_del_mar.jpg",
     "accesibilidad": "alta"
@@ -233,7 +249,9 @@
       "restaurantes": true,
       "comida_para_llevar": false,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "sardina_del_norte.jpg",
     "accesibilidad": "media"
@@ -260,7 +278,9 @@
       "restaurantes": false,
       "comida_para_llevar": false,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": true,
+      "escuela_windsurf": false
     },
     "imagen": "la_laja.jpg",
     "accesibilidad": "media"
@@ -291,7 +311,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "melenara.jpg",
     "accesibilidad": "alta"
@@ -322,7 +344,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "la_garita.jpg",
     "accesibilidad": "alta"
@@ -353,7 +377,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "meloneras.jpg",
     "accesibilidad": "alta"
@@ -376,7 +402,9 @@
       "restaurantes": false,
       "comida_para_llevar": false,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "playa_del_cabron.jpg",
     "accesibilidad": "baja"
@@ -407,7 +435,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "salinetas.jpg",
     "accesibilidad": "alta"
@@ -438,7 +468,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": true,
+      "escuela_windsurf": false
     },
     "imagen": "san_agustin.jpg",
     "accesibilidad": "alta"
@@ -469,7 +501,9 @@
       "restaurantes": true,
       "comida_para_llevar": true,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "arinaga.jpg",
     "accesibilidad": "alta"
@@ -496,7 +530,9 @@
       "restaurantes": false,
       "comida_para_llevar": false,
       "balneario": false,
-      "zona_deportiva": false
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false
     },
     "imagen": "tufia.jpg",
     "accesibilidad": "media"
