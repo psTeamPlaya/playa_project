@@ -73,6 +73,42 @@
             <span>Piedra</span>
           </label>
         </fieldset>
+
+        <fieldset class="filter-group">
+          <legend>Servicios</legend>
+          <label class="filter-option">
+            <input type="checkbox" id="filterFoodPlaces" value="sitios_para_comer">
+            <span>Sitios para comer</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" id="filterSurfSchool" value="escuela_surf">
+            <span>Escuela de surf</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" id="filterWindsurfSchool" value="escuela_windsurf">
+            <span>Escuela de windsurf</span>
+          </label>
+        </fieldset>
+
+        <fieldset class="filter-group dynamic-filter-group">
+          <legend>Velocidad del viento</legend>
+          <div class="range-values">
+            <span><strong id="windMinValue">5</strong> km/h</span>
+            <span><strong id="windMaxValue">15</strong> km/h</span>
+          </div>
+          <div class="dual-range" id="windRangeTrack">
+            <input type="range" id="filterWindMin" min="0" max="60" step="1" value="5" aria-label="Viento minimo">
+            <input type="range" id="filterWindMax" min="0" max="60" step="1" value="15" aria-label="Viento maximo">
+          </div>
+          <label class="filter-option filter-compact-option">
+            <input type="checkbox" id="filterWindReset">
+            <span>Restablecer filtro</span>
+          </label>
+          <label class="filter-option filter-compact-option">
+            <input type="checkbox" id="filterWindDisabled">
+            <span>Desactivar filtro</span>
+          </label>
+        </fieldset>
       </div>
     </aside>
 

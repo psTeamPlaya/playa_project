@@ -122,7 +122,7 @@
     .filter-group {
         display: grid;
         gap: 0.8rem;
-        margin: 0;
+        margin: 0 0 1.5rem;
         padding: 0;
         border: 0;
     }
@@ -146,6 +146,99 @@
         width: 1.1rem;
         height: 1.1rem;
         accent-color: var(--primary);
+    }
+
+    .dynamic-filter-group {
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .range-values {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        color: var(--primary-dark);
+        font-size: 1.05rem;
+    }
+
+    .dual-range {
+        --range-min: 8.333%;
+        --range-max: 25%;
+        position: relative;
+        height: 2.4rem;
+        display: grid;
+        align-items: center;
+    }
+
+    .dual-range::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 0.5rem;
+        border-radius: 999px;
+        background: linear-gradient(
+            to right,
+            #e8eef5 0%,
+            #e8eef5 var(--range-min),
+            var(--secondary) var(--range-min),
+            var(--secondary) var(--range-max),
+            #e8eef5 var(--range-max),
+            #e8eef5 100%
+        );
+    }
+
+    .dual-range input {
+        position: absolute;
+        width: 100%;
+        margin: 0;
+        background: transparent;
+        pointer-events: none;
+        appearance: none;
+    }
+
+    .dual-range input::-webkit-slider-runnable-track {
+        height: 0.5rem;
+        background: transparent;
+    }
+
+    .dual-range input::-webkit-slider-thumb {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: -0.38rem;
+        border: 3px solid #ffffff;
+        border-radius: 999px;
+        background: var(--primary);
+        box-shadow: 0 3px 10px rgba(2, 62, 138, 0.24);
+        cursor: pointer;
+        pointer-events: auto;
+        appearance: none;
+    }
+
+    .dual-range input::-moz-range-track {
+        height: 0.5rem;
+        background: transparent;
+    }
+
+    .dual-range input::-moz-range-thumb {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 3px solid #ffffff;
+        border-radius: 999px;
+        background: var(--primary);
+        box-shadow: 0 3px 10px rgba(2, 62, 138, 0.24);
+        cursor: pointer;
+        pointer-events: auto;
+    }
+
+    .dual-range.is-disabled {
+        opacity: 0.45;
+    }
+
+    .filter-compact-option {
+        padding: 0.45rem 0;
+        border-bottom: 0;
+        font-size: 1rem;
     }
 
     .panel {

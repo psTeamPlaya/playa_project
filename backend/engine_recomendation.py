@@ -545,13 +545,14 @@ def cumple_filtros_estaticos_adicionales(
     zona_beachvolley: bool | None = None,
     zona_deportiva: bool | None = None,
     escuela_kayak: bool | None = None,
+    sitios_para_comer: bool | None = None,
     restaurantes: bool | None = None,
     comida_para_llevar: bool | None = None,
 ) -> bool:
-    if escuela_surf and not playa_tiene_actividad(playa, "surf"):
+    if escuela_surf and not playa_tiene_servicio(playa, "escuela_surf"):
         return False
 
-    if escuela_windsurf and not playa_tiene_actividad(playa, "windsurf"):
+    if escuela_windsurf and not playa_tiene_servicio(playa, "escuela_windsurf"):
         return False
 
     if escuela_kayak and not playa_tiene_actividad(playa, "kayak"):
@@ -561,6 +562,12 @@ def cumple_filtros_estaticos_adicionales(
         return False
 
     if zona_deportiva and not playa_tiene_servicio(playa, "zona_deportiva"):
+        return False
+
+    if sitios_para_comer and not (
+        playa_tiene_servicio(playa, "restaurantes")
+        or playa_tiene_servicio(playa, "comida_para_llevar")
+    ):
         return False
 
     if restaurantes and not playa_tiene_servicio(playa, "restaurantes"):
@@ -617,6 +624,7 @@ def filtrar_resultados_recomendacion(
     zona_beachvolley: bool | None = None,
     zona_deportiva: bool | None = None,
     escuela_kayak: bool | None = None,
+    sitios_para_comer: bool | None = None,
     restaurantes: bool | None = None,
     comida_para_llevar: bool | None = None,
     min_temperatura_ambiente: float | None = None,
@@ -645,6 +653,7 @@ def filtrar_resultados_recomendacion(
             zona_beachvolley=zona_beachvolley,
             zona_deportiva=zona_deportiva,
             escuela_kayak=escuela_kayak,
+            sitios_para_comer=sitios_para_comer,
             restaurantes=restaurantes,
             comida_para_llevar=comida_para_llevar,
         ):
@@ -684,6 +693,7 @@ def recomendar_playas(
     zona_beachvolley: bool | None = None,
     zona_deportiva: bool | None = None,
     escuela_kayak: bool | None = None,
+    sitios_para_comer: bool | None = None,
     restaurantes: bool | None = None,
     comida_para_llevar: bool | None = None,
     min_temperatura_ambiente: float | None = None,
@@ -742,6 +752,7 @@ def recomendar_playas(
         zona_beachvolley=zona_beachvolley,
         zona_deportiva=zona_deportiva,
         escuela_kayak=escuela_kayak,
+        sitios_para_comer=sitios_para_comer,
         restaurantes=restaurantes,
         comida_para_llevar=comida_para_llevar,
         min_temperatura_ambiente=min_temperatura_ambiente,
