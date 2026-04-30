@@ -2,7 +2,6 @@ import base64
 import hashlib
 import bcrypt
 
-from passlib.context import CryptContext
 from jose import JWTError, jwt
 from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
