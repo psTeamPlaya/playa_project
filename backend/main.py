@@ -51,14 +51,25 @@ def obtener_recomendaciones(actividad: str, fecha: str, hora: str, lat: float, l
         except SunlightError:
             aviso_sol = None
 
-        if aviso_sol is not None:
-            return {
-                "actividad": actividad,
-                "fecha": fecha,
-                "hora": hora,
-                "resultados": [],
-                "aviso_sol": aviso_sol,
-            }
+        resultados = recomendar_playas(
+            actividad=actividad,
+            fecha=fecha,
+            hora=hora,
+            lat_usuario=lat,
+            lon_usuario=lon,
+            radio_km=radius,
+            top_n=limit
+        )
+
+
+        #if aviso_sol is not None:
+        #    return {
+        #        "actividad": actividad,
+        #        "fecha": fecha,
+        #        "hora": hora,
+        #        "resultados": [],
+        #        "aviso_sol": aviso_sol,
+        #    }
 
         resultados = recomendar_playas(
             actividad=actividad,
