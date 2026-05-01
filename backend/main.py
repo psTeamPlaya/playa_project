@@ -1,3 +1,4 @@
+#TODO: when choose location, show something to indicates progess to the user.
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
