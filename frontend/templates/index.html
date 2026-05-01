@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mi dia de Playa</title>
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
-  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="/static/css/styles.css?v=location-layout">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +19,7 @@
         <section class="auth-container">
           <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
             <span class="auth-trigger-icon" aria-hidden="true">
-              <i class="bi bi-box-arrow-in-left" id="authActionIcon"></i>
+              <i class="bi bi-box-arrow-in-right" id="authActionIcon"></i>
             </span>
           </button>
           <div class="preferences-panel" id="preferencesPanel" hidden>
@@ -108,7 +108,7 @@
 
   <main class="app-main">
     <section class="panel">
-      <h2>1. Que quieres hacer en tu dia de playa?</h2>
+      <h2>1. ¿Qué quieres hacer en tu dia de playa?</h2>
       <div class="activities-grid" id="activitiesGrid">
         <div class="activity-card" data-activity="tomar_sol">
           <span class="activity-icon">☀️</span>
@@ -143,7 +143,7 @@
     </section>
 
     <section class="panel">
-      <h2>2. Cuando tienes pensado ir?</h2>
+      <h2>2. ¿Cuándo quieres ir a la playa?</h2>
 
       <div class="form-grid">
         <div class="field">
@@ -173,15 +173,15 @@
       </div>
     </section>
 
-    <section class="panel">
-      <h2>3. ¿Dónde quieres ir?</h2>
-      <div class="form-grid">
+    <section class="panel location-panel">
+      <h2>3. Elige tu ubicación</h2>
+      <div class="form-grid location-grid">
         <div class="field">
           <label for="locationInput">Ciudad / Ubicación</label>
           <input type="text" id="locationInput" placeholder="Ej: Las Palmas">
           <div id="suggestions" class="suggestions-dropdown"></div>
         </div>
-        <div class="field">
+        <div class="field range-field">
       <label>Rango de búsqueda:</label>
         <div class="range-selector">
             <input type="radio" id="rango5" name="rango" value="5" checked>
@@ -194,14 +194,14 @@
             <label for="rango50">50 km</label>
         </div>
       </div>
-        <div class="actions">
+        <div class="actions location-actions">
           <button class="btn-secondary" id="btnGeolocalizar">📍 Mi ubicación</button>
-          <button class="btn-secondary" id="btnMapa">🗺️ Elegir en mapa</button>
+          <button class="btn-secondary" id="btnMapa">🗺️ Elige una ubicación</button>
         </div>
       </div>
       <div id="locationHistory" class="mini-chip-container"></div>
 
-      <div class="actions">
+      <div class="actions search-actions">
         <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
       </div>
       <div class="sun-alert" id="sunAlert" hidden></div>
