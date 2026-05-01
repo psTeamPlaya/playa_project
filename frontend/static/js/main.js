@@ -1063,7 +1063,7 @@ function actualizarBotonesSesion() {
         return;
     }
 
-    authActionIcon.className = "bi bi-box-arrow-in-left";
+    authActionIcon.className = "bi bi-box-arrow-in-right";
     authActionBtn.hidden = false;
     authActionBtn.setAttribute("aria-label", "Acceder");
     cerrarPanelPreferencias();
