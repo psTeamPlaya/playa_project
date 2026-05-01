@@ -1,5 +1,6 @@
 import { login } from "./auth/login.js";
 import { registerUser } from "./auth/register.js";
+import { selectedCoords } from "./localization.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -280,6 +281,11 @@ function restablecerFiltroViento() {
     actualizarFiltroVientoUI();
 }
 
+const cantidadWheel = document.getElementById("cantidadWheel");
+
+let cantidadSeleccionada = "3";
+let cantidadOptions = [];
+
 // =========================================================
 // UTILIDADES DE FECHA Y HORA
 // =========================================================
@@ -375,7 +381,7 @@ function renderizarWheelHoras(fechaTexto) {
         .map(hora => `<div class="hour-option" data-hour="${hora}">${hora}</div>`)
         .join("");
 
-    hourOptions = [...document.querySelectorAll(".hour-option")];
+    hourOptions = [...hourWheel.querySelectorAll(".hour-option")];
 
     hourOptions.forEach(option => {
         option.addEventListener("click", () => {
@@ -405,6 +411,40 @@ function renderizarWheelHoras(fechaTexto) {
         fijarHoraInicial(horaSeleccionada);
         guardarHorarioRecordado();
     }
+}
+
+function renderizarWheelCantidad() {
+    const cantidades = [];
+
+    for (let i = 1; i <= 10; i++) {
+        cantidades.push(String(i));
+    }
+
+    // 👇 añadimos opción especial
+    cantidades.push("all");
+
+    cantidadWheel.innerHTML = cantidades
+        .map(num => {
+            const label = num === "all" ? "+10" : num;
+            return `<div class="hour-option" data-value="${num}">${label}</div>`;
+        })
+        .join("");
+
+    cantidadOptions = [...cantidadWheel.querySelectorAll(".hour-option")];
+
+    cantidadOptions.forEach(option => {
+        option.addEventListener("click", () => {
+            option.scrollIntoView({
+                block: "center",
+                behavior: "smooth"
+            });
+
+            cantidadSeleccionada = option.dataset.value;
+            setTimeout(actualizarCantidadActiva, 150);
+        });
+    });
+
+    fijarCantidadInicial(cantidadSeleccionada);
 }
 
 function esFechaHoy(fechaTexto) {
@@ -608,6 +648,81 @@ function fijarHoraInicial(valor = "12:00") {
 }
 
 // =========================================================
+// RUEDA DE CANTIDAD
+// =========================================================
+
+function actualizarCantidadActiva() {
+    const wheelRect = cantidadWheel.getBoundingClientRect();
+    const wheelCenter = wheelRect.top + wheelRect.height / 2;
+
+    let opcionMasCercana = null;
+    let distanciaMinima = Infinity;
+
+    cantidadOptions.forEach(option => {
+        const rect = option.getBoundingClientRect();
+        const optionCenter = rect.top + rect.height / 2;
+        const distancia = Math.abs(wheelCenter - optionCenter);
+
+        option.classList.remove("active", "near");
+
+        if (distancia < distanciaMinima) {
+            distanciaMinima = distancia;
+            opcionMasCercana = option;
+        }
+    });
+
+    cantidadOptions.forEach(option => {
+        const rect = option.getBoundingClientRect();
+        const optionCenter = rect.top + rect.height / 2;
+        const distancia = Math.abs(wheelCenter - optionCenter);
+
+        if (distancia < 18) {
+            option.classList.add("active");
+        } else if (distancia < 54) {
+            option.classList.add("near");
+        }
+    });
+
+    if (opcionMasCercana) {
+        cantidadSeleccionada = opcionMasCercana.dataset.value;
+    }
+}
+
+let scrollCantidadTimeout;
+
+cantidadWheel.addEventListener("scroll", () => {
+    actualizarCantidadActiva();
+
+    clearTimeout(scrollCantidadTimeout);
+    scrollCantidadTimeout = setTimeout(() => {
+        const activa = cantidadOptions.find(o => o.classList.contains("active"));
+
+        if (activa) {
+            activa.scrollIntoView({
+                block: "center",
+                behavior: "smooth"
+            });
+
+            cantidadSeleccionada = activa.dataset.value;
+        }
+    }, 120);
+});
+
+function fijarCantidadInicial(valor = "3") {
+    const option = cantidadWheel.querySelector(`[data-value="${valor}"]`);
+
+    if (option) {
+        option.scrollIntoView({
+            block: "center",
+            behavior: "auto"
+        });
+
+        cantidadSeleccionada = valor;
+        setTimeout(actualizarCantidadActiva, 50);
+    }
+}
+
+// =========================================================
 // EVENTOS DE ACTIVIDAD Y FECHA
 // =========================================================
 
@@ -678,11 +793,29 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
+        const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
+        const rango = radioSeleccionado ? radioSeleccionado.value : "5";
+        const cantidad = cantidadSeleccionada === "all"
+            ? 100
+            : Number(cantidadSeleccionada) || 3;
+
         const params = new URLSearchParams({
             actividad: actividadSeleccionada,
             fecha,
-            hora
+            hora,
+            radius: rango,
+            limit: String(cantidad)
         });
+
+        if (selectedCoords) {
+            const [lon, lat] = selectedCoords;
+            params.set("lat", String(lat));
+            params.set("lon", String(lon));
+        } else {
+            statusEl.textContent = "Introduce informacion de localizacion.";
+            return;
+        }
+
         aplicarFiltrosAParametros(params);
 
         const url = `/recomendaciones?${params.toString()}`;
@@ -911,6 +1044,9 @@ function actualizarBotonesSesion() {
     const estaLogueado = Boolean(token);
 
     document.body.classList.toggle("is-authenticated", estaLogueado);
+    document.querySelectorAll(".loggedIn").forEach(element => {
+        element.classList.toggle("hidden", !estaLogueado);
+    });
 
     if (filtersSidebar) {
         filtersSidebar.hidden = !estaLogueado;
@@ -1124,4 +1260,5 @@ if (document.getElementById("fecha")) {
     configurarFechaYHoraIniciales();
 }
 loadCurrentUser();
+renderizarWheelCantidad();
 actualizarBotonesSesion();

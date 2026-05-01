@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import math
 import unicodedata
 from pathlib import Path
 from typing import Any
@@ -13,6 +15,8 @@ from backend.weather_provider import OpenMeteoError, obtener_condiciones_open_me
 BASE_DIR = Path(__file__).resolve().parent
 PLAYAS_FILE = BASE_DIR / "playas.json"
 CONDICIONES_FILE = BASE_DIR / "condiciones_playas.json"
+
+logger = logging.getLogger(__name__)
 
 
 # =========================================================
@@ -681,10 +685,27 @@ def filtrar_resultados_recomendacion(
 # RECOMENDACIÓN PRINCIPAL
 # =========================================================
 
+def calcular_distancia_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    radio_tierra_km = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(math.radians(lat1))
+        * math.cos(math.radians(lat2))
+        * math.sin(dlon / 2) ** 2
+    )
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return radio_tierra_km * c
+
+
 def recomendar_playas(
     actividad: str,
     fecha: str,
     hora: str,
+    lat_usuario: float | None = None,
+    lon_usuario: float | None = None,
+    radio_km: int | None = None,
     top_n: int = 3,
     tipo_arena: bool | None = None,
     tipo_piedra: bool | None = None,
@@ -711,6 +732,22 @@ def recomendar_playas(
     resultados: list[dict[str, Any]] = []
 
     for playa in playas:
+        if lat_usuario is not None and lon_usuario is not None and radio_km is not None:
+            distancia = calcular_distancia_km(
+                lat_usuario,
+                lon_usuario,
+                float(playa["latitud"]),
+                float(playa["longitud"]),
+            )
+
+            if distancia > radio_km:
+                logger.debug(
+                    "Playa '%s' descartada por distancia: %.2f km",
+                    playa["nombre"],
+                    distancia,
+                )
+                continue
+
         condicion = buscar_condicion(
             condiciones=condiciones,
             beach_id=playa["id"],
