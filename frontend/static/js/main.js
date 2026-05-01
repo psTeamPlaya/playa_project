@@ -51,6 +51,9 @@ let horaSeleccionada = "";
 let authMode = "login";
 let preferencesCloseTimeout;
 
+const DEFAULT_ACTIVITY = "tomar_sol";
+const DEFAULT_QUANTITY = "3";
+
 const WIND_FILTER_DEFAULTS = {
     min: 5,
     max: 15
@@ -152,7 +155,7 @@ function obtenerActividadInicial() {
         return actividadGuardada;
     }
 
-    return "tomar_sol";
+    return DEFAULT_ACTIVITY;
 }
 
 function obtenerHorarioInicial() {
@@ -283,7 +286,7 @@ function restablecerFiltroViento() {
 
 const cantidadWheel = document.getElementById("cantidadWheel");
 
-let cantidadSeleccionada = "3";
+let cantidadSeleccionada = DEFAULT_QUANTITY;
 let cantidadOptions = [];
 
 // =========================================================
@@ -324,7 +327,7 @@ function actualizarTextoFecha() {
 
 function obtenerHoraMinimaPermitida() {
     const ahora = new Date();
-    const hora = ahora.getHours();
+        const hora = ahora.getHours();
     const minutos = ahora.getMinutes();
 
     if (minutos === 0) {
@@ -708,7 +711,7 @@ cantidadWheel.addEventListener("scroll", () => {
     }, 120);
 });
 
-function fijarCantidadInicial(valor = "3") {
+function fijarCantidadInicial(valor = DEFAULT_QUANTITY) {
     const option = cantidadWheel.querySelector(`[data-value="${valor}"]`);
 
     if (option) {
