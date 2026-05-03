@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, Boolean, DECIMAL
+from sqlalchemy.orm import relationship
 from backend.db import Base
 
 class Beach(Base):
@@ -13,3 +14,5 @@ class Beach(Base):
     longitude = Column(DECIMAL, nullable=False)
     accessibility = Column(Boolean)
     image = Column(String)
+
+    services = relationship("Service", secondary="beach_services", back_populates="beaches")
