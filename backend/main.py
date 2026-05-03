@@ -4,7 +4,9 @@ from fastapi.staticfiles import StaticFiles
 
 import backend.models       # NO BORRAR, SE USA AUNQUE PONGA QUE NO
 from backend.config import settings
-from backend.routes import api_router, views_router, auth_router, users_router, services_router 
+from backend.routes import (api_router, views_router, auth_router, users_router, 
+                            services_router, activities_router, variables_router,  
+                            beach_conditions_router)
 from backend.engine_recomendation import recomendar_playas
 from backend.db import engine
 from contextlib import asynccontextmanager
@@ -22,12 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "frontend" / "static"
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-app.include_router(api_router)
-app.include_router(views_router)
-app.include_router(auth_router)
-app.include_router(users_router)
-app.include_router(services_router)
-# app.include_router(fav_router)
+
+routers = [api_router, views_router, 
+           auth_router, users_router, 
+           services_router, activities_router,
+           variables_router, beach_conditions_router]
+
+for router in routers:
+    app.include_router(router)
 
 @app.get("/")
 def inicio():
