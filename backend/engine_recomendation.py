@@ -1,16 +1,23 @@
 from __future__ import annotations
 
 import json
+import unicodedata
 from pathlib import Path
 from typing import Any
+import math
+import logging
 
 from backend.config import settings
+from backend.db import SessionLocal
+from backend.models.beach import Beach
 from backend.weather_provider import OpenMeteoError, obtener_condiciones_open_meteo
 
 BASE_DIR = Path(__file__).resolve().parent
 PLAYAS_FILE = BASE_DIR / "playas.json"
 CONDICIONES_FILE = BASE_DIR / "condiciones_playas.json"
 
+
+logger = logging.getLogger(__name__)
 
 # =========================================================
 # CARGA DE DATOS
@@ -22,11 +29,105 @@ def cargar_json(ruta: Path) -> list[dict[str, Any]]:
 
 
 def cargar_playas() -> list[dict[str, Any]]:
-    return cargar_json(PLAYAS_FILE)
+    playas_locales = cargar_json(PLAYAS_FILE)
+    playas_db = cargar_playas_desde_db()
+
+    if not playas_db:
+        return playas_locales
+
+    return fusionar_playas(playas_locales, playas_db)
 
 
 def cargar_condiciones() -> list[dict[str, Any]]:
     return cargar_json(CONDICIONES_FILE)
+
+
+def _normalizar_identificador_texto(valor: str | None) -> str:
+    if not valor:
+        return ""
+
+    normalizado = unicodedata.normalize("NFKD", valor)
+    ascii_only = normalizado.encode("ascii", "ignore").decode("ascii")
+    return " ".join(ascii_only.lower().split())
+
+
+def cargar_playas_desde_db() -> list[dict[str, Any]]:
+    session = SessionLocal()
+
+    try:
+        playas = session.query(Beach).order_by(Beach.id.asc()).all()
+    except Exception:
+        return []
+    finally:
+        session.close()
+
+    return [
+        {
+            "id": playa.id,
+            "nombre": playa.name,
+            "ubicacion": playa.location,
+            "latitud": float(playa.latitude),
+            "longitud": float(playa.longitude),
+            "tipo": playa.type,
+            "descripcion": playa.description,
+            "imagen": playa.image,
+            "accesibilidad": playa.accessibility,
+        }
+        for playa in playas
+    ]
+
+
+def fusionar_playas(
+    playas_locales: list[dict[str, Any]],
+    playas_db: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    playas_por_id = {
+        playa["id"]: dict(playa)
+        for playa in playas_locales
+    }
+    playas_por_nombre = {
+        _normalizar_identificador_texto(playa.get("nombre")): playa["id"]
+        for playa in playas_locales
+    }
+
+    siguiente_id = max(playas_por_id, default=0) + 1
+
+    for playa_db in playas_db:
+        beach_id = playa_db.get("id")
+        playa_local = playas_por_id.get(beach_id)
+
+        if playa_local is None:
+            nombre_normalizado = _normalizar_identificador_texto(playa_db.get("nombre"))
+            playa_local_id = playas_por_nombre.get(nombre_normalizado)
+            playa_local = playas_por_id.get(playa_local_id) if playa_local_id is not None else None
+
+        if playa_local is None:
+            playa_nueva = {
+                "id": beach_id if beach_id is not None else siguiente_id,
+                "nombre": playa_db.get("nombre") or "Playa sin nombre",
+                "ubicacion": playa_db.get("ubicacion") or "",
+                "latitud": playa_db.get("latitud"),
+                "longitud": playa_db.get("longitud"),
+                "tipo": playa_db.get("tipo") or "desconocido",
+                "descripcion": playa_db.get("descripcion") or "",
+                "actividades_ideales": [],
+                "servicios": {},
+                "imagen": playa_db.get("imagen") or "",
+                "accesibilidad": playa_db.get("accesibilidad"),
+            }
+            playas_por_id[playa_nueva["id"]] = playa_nueva
+            playas_por_nombre[_normalizar_identificador_texto(playa_nueva["nombre"])] = playa_nueva["id"]
+            siguiente_id = max(siguiente_id, playa_nueva["id"] + 1)
+            continue
+
+        for campo, valor in playa_db.items():
+            if valor is not None:
+                playa_local[campo] = valor
+
+    return [
+        playas_por_id[beach_id]
+        for beach_id in sorted(playas_por_id)
+    ]
 
 
 def cargar_condiciones_locales_filtradas(fecha: str, hora: str) -> list[dict[str, Any]]:
@@ -59,12 +160,12 @@ def cargar_condiciones_para_busqueda(
         return condiciones_locales
 
     condiciones_por_playa = {
-        condicion["playa_id"]: condicion
+        condicion["beach_id"]: condicion
         for condicion in condiciones_remotas
     }
 
     for condicion_local in condiciones_locales:
-        condiciones_por_playa.setdefault(condicion_local["playa_id"], condicion_local)
+        condiciones_por_playa.setdefault(condicion_local["beach_id"], condicion_local)
 
     return list(condiciones_por_playa.values())
 
@@ -117,13 +218,13 @@ def puntuacion_categorica(valor: str, mapa: dict[str, float]) -> float:
 
 def buscar_condicion(
     condiciones: list[dict[str, Any]],
-    playa_id: int,
+    beach_id: int,
     fecha: str,
     hora: str
 ) -> dict[str, Any] | None:
     for c in condiciones:
         if (
-            c["playa_id"] == playa_id
+            c["beach_id"] == beach_id
             and c["fecha"] == fecha
             and c["hora"] == hora
         ):
@@ -408,6 +509,179 @@ def calcular_score_final(
 
 
 # =========================================================
+# FILTROS DE RECOMENDACION
+# =========================================================
+
+def cumple_filtro_tipo(
+    tipo_playa: str,
+    tipo_arena: bool | None = None,
+    tipo_piedra: bool | None = None,
+) -> bool:
+    tipo_normalizado = tipo_playa.lower()
+    tipos_permitidos: set[str] = set()
+
+    if tipo_arena:
+        tipos_permitidos.add("arena")
+
+    if tipo_piedra:
+        tipos_permitidos.add("piedra")
+
+    if not tipos_permitidos:
+        return True
+
+    return tipo_normalizado in tipos_permitidos
+
+
+def playa_tiene_actividad(playa: dict[str, Any], actividad: str) -> bool:
+    actividades_ideales = playa.get("actividades_ideales", [])
+    return any(item.get("actividad") == actividad for item in actividades_ideales)
+
+
+def playa_tiene_servicio(playa: dict[str, Any], servicio: str) -> bool:
+    servicios = playa.get("servicios", {})
+    return bool(servicios.get(servicio))
+
+
+def cumple_filtros_estaticos_adicionales(
+    playa: dict[str, Any],
+    escuela_surf: bool | None = None,
+    escuela_windsurf: bool | None = None,
+    zona_beachvolley: bool | None = None,
+    zona_deportiva: bool | None = None,
+    escuela_kayak: bool | None = None,
+    sitios_para_comer: bool | None = None,
+    restaurantes: bool | None = None,
+    comida_para_llevar: bool | None = None,
+) -> bool:
+    if escuela_surf and not playa_tiene_servicio(playa, "escuela_surf"):
+        return False
+
+    if escuela_windsurf and not playa_tiene_servicio(playa, "escuela_windsurf"):
+        return False
+
+    if escuela_kayak and not playa_tiene_actividad(playa, "kayak"):
+        return False
+
+    if zona_beachvolley and not playa_tiene_servicio(playa, "zona_deportiva"):
+        return False
+
+    if zona_deportiva and not playa_tiene_servicio(playa, "zona_deportiva"):
+        return False
+
+    if sitios_para_comer and not (
+        playa_tiene_servicio(playa, "restaurantes")
+        or playa_tiene_servicio(playa, "comida_para_llevar")
+    ):
+        return False
+
+    if restaurantes and not playa_tiene_servicio(playa, "restaurantes"):
+        return False
+
+    if comida_para_llevar and not playa_tiene_servicio(playa, "comida_para_llevar"):
+        return False
+
+    return True
+
+
+def cumple_filtros_dinamicos(
+    condicion: dict[str, Any],
+    min_temperatura_ambiente: float | None = None,
+    max_temperatura_ambiente: float | None = None,
+    min_nubosidad: float | None = None,
+    max_nubosidad: float | None = None,
+    min_velocidad_viento: float | None = None,
+    max_velocidad_viento: float | None = None,
+    min_altura_oleaje: float | None = None,
+    max_altura_oleaje: float | None = None,
+) -> bool:
+    filtros = (
+        ("temperatura_ambiente", min_temperatura_ambiente, max_temperatura_ambiente),
+        ("nubosidad", min_nubosidad, max_nubosidad),
+        ("velocidad_viento", min_velocidad_viento, max_velocidad_viento),
+        ("altura_oleaje", min_altura_oleaje, max_altura_oleaje),
+    )
+
+    for variable, minimo, maximo in filtros:
+        if minimo is None and maximo is None:
+            continue
+
+        valor = condicion.get(variable)
+        if valor is None:
+            return False
+
+        valor_numerico = float(valor)
+        if minimo is not None and valor_numerico < minimo:
+            return False
+
+        if maximo is not None and valor_numerico > maximo:
+            return False
+
+    return True
+
+
+def filtrar_resultados_recomendacion(
+    resultados: list[dict[str, Any]],
+    tipo_arena: bool | None = None,
+    tipo_piedra: bool | None = None,
+    escuela_surf: bool | None = None,
+    escuela_windsurf: bool | None = None,
+    zona_beachvolley: bool | None = None,
+    zona_deportiva: bool | None = None,
+    escuela_kayak: bool | None = None,
+    sitios_para_comer: bool | None = None,
+    restaurantes: bool | None = None,
+    comida_para_llevar: bool | None = None,
+    min_temperatura_ambiente: float | None = None,
+    max_temperatura_ambiente: float | None = None,
+    min_nubosidad: float | None = None,
+    max_nubosidad: float | None = None,
+    min_velocidad_viento: float | None = None,
+    max_velocidad_viento: float | None = None,
+    min_altura_oleaje: float | None = None,
+    max_altura_oleaje: float | None = None,
+) -> list[dict[str, Any]]:
+    resultados_filtrados: list[dict[str, Any]] = []
+
+    for resultado in resultados:
+        if not cumple_filtro_tipo(
+            tipo_playa=str(resultado.get("tipo", "")),
+            tipo_arena=tipo_arena,
+            tipo_piedra=tipo_piedra,
+        ):
+            continue
+
+        if not cumple_filtros_estaticos_adicionales(
+            playa=resultado,
+            escuela_surf=escuela_surf,
+            escuela_windsurf=escuela_windsurf,
+            zona_beachvolley=zona_beachvolley,
+            zona_deportiva=zona_deportiva,
+            escuela_kayak=escuela_kayak,
+            sitios_para_comer=sitios_para_comer,
+            restaurantes=restaurantes,
+            comida_para_llevar=comida_para_llevar,
+        ):
+            continue
+
+        if not cumple_filtros_dinamicos(
+            condicion=resultado.get("condiciones", {}),
+            min_temperatura_ambiente=min_temperatura_ambiente,
+            max_temperatura_ambiente=max_temperatura_ambiente,
+            min_nubosidad=min_nubosidad,
+            max_nubosidad=max_nubosidad,
+            min_velocidad_viento=min_velocidad_viento,
+            max_velocidad_viento=max_velocidad_viento,
+            min_altura_oleaje=min_altura_oleaje,
+            max_altura_oleaje=max_altura_oleaje,
+        ):
+            continue
+
+        resultados_filtrados.append(resultado)
+
+    return resultados_filtrados
+
+
+# =========================================================
 # RECOMENDACIÓN PRINCIPAL
 # =========================================================
 
@@ -415,7 +689,25 @@ def recomendar_playas(
     actividad: str,
     fecha: str,
     hora: str,
-    top_n: int = 3
+    top_n: int = 3,
+    tipo_arena: bool | None = None,
+    tipo_piedra: bool | None = None,
+    escuela_surf: bool | None = None,
+    escuela_windsurf: bool | None = None,
+    zona_beachvolley: bool | None = None,
+    zona_deportiva: bool | None = None,
+    escuela_kayak: bool | None = None,
+    sitios_para_comer: bool | None = None,
+    restaurantes: bool | None = None,
+    comida_para_llevar: bool | None = None,
+    min_temperatura_ambiente: float | None = None,
+    max_temperatura_ambiente: float | None = None,
+    min_nubosidad: float | None = None,
+    max_nubosidad: float | None = None,
+    min_velocidad_viento: float | None = None,
+    max_velocidad_viento: float | None = None,
+    min_altura_oleaje: float | None = None,
+    max_altura_oleaje: float | None = None,
 ) -> list[dict[str, Any]]:
     playas = cargar_playas()
     condiciones = cargar_condiciones_para_busqueda(playas, fecha, hora)
@@ -423,9 +715,21 @@ def recomendar_playas(
     resultados: list[dict[str, Any]] = []
 
     for playa in playas:
+        def calcular_distancia(lat1, lon1, lat2, lon2):
+            R = 6371 
+            dlat = math.radians(lat2 - lat1)
+            dlon = math.radians(lon2 - lon1)
+            a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            return R * c
+        distancia = calcular_distancia(lat_usuario, lon_usuario, playa["latitud"], playa["longitud"])
+        if distancia > radio_km:
+            logger.debug(f"Playa '{playa['nombre']}' descartada por distancia: {distancia:.2f} km")
+            continue
+
         condicion = buscar_condicion(
             condiciones=condiciones,
-            playa_id=playa["id"],
+            beach_id=playa["id"],
             fecha=fecha,
             hora=hora,
         )
@@ -440,7 +744,7 @@ def recomendar_playas(
         )
 
         resultados.append({
-            "playa_id": playa["id"],
+            "beach_id": playa["id"],
             "nombre": playa["nombre"],
             "ubicacion": playa["ubicacion"],
             "latitud": playa["latitud"],
@@ -448,14 +752,37 @@ def recomendar_playas(
             "tipo": playa["tipo"],
             "descripcion": playa["descripcion"],
             "servicios": playa["servicios"],
+            "actividades_ideales": playa.get("actividades_ideales", []),
             "score": score_final,
             "motivo": detalle["condicion_actividad"],
             "detalle_puntuacion": detalle,
             "condiciones": condicion,
         })
 
-    resultados.sort(key=lambda x: x["score"], reverse=True)
-    return resultados[:top_n]
+    resultados_filtrados = filtrar_resultados_recomendacion(
+        resultados=resultados,
+        tipo_arena=tipo_arena,
+        tipo_piedra=tipo_piedra,
+        escuela_surf=escuela_surf,
+        escuela_windsurf=escuela_windsurf,
+        zona_beachvolley=zona_beachvolley,
+        zona_deportiva=zona_deportiva,
+        escuela_kayak=escuela_kayak,
+        sitios_para_comer=sitios_para_comer,
+        restaurantes=restaurantes,
+        comida_para_llevar=comida_para_llevar,
+        min_temperatura_ambiente=min_temperatura_ambiente,
+        max_temperatura_ambiente=max_temperatura_ambiente,
+        min_nubosidad=min_nubosidad,
+        max_nubosidad=max_nubosidad,
+        min_velocidad_viento=min_velocidad_viento,
+        max_velocidad_viento=max_velocidad_viento,
+        min_altura_oleaje=min_altura_oleaje,
+        max_altura_oleaje=max_altura_oleaje,
+    )
+
+    resultados_filtrados.sort(key=lambda x: x["score"], reverse=True)
+    return resultados_filtrados[:top_n]
 
 
 # =========================================================
