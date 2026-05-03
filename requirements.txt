@@ -2,7 +2,9 @@ fastapi
 uvicorn
 sqlalchemy
 psycopg2-binary
-passlib[bcrypt]
-bcrypt<5
+bcrypt>=5
 python-jose[cryptography]
 python-dotenv
+jinja2
+requests
+fastapi-mail>=1.6.2
