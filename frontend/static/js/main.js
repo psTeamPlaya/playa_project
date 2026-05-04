@@ -32,6 +32,8 @@ const rememberSchedulePreference = document.getElementById("rememberSchedulePref
 const expandResultsPreference = document.getElementById("expandResultsPreference");
 const appHeader = document.getElementById("appHeader");
 const filtersSidebar = document.getElementById("filtersSidebar");
+const disableStaticFilters = document.getElementById("disableStaticFilters");
+const disableDynamicFilters = document.getElementById("disableDynamicFilters");
 const filterSandBeach = document.getElementById("filterSandBeach");
 const filterStoneBeach = document.getElementById("filterStoneBeach");
 const filterFoodPlaces = document.getElementById("filterFoodPlaces");
@@ -44,6 +46,27 @@ const filterWindDisabled = document.getElementById("filterWindDisabled");
 const windRangeTrack = document.getElementById("windRangeTrack");
 const windMinValue = document.getElementById("windMinValue");
 const windMaxValue = document.getElementById("windMaxValue");
+const filterCloudMin = document.getElementById("filterCloudMin");
+const filterCloudMax = document.getElementById("filterCloudMax");
+const filterCloudReset = document.getElementById("filterCloudReset");
+const filterCloudDisabled = document.getElementById("filterCloudDisabled");
+const cloudRangeTrack = document.getElementById("cloudRangeTrack");
+const cloudMinValue = document.getElementById("cloudMinValue");
+const cloudMaxValue = document.getElementById("cloudMaxValue");
+const filterTemperatureMin = document.getElementById("filterTemperatureMin");
+const filterTemperatureMax = document.getElementById("filterTemperatureMax");
+const filterTemperatureReset = document.getElementById("filterTemperatureReset");
+const filterTemperatureDisabled = document.getElementById("filterTemperatureDisabled");
+const temperatureRangeTrack = document.getElementById("temperatureRangeTrack");
+const temperatureMinValue = document.getElementById("temperatureMinValue");
+const temperatureMaxValue = document.getElementById("temperatureMaxValue");
+const filterWaveMin = document.getElementById("filterWaveMin");
+const filterWaveMax = document.getElementById("filterWaveMax");
+const filterWaveReset = document.getElementById("filterWaveReset");
+const filterWaveDisabled = document.getElementById("filterWaveDisabled");
+const waveRangeTrack = document.getElementById("waveRangeTrack");
+const waveMinValue = document.getElementById("waveMinValue");
+const waveMaxValue = document.getElementById("waveMaxValue");
 
 let hourOptions = [];
 let actividadSeleccionada = "";
@@ -51,6 +74,11 @@ let horaSeleccionada = "";
 let authMode = "login";
 let preferencesCloseTimeout;
 let windResetLightTimeout;
+let cloudResetLightTimeout;
+let temperatureResetLightTimeout;
+let waveResetLightTimeout;
+let staticFiltersLightTimeout;
+let dynamicFiltersLightTimeout;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
@@ -58,6 +86,21 @@ const DEFAULT_QUANTITY = "3";
 const WIND_FILTER_DEFAULTS = {
     min: 5,
     max: 15
+};
+
+const CLOUD_FILTER_DEFAULTS = {
+    min: 5,
+    max: 20
+};
+
+const TEMPERATURE_FILTER_DEFAULTS = {
+    min: 20,
+    max: 29
+};
+
+const WAVE_FILTER_DEFAULTS = {
+    min: 0,
+    max: 1
 };
 
 const STORAGE_KEYS = {
@@ -201,6 +244,30 @@ function obtenerFiltrosViento() {
     };
 }
 
+function obtenerFiltrosNubosidad() {
+    return {
+        activo: estaSidebarFiltrosActiva() && !filterCloudDisabled?.checked,
+        min: Number(filterCloudMin?.value ?? CLOUD_FILTER_DEFAULTS.min),
+        max: Number(filterCloudMax?.value ?? CLOUD_FILTER_DEFAULTS.max)
+    };
+}
+
+function obtenerFiltrosTemperaturaAmbiente() {
+    return {
+        activo: estaSidebarFiltrosActiva() && !filterTemperatureDisabled?.checked,
+        min: Number(filterTemperatureMin?.value ?? TEMPERATURE_FILTER_DEFAULTS.min),
+        max: Number(filterTemperatureMax?.value ?? TEMPERATURE_FILTER_DEFAULTS.max)
+    };
+}
+
+function obtenerFiltrosOleaje() {
+    return {
+        activo: estaSidebarFiltrosActiva() && !filterWaveDisabled?.checked,
+        min: Number(filterWaveMin?.value ?? WAVE_FILTER_DEFAULTS.min),
+        max: Number(filterWaveMax?.value ?? WAVE_FILTER_DEFAULTS.max)
+    };
+}
+
 function aplicarFiltrosAParametros(params) {
     if (!estaSidebarFiltrosActiva()) {
         return;
@@ -233,6 +300,27 @@ function aplicarFiltrosAParametros(params) {
     if (filtrosViento.activo) {
         params.set("min_velocidad_viento", String(filtrosViento.min));
         params.set("max_velocidad_viento", String(filtrosViento.max));
+    }
+
+    const filtrosNubosidad = obtenerFiltrosNubosidad();
+
+    if (filtrosNubosidad.activo) {
+        params.set("min_nubosidad", String(filtrosNubosidad.min));
+        params.set("max_nubosidad", String(filtrosNubosidad.max));
+    }
+
+    const filtrosTemperatura = obtenerFiltrosTemperaturaAmbiente();
+
+    if (filtrosTemperatura.activo) {
+        params.set("min_temperatura_ambiente", String(filtrosTemperatura.min));
+        params.set("max_temperatura_ambiente", String(filtrosTemperatura.max));
+    }
+
+    const filtrosOleaje = obtenerFiltrosOleaje();
+
+    if (filtrosOleaje.activo) {
+        params.set("min_altura_oleaje", String(filtrosOleaje.min));
+        params.set("max_altura_oleaje", String(filtrosOleaje.max));
     }
 }
 
@@ -283,6 +371,189 @@ function restablecerFiltroViento() {
     filterWindMin.value = String(WIND_FILTER_DEFAULTS.min);
     filterWindMax.value = String(WIND_FILTER_DEFAULTS.max);
     actualizarFiltroVientoUI();
+}
+
+function actualizarFiltroNubosidadUI() {
+    if (!filterCloudMin || !filterCloudMax) {
+        return;
+    }
+
+    let min = Number(filterCloudMin.value);
+    let max = Number(filterCloudMax.value);
+
+    if (min > max) {
+        [min, max] = [max, min];
+        filterCloudMin.value = String(min);
+        filterCloudMax.value = String(max);
+    }
+
+    if (cloudMinValue) {
+        cloudMinValue.textContent = String(min);
+    }
+
+    if (cloudMaxValue) {
+        cloudMaxValue.textContent = String(max);
+    }
+
+    if (cloudRangeTrack) {
+        const minPermitido = Number(filterCloudMin.min);
+        const maxPermitido = Number(filterCloudMin.max);
+        const total = maxPermitido - minPermitido;
+        const minPorcentaje = ((min - minPermitido) / total) * 100;
+        const maxPorcentaje = ((max - minPermitido) / total) * 100;
+
+        cloudRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
+        cloudRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
+        cloudRangeTrack.classList.toggle("is-disabled", Boolean(filterCloudDisabled?.checked));
+    }
+
+    const desactivado = Boolean(filterCloudDisabled?.checked);
+    filterCloudMin.disabled = desactivado;
+    filterCloudMax.disabled = desactivado;
+}
+
+function restablecerFiltroNubosidad() {
+    if (!filterCloudMin || !filterCloudMax) {
+        return;
+    }
+
+    filterCloudMin.value = String(CLOUD_FILTER_DEFAULTS.min);
+    filterCloudMax.value = String(CLOUD_FILTER_DEFAULTS.max);
+    actualizarFiltroNubosidadUI();
+}
+
+function actualizarFiltroTemperaturaAmbienteUI() {
+    if (!filterTemperatureMin || !filterTemperatureMax) {
+        return;
+    }
+
+    let min = Number(filterTemperatureMin.value);
+    let max = Number(filterTemperatureMax.value);
+
+    if (min > max) {
+        [min, max] = [max, min];
+        filterTemperatureMin.value = String(min);
+        filterTemperatureMax.value = String(max);
+    }
+
+    if (temperatureMinValue) {
+        temperatureMinValue.textContent = String(min);
+    }
+
+    if (temperatureMaxValue) {
+        temperatureMaxValue.textContent = String(max);
+    }
+
+    if (temperatureRangeTrack) {
+        const minPermitido = Number(filterTemperatureMin.min);
+        const maxPermitido = Number(filterTemperatureMin.max);
+        const total = maxPermitido - minPermitido;
+        const minPorcentaje = ((min - minPermitido) / total) * 100;
+        const maxPorcentaje = ((max - minPermitido) / total) * 100;
+
+        temperatureRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
+        temperatureRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
+        temperatureRangeTrack.classList.toggle("is-disabled", Boolean(filterTemperatureDisabled?.checked));
+    }
+
+    const desactivado = Boolean(filterTemperatureDisabled?.checked);
+    filterTemperatureMin.disabled = desactivado;
+    filterTemperatureMax.disabled = desactivado;
+}
+
+function restablecerFiltroTemperaturaAmbiente() {
+    if (!filterTemperatureMin || !filterTemperatureMax) {
+        return;
+    }
+
+    filterTemperatureMin.value = String(TEMPERATURE_FILTER_DEFAULTS.min);
+    filterTemperatureMax.value = String(TEMPERATURE_FILTER_DEFAULTS.max);
+    actualizarFiltroTemperaturaAmbienteUI();
+}
+
+function formatearValorDecimalFiltro(valor) {
+    return Number.isInteger(valor) ? String(valor) : valor.toFixed(1);
+}
+
+function actualizarFiltroOleajeUI() {
+    if (!filterWaveMin || !filterWaveMax) {
+        return;
+    }
+
+    let min = Number(filterWaveMin.value);
+    let max = Number(filterWaveMax.value);
+
+    if (min > max) {
+        [min, max] = [max, min];
+        filterWaveMin.value = String(min);
+        filterWaveMax.value = String(max);
+    }
+
+    if (waveMinValue) {
+        waveMinValue.textContent = formatearValorDecimalFiltro(min);
+    }
+
+    if (waveMaxValue) {
+        waveMaxValue.textContent = formatearValorDecimalFiltro(max);
+    }
+
+    if (waveRangeTrack) {
+        const minPermitido = Number(filterWaveMin.min);
+        const maxPermitido = Number(filterWaveMin.max);
+        const total = maxPermitido - minPermitido;
+        const minPorcentaje = ((min - minPermitido) / total) * 100;
+        const maxPorcentaje = ((max - minPermitido) / total) * 100;
+
+        waveRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
+        waveRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
+        waveRangeTrack.classList.toggle("is-disabled", Boolean(filterWaveDisabled?.checked));
+    }
+
+    const desactivado = Boolean(filterWaveDisabled?.checked);
+    filterWaveMin.disabled = desactivado;
+    filterWaveMax.disabled = desactivado;
+}
+
+function restablecerFiltroOleaje() {
+    if (!filterWaveMin || !filterWaveMax) {
+        return;
+    }
+
+    filterWaveMin.value = String(WAVE_FILTER_DEFAULTS.min);
+    filterWaveMax.value = String(WAVE_FILTER_DEFAULTS.max);
+    actualizarFiltroOleajeUI();
+}
+
+function desactivarFiltrosEstaticos() {
+    [filterSandBeach, filterStoneBeach, filterFoodPlaces, filterSurfSchool, filterWindsurfSchool].forEach(filterInput => {
+        if (filterInput) {
+            filterInput.checked = false;
+        }
+    });
+}
+
+function desactivarFiltrosDinamicos() {
+    [filterCloudDisabled, filterTemperatureDisabled, filterWindDisabled, filterWaveDisabled].forEach(filterInput => {
+        if (filterInput) {
+            filterInput.checked = true;
+        }
+    });
+
+    actualizarFiltroNubosidadUI();
+    actualizarFiltroTemperaturaAmbienteUI();
+    actualizarFiltroVientoUI();
+    actualizarFiltroOleajeUI();
+}
+
+function iluminarChipFiltro(chip, timeoutId, onTimeoutChange) {
+    chip.classList.remove("is-lit");
+    void chip.offsetWidth;
+    chip.classList.add("is-lit");
+    clearTimeout(timeoutId);
+    const nextTimeoutId = setTimeout(() => {
+        chip.classList.remove("is-lit");
+    }, 500);
+    onTimeoutChange(nextTimeoutId);
 }
 
 const cantidadSlider = document.getElementById("cantidadSlider");
@@ -1187,6 +1458,26 @@ if (expandResultsPreference) {
     filterInput.addEventListener("change", limpiarResultadosPorCambioDeFiltros);
 });
 
+if (disableStaticFilters) {
+    disableStaticFilters.addEventListener("click", () => {
+        desactivarFiltrosEstaticos();
+        limpiarResultadosPorCambioDeFiltros();
+        iluminarChipFiltro(disableStaticFilters, staticFiltersLightTimeout, (timeoutId) => {
+            staticFiltersLightTimeout = timeoutId;
+        });
+    });
+}
+
+if (disableDynamicFilters) {
+    disableDynamicFilters.addEventListener("click", () => {
+        desactivarFiltrosDinamicos();
+        limpiarResultadosPorCambioDeFiltros();
+        iluminarChipFiltro(disableDynamicFilters, dynamicFiltersLightTimeout, (timeoutId) => {
+            dynamicFiltersLightTimeout = timeoutId;
+        });
+    });
+}
+
 [filterWindMin, filterWindMax].forEach(filterInput => {
     if (!filterInput) {
         return;
@@ -1198,23 +1489,103 @@ if (expandResultsPreference) {
     });
 });
 
+[filterCloudMin, filterCloudMax].forEach(filterInput => {
+    if (!filterInput) {
+        return;
+    }
+
+    filterInput.addEventListener("input", () => {
+        actualizarFiltroNubosidadUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+});
+
+[filterTemperatureMin, filterTemperatureMax].forEach(filterInput => {
+    if (!filterInput) {
+        return;
+    }
+
+    filterInput.addEventListener("input", () => {
+        actualizarFiltroTemperaturaAmbienteUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+});
+
+[filterWaveMin, filterWaveMax].forEach(filterInput => {
+    if (!filterInput) {
+        return;
+    }
+
+    filterInput.addEventListener("input", () => {
+        actualizarFiltroOleajeUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+});
+
 if (filterWindReset) {
     filterWindReset.addEventListener("click", () => {
         restablecerFiltroViento();
         limpiarResultadosPorCambioDeFiltros();
-        filterWindReset.classList.remove("is-lit");
-        void filterWindReset.offsetWidth;
-        filterWindReset.classList.add("is-lit");
-        clearTimeout(windResetLightTimeout);
-        windResetLightTimeout = setTimeout(() => {
-            filterWindReset.classList.remove("is-lit");
-        }, 500);
+        iluminarChipFiltro(filterWindReset, windResetLightTimeout, (timeoutId) => {
+            windResetLightTimeout = timeoutId;
+        });
     });
 }
 
 if (filterWindDisabled) {
     filterWindDisabled.addEventListener("change", () => {
         actualizarFiltroVientoUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+}
+
+if (filterCloudReset) {
+    filterCloudReset.addEventListener("click", () => {
+        restablecerFiltroNubosidad();
+        limpiarResultadosPorCambioDeFiltros();
+        iluminarChipFiltro(filterCloudReset, cloudResetLightTimeout, (timeoutId) => {
+            cloudResetLightTimeout = timeoutId;
+        });
+    });
+}
+
+if (filterCloudDisabled) {
+    filterCloudDisabled.addEventListener("change", () => {
+        actualizarFiltroNubosidadUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+}
+
+if (filterTemperatureReset) {
+    filterTemperatureReset.addEventListener("click", () => {
+        restablecerFiltroTemperaturaAmbiente();
+        limpiarResultadosPorCambioDeFiltros();
+        iluminarChipFiltro(filterTemperatureReset, temperatureResetLightTimeout, (timeoutId) => {
+            temperatureResetLightTimeout = timeoutId;
+        });
+    });
+}
+
+if (filterTemperatureDisabled) {
+    filterTemperatureDisabled.addEventListener("change", () => {
+        actualizarFiltroTemperaturaAmbienteUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+}
+
+if (filterWaveReset) {
+    filterWaveReset.addEventListener("click", () => {
+        restablecerFiltroOleaje();
+        limpiarResultadosPorCambioDeFiltros();
+        iluminarChipFiltro(filterWaveReset, waveResetLightTimeout, (timeoutId) => {
+            waveResetLightTimeout = timeoutId;
+        });
+    });
+}
+
+if (filterWaveDisabled) {
+    filterWaveDisabled.addEventListener("change", () => {
+        actualizarFiltroOleajeUI();
         limpiarResultadosPorCambioDeFiltros();
     });
 }
@@ -1255,6 +1626,9 @@ if (appHeader && "ResizeObserver" in window) {
 
 actualizarAlturaHeader();
 actualizarFiltroVientoUI();
+actualizarFiltroNubosidadUI();
+actualizarFiltroTemperaturaAmbienteUI();
+actualizarFiltroOleajeUI();
 cargarPreferenciasUI();
 
 if (document.getElementById("fecha")) {
