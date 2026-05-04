@@ -861,37 +861,36 @@ async function buscarRecomendaciones() {
             actividad: actividadSeleccionada,
             fecha,
             hora,
-            radius: rango,
-            limit: String(cantidad)
+            radio_km: rango,
+            top_n: String(cantidad)
         });
+
         if (selectedCoords) {
             const [lon, lat] = selectedCoords;
             params.set("lat", String(lat));
             params.set("lon", String(lon));
-        } 
+        }
         else {
             statusEl.textContent = "Introduce informacion de localizacion.";
             return;
         }
         aplicarFiltrosAParametros(params);
-        const url = `/recomendaciones?${params.toString()}`;
-        const response = await fetch(url);
+        const response = await fetch(`/recomendaciones?${params.toString()}`);
         if (!response.ok) {
             throw new Error("No se pudieron obtener las recomendaciones.");
         }
 
         const data = await response.json();
-        const favorites = await getFavoriteBeachIds();
-        console.log("favs: ", favorites);  // TODO for debug
+        console.log("DATA COMPLETA DEL BACKEND:", data);
 
+        const favorites = await getFavoriteBeachIds();
         const favoriteIds = favorites.map(f => f.beach_id);
-        console.log("fav ids:", favoriteIds);  // TODO for debug
+        console.log("favs: ", favorites);  // TODO for debug
 
         data.resultados.forEach(playa => {
             playa.isFavorite = favoriteIds.includes(playa.beach_id);
         });
-        console.log("Resultados obtenidos:", data.resultados);  // debug
-
+        
         pintarResultados(data.resultados);
         desplazarAPlayasRecomendadas();
         if (data.aviso_sol?.mensaje) {
@@ -1028,13 +1027,13 @@ function pintarResultados(resultados) {
 
                 <div class="meta-list">
                 <span class="chip">🏖️ Tipo: ${playa.tipo}</span>
-                <span class="chip">🌡️ Temp. aire: ${condiciones.temperatura_ambiente} ºC</span>
-                <span class="chip">🌊 Oleaje: ${condiciones.altura_oleaje} m</span>
-                <span class="chip">💨 Viento: ${condiciones.velocidad_viento} km/h</span>
-                <span class="chip">🌡️ Agua: ${condiciones.temperatura_agua} ºC</span>
-                <span class="chip">🌤️ Nubosidad: ${condiciones.nubosidad}%</span>
-                <span class="chip">🌧️ Lluvia: ${condiciones.probabilidad_lluvia}%</span>
-                <span class="chip">🌙 Marea: ${condiciones.marea}</span>
+                <span class="chip">🌡️ Temp. aire: ${condiciones.air_temp ?? "N/A"} ºC</span>
+                <span class="chip">🌊 Oleaje: ${condiciones.wave_height ?? "N/A"} m</span>
+                <span class="chip">💨 Viento: ${condiciones.wind_speed ?? "N/A"} km/h</span>
+                <span class="chip">🌡️ Agua: ${condiciones.water_temp ?? "N/A"} ºC</span>
+                <span class="chip">🌤️ Nubosidad: ${condiciones.cloud_cover ?? "N/A"}%</span>
+                <span class="chip">🌧️ Lluvia: ${condiciones.rain_probability ?? "N/A"}%</span>
+                <span class="chip">🌙 Marea: ${condiciones.tide ?? "N/A"}</span>
                 </div>
 
                 <div class="motivo detalle-box">
@@ -1175,7 +1174,6 @@ function logout() {
     document.querySelectorAll(".favorite-btn").forEach(btn => {
         btn.innerText = "🤍";
     });
-    console.log("favorites reset after logout");  // debug
     actualizarBotonesSesion();
     cerrarPanelPreferencias();
 }
