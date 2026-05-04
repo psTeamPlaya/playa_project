@@ -24,6 +24,11 @@
         color: var(--text);
     }
 
+    body:not(.is-authenticated) .favorite-btn,
+    body:not(.is-authenticated) .btn-favorite {
+        display: none;
+    }
+
     .container {
         padding-inline: clamp(1rem, 3vw, 2.5rem);
         margin: 0 auto;
@@ -78,8 +83,7 @@
         text-align: justify;
     }
 
-    main {
-    }
+    main {}
 
     .app-shell {
         display: grid;
@@ -274,6 +278,7 @@
     }
 
     @keyframes chipLight {
+
         0%,
         100% {
             background: #f3f7fa;
