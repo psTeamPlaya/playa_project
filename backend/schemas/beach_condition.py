@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, Dict
 
 class BeachConditionsCreate(BaseModel):
     beach_id: int = Field(..., gt=0)
@@ -21,5 +21,15 @@ class BeachConditionResponse(BaseModel):
     rain_probability: Optional[int] = None
     tide: Optional[float] = None
     uv_index: Optional[float] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class BeachRecommendationResponse(BaseModel):
+    beach_id: int
+    nombre: str
+    tipo: str
+    score: float
+    condiciones: BeachConditionResponse
+    servicios: Dict[str, bool] = {} 
 
     model_config = ConfigDict(from_attributes=True)
