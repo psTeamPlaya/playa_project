@@ -86,12 +86,12 @@ const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
 
 const WIND_FILTER_DEFAULTS = {
-    min: 5,
+    min: 0,
     max: 15
 };
 
 const CLOUD_FILTER_DEFAULTS = {
-    min: 5,
+    min: 0,
     max: 20
 };
 
