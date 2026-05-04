@@ -52,6 +52,7 @@
         justify-content: space-between;
         align-items: center;
         gap: 0.75rem;
+        gap: 0.75rem;
         position: relative;
     }
 
@@ -77,9 +78,9 @@
 
     .hero p {
         margin: 0;
-        line-height: 1.5;
+        line-height: 1.35;
         opacity: 0.95;
-        font-size: x-large;
+        font-size: 1.25rem;
         text-align: justify;
     }
 
@@ -383,9 +384,12 @@
         border-radius: 12px;
         padding: 0 0.9rem;
         font-size: 1.8rem;
+        font-size: 1.8rem;
         background: white;
         outline: none;
         font-family: 'Atma';
+        width: 100%;
+        text-align: center;
         width: 100%;
         text-align: center;
     }
@@ -653,6 +657,20 @@
         transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
         font-family: sans-serif;
         font-size: 2rem;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #f3f7fa;
+        color: var(--primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        line-height: 1;
+        transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+        font-family: sans-serif;
+        font-size: 2rem;
     }
 
     .beach-detail {
@@ -707,6 +725,9 @@
     }
 
     .desplegable[open] .expand-hint {
+        background: var(--primary);
+        color: #fff;
+        transform: rotate(45deg);
         background: var(--primary);
         color: #fff;
         transform: rotate(45deg);
@@ -804,6 +825,20 @@
     }
 
     @media (max-width: 800px) {
+        body.is-authenticated .app-shell {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .filters-sidebar {
+            position: static;
+            height: auto;
+            min-height: 0;
+            border-right: 0;
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-radius: var(--radius);
+        }
+
         body.is-authenticated .app-shell {
             grid-template-columns: minmax(0, 1fr);
         }
@@ -1067,7 +1102,9 @@
         background: #eef6fb;
         color: var(--primary-dark);
         font-size: 2.4rem;
+        font-size: 2.4rem;
         line-height: 1;
+        font-family: sans-serif;
         font-family: sans-serif;
     }
 
