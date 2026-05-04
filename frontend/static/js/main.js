@@ -1004,7 +1004,6 @@ function pintarResultados(resultados) {
 
         return `
             <details class="beach-card desplegable">
-            <details class="beach-card desplegable">
             <summary class="beach-summary">
                 <div class="beach-summary-left">
                 <div class="ranking-badge">#${index + 1}</div>
@@ -1015,15 +1014,13 @@ function pintarResultados(resultados) {
                 </div>
                 </div>
 
-                <div class="beach-summary-right">
+            <div class="beach-summary-right">
                 <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
+                <button class="favorite-btn" data-id="${playa.beach_id}">
+                    ${playa.isFavorite ? '❤️' : '🤍'}
+                </button>
                 <span class="expand-hint" aria-hidden="true">+</span>
-                    <button class="favorite-btn" data-id="${playa.beach_id}">
-                        ${playa.isFavorite ? '❤️' : '🤍'}
-                    </button>
-                    <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
-                    <span class="expand-hint" aria-hidden="true">+</span>
-                </div>
+            </div>
             </summary>
 
             <div class="beach-detail">
@@ -1076,9 +1073,6 @@ function formatearServicios(servicios) {
         restaurantes: "🍽️ Restaurantes",
         comida_para_llevar: "🥡 Comida para llevar",
         balneario: "🚿 Balneario",
-        zona_deportiva: "🏐 Zona deportiva",
-        escuela_surf: "🏄 Escuela de surf",
-        escuela_windsurf: "🌬️ Escuela de windsurf"
         zona_deportiva: "🏐 Zona deportiva",
         escuela_surf: "🏄 Escuela de surf",
         escuela_windsurf: "🌬️ Escuela de windsurf"
