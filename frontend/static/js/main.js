@@ -284,10 +284,11 @@ function restablecerFiltroViento() {
     actualizarFiltroVientoUI();
 }
 
-const cantidadWheel = document.getElementById("cantidadWheel");
+const cantidadSlider = document.getElementById("cantidadSlider");
+const cantidadSliderValue = document.getElementById("cantidadSliderValue");
+const cantidadSliderMax = document.getElementById("cantidadSliderMax");
 
-let cantidadSeleccionada = DEFAULT_QUANTITY;
-let cantidadOptions = [];
+let cantidadSeleccionada = Number(DEFAULT_QUANTITY);
 
 // =========================================================
 // UTILIDADES DE FECHA Y HORA
@@ -416,38 +417,41 @@ function renderizarWheelHoras(fechaTexto) {
     }
 }
 
-function renderizarWheelCantidad() {
-    const cantidades = [];
-
-    for (let i = 1; i <= 10; i++) {
-        cantidades.push(String(i));
+function actualizarCantidadSliderUI() {
+    if (!cantidadSlider || !cantidadSliderValue) {
+        return;
     }
 
-    // 👇 añadimos opción especial
-    cantidades.push("all");
+    cantidadSeleccionada = Number(cantidadSlider.value) || 0;
+    cantidadSliderValue.value = String(cantidadSeleccionada);
+    cantidadSliderValue.textContent = String(cantidadSeleccionada);
+}
 
-    cantidadWheel.innerHTML = cantidades
-        .map(num => {
-            const label = num === "all" ? "+10" : num;
-            return `<div class="hour-option" data-value="${num}">${label}</div>`;
-        })
-        .join("");
+async function configurarSliderCantidad() {
+    if (!cantidadSlider) {
+        return;
+    }
 
-    cantidadOptions = [...cantidadWheel.querySelectorAll(".hour-option")];
+    try {
+        const response = await fetch("/api/playas/count");
 
-    cantidadOptions.forEach(option => {
-        option.addEventListener("click", () => {
-            option.scrollIntoView({
-                block: "center",
-                behavior: "smooth"
-            });
+        if (!response.ok) {
+            throw new Error("No se pudo obtener el total de playas.");
+        }
 
-            cantidadSeleccionada = option.dataset.value;
-            setTimeout(actualizarCantidadActiva, 150);
-        });
-    });
+        const data = await response.json();
+        const maxPlayas = Math.max(0, Number(data.total) || 0);
+        cantidadSlider.max = String(maxPlayas);
+        cantidadSlider.value = String(Math.min(Number(DEFAULT_QUANTITY), maxPlayas));
 
-    fijarCantidadInicial(cantidadSeleccionada);
+        if (cantidadSliderMax) {
+            cantidadSliderMax.textContent = String(maxPlayas);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+    actualizarCantidadSliderUI();
 }
 
 function esFechaHoy(fechaTexto) {
@@ -651,78 +655,11 @@ function fijarHoraInicial(valor = "12:00") {
 }
 
 // =========================================================
-// RUEDA DE CANTIDAD
+// SLIDER DE CANTIDAD
 // =========================================================
 
-function actualizarCantidadActiva() {
-    const wheelRect = cantidadWheel.getBoundingClientRect();
-    const wheelCenter = wheelRect.top + wheelRect.height / 2;
-
-    let opcionMasCercana = null;
-    let distanciaMinima = Infinity;
-
-    cantidadOptions.forEach(option => {
-        const rect = option.getBoundingClientRect();
-        const optionCenter = rect.top + rect.height / 2;
-        const distancia = Math.abs(wheelCenter - optionCenter);
-
-        option.classList.remove("active", "near");
-
-        if (distancia < distanciaMinima) {
-            distanciaMinima = distancia;
-            opcionMasCercana = option;
-        }
-    });
-
-    cantidadOptions.forEach(option => {
-        const rect = option.getBoundingClientRect();
-        const optionCenter = rect.top + rect.height / 2;
-        const distancia = Math.abs(wheelCenter - optionCenter);
-
-        if (distancia < 18) {
-            option.classList.add("active");
-        } else if (distancia < 54) {
-            option.classList.add("near");
-        }
-    });
-
-    if (opcionMasCercana) {
-        cantidadSeleccionada = opcionMasCercana.dataset.value;
-    }
-}
-
-let scrollCantidadTimeout;
-
-cantidadWheel.addEventListener("scroll", () => {
-    actualizarCantidadActiva();
-
-    clearTimeout(scrollCantidadTimeout);
-    scrollCantidadTimeout = setTimeout(() => {
-        const activa = cantidadOptions.find(o => o.classList.contains("active"));
-
-        if (activa) {
-            activa.scrollIntoView({
-                block: "center",
-                behavior: "smooth"
-            });
-
-            cantidadSeleccionada = activa.dataset.value;
-        }
-    }, 120);
-});
-
-function fijarCantidadInicial(valor = DEFAULT_QUANTITY) {
-    const option = cantidadWheel.querySelector(`[data-value="${valor}"]`);
-
-    if (option) {
-        option.scrollIntoView({
-            block: "center",
-            behavior: "auto"
-        });
-
-        cantidadSeleccionada = valor;
-        setTimeout(actualizarCantidadActiva, 50);
-    }
+if (cantidadSlider) {
+    cantidadSlider.addEventListener("input", actualizarCantidadSliderUI);
 }
 
 // =========================================================
@@ -798,9 +735,7 @@ buscarBtn.addEventListener("click", async () => {
     try {
         const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
         const rango = radioSeleccionado ? radioSeleccionado.value : "5";
-        const cantidad = cantidadSeleccionada === "all"
-            ? 100
-            : Number(cantidadSeleccionada) || 3;
+        const cantidad = Math.max(0, Number(cantidadSeleccionada) || 0);
 
         const params = new URLSearchParams({
             actividad: actividadSeleccionada,
@@ -909,6 +844,46 @@ function pintarResultados(resultados) {
             </details>
         `;
     }).join("");
+
+    igualarAlturaResumenYDetalle();
+}
+
+function igualarAlturaResumenYDetalle() {
+    const beachCards = resultsContainer.querySelectorAll(".beach-card");
+
+    beachCards.forEach((card) => {
+        const summary = card.querySelector(".beach-summary");
+        const detail = card.querySelector(".beach-detail");
+
+        if (!summary || !detail) {
+            return;
+        }
+
+        summary.style.minHeight = "";
+
+        const cardClone = card.cloneNode(true);
+        const cloneSummary = cardClone.querySelector(".beach-summary");
+        const cloneDetail = cardClone.querySelector(".beach-detail");
+
+        if (!cloneSummary || !cloneDetail) {
+            return;
+        }
+
+        cardClone.open = true;
+        cloneSummary.style.minHeight = "";
+        cardClone.style.position = "absolute";
+        cardClone.style.visibility = "hidden";
+        cardClone.style.pointerEvents = "none";
+        cardClone.style.left = "-9999px";
+        cardClone.style.top = "0";
+        cardClone.style.maxWidth = `${resultsContainer.clientWidth}px`;
+
+        document.body.appendChild(cardClone);
+        const detailHeight = cloneDetail.getBoundingClientRect().height;
+        cardClone.remove();
+
+        summary.style.minHeight = `${Math.ceil(detailHeight)}px`;
+    });
 }
 
 function formatearServicios(servicios) {
@@ -1243,7 +1218,10 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-window.addEventListener("resize", actualizarAlturaHeader);
+window.addEventListener("resize", () => {
+    actualizarAlturaHeader();
+    igualarAlturaResumenYDetalle();
+});
 
 if (appHeader && "ResizeObserver" in window) {
     const headerObserver = new ResizeObserver(actualizarAlturaHeader);
@@ -1263,5 +1241,5 @@ if (document.getElementById("fecha")) {
     configurarFechaYHoraIniciales();
 }
 loadCurrentUser();
-renderizarWheelCantidad();
+configurarSliderCantidad();
 actualizarBotonesSesion();
