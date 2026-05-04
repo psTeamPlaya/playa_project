@@ -1117,46 +1117,7 @@ function pintarResultados(resultados) {
         `;
     }).join("");
 
-    igualarAlturaResumenYDetalle();
     configurarAnimacionDetalles();
-}
-
-function igualarAlturaResumenYDetalle() {
-    const beachCards = resultsContainer.querySelectorAll(".beach-card");
-
-    beachCards.forEach((card) => {
-        const summary = card.querySelector(".beach-summary");
-        const detail = card.querySelector(".beach-detail");
-
-        if (!summary || !detail) {
-            return;
-        }
-
-        summary.style.minHeight = "";
-
-        const cardClone = card.cloneNode(true);
-        const cloneSummary = cardClone.querySelector(".beach-summary");
-        const cloneDetail = cardClone.querySelector(".beach-detail");
-
-        if (!cloneSummary || !cloneDetail) {
-            return;
-        }
-
-        cardClone.open = true;
-        cloneSummary.style.minHeight = "";
-        cardClone.style.position = "absolute";
-        cardClone.style.visibility = "hidden";
-        cardClone.style.pointerEvents = "none";
-        cardClone.style.left = "-9999px";
-        cardClone.style.top = "0";
-        cardClone.style.maxWidth = `${resultsContainer.clientWidth}px`;
-
-        document.body.appendChild(cardClone);
-        const detailHeight = cloneDetail.getBoundingClientRect().height;
-        cardClone.remove();
-
-        summary.style.minHeight = `${Math.ceil(detailHeight)}px`;
-    });
 }
 
 function configurarAnimacionDetalles() {
@@ -1612,7 +1573,6 @@ document.addEventListener("keydown", (event) => {
 
 window.addEventListener("resize", () => {
     actualizarAlturaHeader();
-    igualarAlturaResumenYDetalle();
 });
 
 if (appHeader && "ResizeObserver" in window) {
