@@ -50,6 +50,7 @@ let actividadSeleccionada = "";
 let horaSeleccionada = "";
 let authMode = "login";
 let preferencesCloseTimeout;
+let windResetLightTimeout;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
@@ -846,6 +847,7 @@ function pintarResultados(resultados) {
     }).join("");
 
     igualarAlturaResumenYDetalle();
+    configurarAnimacionDetalles();
 }
 
 function igualarAlturaResumenYDetalle() {
@@ -883,6 +885,23 @@ function igualarAlturaResumenYDetalle() {
         cardClone.remove();
 
         summary.style.minHeight = `${Math.ceil(detailHeight)}px`;
+    });
+}
+
+function configurarAnimacionDetalles() {
+    const beachCards = resultsContainer.querySelectorAll(".beach-card");
+
+    beachCards.forEach((card) => {
+        card.addEventListener("toggle", () => {
+            if (!card.open) {
+                card.classList.remove("is-revealing");
+                return;
+            }
+
+            card.classList.remove("is-revealing");
+            void card.offsetWidth;
+            card.classList.add("is-revealing");
+        });
     });
 }
 
@@ -1180,14 +1199,16 @@ if (expandResultsPreference) {
 });
 
 if (filterWindReset) {
-    filterWindReset.addEventListener("change", () => {
-        if (!filterWindReset.checked) {
-            return;
-        }
-
+    filterWindReset.addEventListener("click", () => {
         restablecerFiltroViento();
         limpiarResultadosPorCambioDeFiltros();
-        filterWindReset.checked = false;
+        filterWindReset.classList.remove("is-lit");
+        void filterWindReset.offsetWidth;
+        filterWindReset.classList.add("is-lit");
+        clearTimeout(windResetLightTimeout);
+        windResetLightTimeout = setTimeout(() => {
+            filterWindReset.classList.remove("is-lit");
+        }, 500);
     });
 }
 

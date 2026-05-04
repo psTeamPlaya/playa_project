@@ -239,6 +239,47 @@
         font-size: 1rem;
     }
 
+    .filter-chip-button {
+        width: fit-content;
+        padding: 0.45rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: #f3f7fa;
+        color: var(--primary-dark);
+        font-size: 1rem;
+        line-height: 1.1;
+        box-shadow: none;
+        transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .filter-chip-button:hover,
+    .filter-chip-button:focus-visible {
+        background: #eaf7fd;
+        border-color: var(--secondary);
+        box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.12);
+        outline: none;
+    }
+
+    .filter-chip-button.is-lit {
+        animation: chipLight 0.5s ease;
+    }
+
+    @keyframes chipLight {
+        0%,
+        100% {
+            background: #f3f7fa;
+            border-color: var(--border);
+            box-shadow: none;
+        }
+
+        35%,
+        70% {
+            background: #fff2b8;
+            border-color: #f6c945;
+            box-shadow: 0 0 0 5px rgba(246, 201, 69, 0.24);
+        }
+    }
+
     .panel {
         background: var(--card);
         border: 1px solid var(--border);
@@ -425,6 +466,7 @@
     }
 
     .beach-card[open] {
+        width: 100%;
         display: grid;
         grid-template-columns: max-content minmax(360px, 1fr);
         align-items: stretch;
@@ -610,14 +652,19 @@
     .beach-card[open] .beach-detail {
         border-top: 0;
         border-left: 1px solid var(--border);
-        animation: beachDetailReveal 0.42s ease-out both;
+        overflow: hidden;
+        transform-origin: left center;
     }
 
-    @keyframes beachDetailReveal {
+    .beach-card[open].is-revealing .beach-detail {
+        animation: beachDetailSlideIn 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes beachDetailSlideIn {
         from {
             opacity: 0;
-            transform: translateX(-14px);
-            clip-path: inset(0 0 0 16%);
+            transform: translateX(-22px) scaleX(0.72);
+            clip-path: inset(0 100% 0 0);
         }
 
         to {
@@ -774,8 +821,27 @@
         .beach-card[open] .beach-detail {
             border-top: 1px solid var(--border);
             border-left: 0;
+            transform-origin: top center;
         }
 
+        .beach-card[open].is-revealing .beach-detail {
+            animation-name: beachDetailSlideDown;
+        }
+
+    }
+
+    @keyframes beachDetailSlideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-18px) scaleY(0.72);
+            clip-path: inset(100% 0 0 0);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+            clip-path: inset(0);
+        }
     }
 
     .auth-container {
