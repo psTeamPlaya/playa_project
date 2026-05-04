@@ -9,8 +9,10 @@ const fechaShell = document.getElementById("fechaShell");
 const fechaDisplay = document.getElementById("fechaDisplay");
 
 const buscarBtn = document.getElementById("buscarBtn");
+const floatingBuscarBtn = document.getElementById("floatingBuscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
+const recommendedBeachesSection = document.getElementById("recommendedBeachesSection");
 const hourWheel = document.getElementById("hourWheel");
 const sunAlertEl = document.getElementById("sunAlert");
 const loginModalEl = document.getElementById("loginModal");
@@ -971,7 +973,7 @@ fechaInput.addEventListener("change", () => {
 // BÚSQUEDA
 // =========================================================
 
-buscarBtn.addEventListener("click", async () => {
+async function buscarRecomendaciones() {
     const fecha = fechaInput.value;
     const hora = horaSeleccionada;
     ocultarAvisoSolar();
@@ -1037,6 +1039,8 @@ buscarBtn.addEventListener("click", async () => {
 
         const data = await response.json();
         pintarResultados(data.resultados);
+        desplazarAPlayasRecomendadas();
+
         if (data.aviso_sol?.mensaje) {
             mostrarAvisoSolar(data.aviso_sol.mensaje);
             statusEl.textContent = "";
@@ -1053,7 +1057,50 @@ buscarBtn.addEventListener("click", async () => {
           </div>
         `;
     }
-});
+}
+
+function actualizarBotonBusquedaFlotante() {
+    if (!floatingBuscarBtn) {
+        return;
+    }
+
+    const rect = buscarBtn.getBoundingClientRect();
+    const debeMostrarse = rect.bottom < 0;
+
+    floatingBuscarBtn.style.setProperty("--floating-search-left", `${rect.left}px`);
+    floatingBuscarBtn.style.setProperty("--floating-search-width", `${rect.width}px`);
+    floatingBuscarBtn.classList.toggle("is-visible", debeMostrarse);
+    floatingBuscarBtn.setAttribute("aria-hidden", debeMostrarse ? "false" : "true");
+}
+
+function configurarBotonBusquedaFlotante() {
+    if (!buscarBtn || !floatingBuscarBtn) {
+        return;
+    }
+
+    actualizarBotonBusquedaFlotante();
+    window.addEventListener("scroll", actualizarBotonBusquedaFlotante, { passive: true });
+    window.addEventListener("resize", actualizarBotonBusquedaFlotante);
+}
+
+function desplazarAPlayasRecomendadas() {
+    if (!recommendedBeachesSection) {
+        return;
+    }
+
+    recommendedBeachesSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
+if (buscarBtn) {
+    buscarBtn.addEventListener("click", buscarRecomendaciones);
+}
+
+if (floatingBuscarBtn) {
+    floatingBuscarBtn.addEventListener("click", buscarRecomendaciones);
+}
 
 // =========================================================
 // RESULTADOS
@@ -1589,6 +1636,7 @@ actualizarFiltroVientoUI();
 actualizarFiltroNubosidadUI();
 actualizarFiltroTemperaturaAmbienteUI();
 actualizarFiltroOleajeUI();
+configurarBotonBusquedaFlotante();
 cargarPreferenciasUI();
 
 if (document.getElementById("fecha")) {
