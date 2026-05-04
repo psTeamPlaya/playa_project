@@ -3,6 +3,7 @@ from sqlalchemy import text
 
 from backend.config import settings
 from backend.db import check_database_connection, engine
+from backend.engine_recomendation import cargar_playas
 
 router = APIRouter(prefix="/api", tags=["API"])
 
@@ -35,4 +36,9 @@ def health():
         "tables": tables,
         "data": all_data
     }
+
+
+@router.get("/playas/count")
+def count_playas():
+    return {"total": len(cargar_playas())}
 

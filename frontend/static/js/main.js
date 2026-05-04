@@ -9,8 +9,10 @@ const fechaShell = document.getElementById("fechaShell");
 const fechaDisplay = document.getElementById("fechaDisplay");
 
 const buscarBtn = document.getElementById("buscarBtn");
+const floatingBuscarBtn = document.getElementById("floatingBuscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
+const recommendedBeachesSection = document.getElementById("recommendedBeachesSection");
 const hourWheel = document.getElementById("hourWheel");
 const sunAlertEl = document.getElementById("sunAlert");
 const loginModalEl = document.getElementById("loginModal");
@@ -20,8 +22,6 @@ const closeLoginModalBtn = document.getElementById("closeLoginModal");
 const loginModalForm = document.getElementById("loginModalForm");
 const loginEmailInput = document.getElementById("loginEmail");
 const loginPasswordInput = document.getElementById("loginPassword");
-const confirmPasswordInput = document.getElementById("confirmPassword");
-const confirmPasswordGroup = document.getElementById("confirmPasswordGroup");
 const loginErrorMessageEl = document.getElementById("loginErrorMessage");
 const authSubmitBtn = document.getElementById("authSubmitBtn");
 const authModeHint = document.getElementById("authModeHint");
@@ -34,6 +34,8 @@ const rememberSchedulePreference = document.getElementById("rememberSchedulePref
 const expandResultsPreference = document.getElementById("expandResultsPreference");
 const appHeader = document.getElementById("appHeader");
 const filtersSidebar = document.getElementById("filtersSidebar");
+const disableStaticFilters = document.getElementById("disableStaticFilters");
+const disableDynamicFilters = document.getElementById("disableDynamicFilters");
 const filterSandBeach = document.getElementById("filterSandBeach");
 const filterStoneBeach = document.getElementById("filterStoneBeach");
 const filterFoodPlaces = document.getElementById("filterFoodPlaces");
@@ -46,16 +48,61 @@ const filterWindDisabled = document.getElementById("filterWindDisabled");
 const windRangeTrack = document.getElementById("windRangeTrack");
 const windMinValue = document.getElementById("windMinValue");
 const windMaxValue = document.getElementById("windMaxValue");
+const filterCloudMin = document.getElementById("filterCloudMin");
+const filterCloudMax = document.getElementById("filterCloudMax");
+const filterCloudReset = document.getElementById("filterCloudReset");
+const filterCloudDisabled = document.getElementById("filterCloudDisabled");
+const cloudRangeTrack = document.getElementById("cloudRangeTrack");
+const cloudMinValue = document.getElementById("cloudMinValue");
+const cloudMaxValue = document.getElementById("cloudMaxValue");
+const filterTemperatureMin = document.getElementById("filterTemperatureMin");
+const filterTemperatureMax = document.getElementById("filterTemperatureMax");
+const filterTemperatureReset = document.getElementById("filterTemperatureReset");
+const filterTemperatureDisabled = document.getElementById("filterTemperatureDisabled");
+const temperatureRangeTrack = document.getElementById("temperatureRangeTrack");
+const temperatureMinValue = document.getElementById("temperatureMinValue");
+const temperatureMaxValue = document.getElementById("temperatureMaxValue");
+const filterWaveMin = document.getElementById("filterWaveMin");
+const filterWaveMax = document.getElementById("filterWaveMax");
+const filterWaveReset = document.getElementById("filterWaveReset");
+const filterWaveDisabled = document.getElementById("filterWaveDisabled");
+const waveRangeTrack = document.getElementById("waveRangeTrack");
+const waveMinValue = document.getElementById("waveMinValue");
+const waveMaxValue = document.getElementById("waveMaxValue");
 
 let hourOptions = [];
 let actividadSeleccionada = "";
 let horaSeleccionada = "";
 let authMode = "login";
 let preferencesCloseTimeout;
+let windResetLightTimeout;
+let cloudResetLightTimeout;
+let temperatureResetLightTimeout;
+let waveResetLightTimeout;
+let staticFiltersLightTimeout;
+let dynamicFiltersLightTimeout;
+
+const DEFAULT_ACTIVITY = "tomar_sol";
+const DEFAULT_QUANTITY = "3";
 
 const WIND_FILTER_DEFAULTS = {
-    min: 5,
+    min: 0,
     max: 15
+};
+
+const CLOUD_FILTER_DEFAULTS = {
+    min: 0,
+    max: 20
+};
+
+const TEMPERATURE_FILTER_DEFAULTS = {
+    min: 20,
+    max: 29
+};
+
+const WAVE_FILTER_DEFAULTS = {
+    min: 0,
+    max: 1
 };
 
 const STORAGE_KEYS = {
@@ -154,7 +201,7 @@ function obtenerActividadInicial() {
         return actividadGuardada;
     }
 
-    return "tomar_sol";
+    return DEFAULT_ACTIVITY;
 }
 
 function obtenerHorarioInicial() {
@@ -199,6 +246,30 @@ function obtenerFiltrosViento() {
     };
 }
 
+function obtenerFiltrosNubosidad() {
+    return {
+        activo: estaSidebarFiltrosActiva() && !filterCloudDisabled?.checked,
+        min: Number(filterCloudMin?.value ?? CLOUD_FILTER_DEFAULTS.min),
+        max: Number(filterCloudMax?.value ?? CLOUD_FILTER_DEFAULTS.max)
+    };
+}
+
+function obtenerFiltrosTemperaturaAmbiente() {
+    return {
+        activo: estaSidebarFiltrosActiva() && !filterTemperatureDisabled?.checked,
+        min: Number(filterTemperatureMin?.value ?? TEMPERATURE_FILTER_DEFAULTS.min),
+        max: Number(filterTemperatureMax?.value ?? TEMPERATURE_FILTER_DEFAULTS.max)
+    };
+}
+
+function obtenerFiltrosOleaje() {
+    return {
+        activo: estaSidebarFiltrosActiva() && !filterWaveDisabled?.checked,
+        min: Number(filterWaveMin?.value ?? WAVE_FILTER_DEFAULTS.min),
+        max: Number(filterWaveMax?.value ?? WAVE_FILTER_DEFAULTS.max)
+    };
+}
+
 function aplicarFiltrosAParametros(params) {
     if (!estaSidebarFiltrosActiva()) {
         return;
@@ -231,6 +302,27 @@ function aplicarFiltrosAParametros(params) {
     if (filtrosViento.activo) {
         params.set("min_velocidad_viento", String(filtrosViento.min));
         params.set("max_velocidad_viento", String(filtrosViento.max));
+    }
+
+    const filtrosNubosidad = obtenerFiltrosNubosidad();
+
+    if (filtrosNubosidad.activo) {
+        params.set("min_nubosidad", String(filtrosNubosidad.min));
+        params.set("max_nubosidad", String(filtrosNubosidad.max));
+    }
+
+    const filtrosTemperatura = obtenerFiltrosTemperaturaAmbiente();
+
+    if (filtrosTemperatura.activo) {
+        params.set("min_temperatura_ambiente", String(filtrosTemperatura.min));
+        params.set("max_temperatura_ambiente", String(filtrosTemperatura.max));
+    }
+
+    const filtrosOleaje = obtenerFiltrosOleaje();
+
+    if (filtrosOleaje.activo) {
+        params.set("min_altura_oleaje", String(filtrosOleaje.min));
+        params.set("max_altura_oleaje", String(filtrosOleaje.max));
     }
 }
 
@@ -282,10 +374,195 @@ function restablecerFiltroViento() {
     filterWindMax.value = String(WIND_FILTER_DEFAULTS.max);
     actualizarFiltroVientoUI();
 }
-const cantidadWheel = document.getElementById("cantidadWheel");
 
-let cantidadSeleccionada = "3";
-let cantidadOptions = [];
+function actualizarFiltroNubosidadUI() {
+    if (!filterCloudMin || !filterCloudMax) {
+        return;
+    }
+
+    let min = Number(filterCloudMin.value);
+    let max = Number(filterCloudMax.value);
+
+    if (min > max) {
+        [min, max] = [max, min];
+        filterCloudMin.value = String(min);
+        filterCloudMax.value = String(max);
+    }
+
+    if (cloudMinValue) {
+        cloudMinValue.textContent = String(min);
+    }
+
+    if (cloudMaxValue) {
+        cloudMaxValue.textContent = String(max);
+    }
+
+    if (cloudRangeTrack) {
+        const minPermitido = Number(filterCloudMin.min);
+        const maxPermitido = Number(filterCloudMin.max);
+        const total = maxPermitido - minPermitido;
+        const minPorcentaje = ((min - minPermitido) / total) * 100;
+        const maxPorcentaje = ((max - minPermitido) / total) * 100;
+
+        cloudRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
+        cloudRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
+        cloudRangeTrack.classList.toggle("is-disabled", Boolean(filterCloudDisabled?.checked));
+    }
+
+    const desactivado = Boolean(filterCloudDisabled?.checked);
+    filterCloudMin.disabled = desactivado;
+    filterCloudMax.disabled = desactivado;
+}
+
+function restablecerFiltroNubosidad() {
+    if (!filterCloudMin || !filterCloudMax) {
+        return;
+    }
+
+    filterCloudMin.value = String(CLOUD_FILTER_DEFAULTS.min);
+    filterCloudMax.value = String(CLOUD_FILTER_DEFAULTS.max);
+    actualizarFiltroNubosidadUI();
+}
+
+function actualizarFiltroTemperaturaAmbienteUI() {
+    if (!filterTemperatureMin || !filterTemperatureMax) {
+        return;
+    }
+
+    let min = Number(filterTemperatureMin.value);
+    let max = Number(filterTemperatureMax.value);
+
+    if (min > max) {
+        [min, max] = [max, min];
+        filterTemperatureMin.value = String(min);
+        filterTemperatureMax.value = String(max);
+    }
+
+    if (temperatureMinValue) {
+        temperatureMinValue.textContent = String(min);
+    }
+
+    if (temperatureMaxValue) {
+        temperatureMaxValue.textContent = String(max);
+    }
+
+    if (temperatureRangeTrack) {
+        const minPermitido = Number(filterTemperatureMin.min);
+        const maxPermitido = Number(filterTemperatureMin.max);
+        const total = maxPermitido - minPermitido;
+        const minPorcentaje = ((min - minPermitido) / total) * 100;
+        const maxPorcentaje = ((max - minPermitido) / total) * 100;
+
+        temperatureRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
+        temperatureRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
+        temperatureRangeTrack.classList.toggle("is-disabled", Boolean(filterTemperatureDisabled?.checked));
+    }
+
+    const desactivado = Boolean(filterTemperatureDisabled?.checked);
+    filterTemperatureMin.disabled = desactivado;
+    filterTemperatureMax.disabled = desactivado;
+}
+
+function restablecerFiltroTemperaturaAmbiente() {
+    if (!filterTemperatureMin || !filterTemperatureMax) {
+        return;
+    }
+
+    filterTemperatureMin.value = String(TEMPERATURE_FILTER_DEFAULTS.min);
+    filterTemperatureMax.value = String(TEMPERATURE_FILTER_DEFAULTS.max);
+    actualizarFiltroTemperaturaAmbienteUI();
+}
+
+function formatearValorDecimalFiltro(valor) {
+    return Number.isInteger(valor) ? String(valor) : valor.toFixed(1);
+}
+
+function actualizarFiltroOleajeUI() {
+    if (!filterWaveMin || !filterWaveMax) {
+        return;
+    }
+
+    let min = Number(filterWaveMin.value);
+    let max = Number(filterWaveMax.value);
+
+    if (min > max) {
+        [min, max] = [max, min];
+        filterWaveMin.value = String(min);
+        filterWaveMax.value = String(max);
+    }
+
+    if (waveMinValue) {
+        waveMinValue.textContent = formatearValorDecimalFiltro(min);
+    }
+
+    if (waveMaxValue) {
+        waveMaxValue.textContent = formatearValorDecimalFiltro(max);
+    }
+
+    if (waveRangeTrack) {
+        const minPermitido = Number(filterWaveMin.min);
+        const maxPermitido = Number(filterWaveMin.max);
+        const total = maxPermitido - minPermitido;
+        const minPorcentaje = ((min - minPermitido) / total) * 100;
+        const maxPorcentaje = ((max - minPermitido) / total) * 100;
+
+        waveRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
+        waveRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
+        waveRangeTrack.classList.toggle("is-disabled", Boolean(filterWaveDisabled?.checked));
+    }
+
+    const desactivado = Boolean(filterWaveDisabled?.checked);
+    filterWaveMin.disabled = desactivado;
+    filterWaveMax.disabled = desactivado;
+}
+
+function restablecerFiltroOleaje() {
+    if (!filterWaveMin || !filterWaveMax) {
+        return;
+    }
+
+    filterWaveMin.value = String(WAVE_FILTER_DEFAULTS.min);
+    filterWaveMax.value = String(WAVE_FILTER_DEFAULTS.max);
+    actualizarFiltroOleajeUI();
+}
+
+function desactivarFiltrosEstaticos() {
+    [filterSandBeach, filterStoneBeach, filterFoodPlaces, filterSurfSchool, filterWindsurfSchool].forEach(filterInput => {
+        if (filterInput) {
+            filterInput.checked = false;
+        }
+    });
+}
+
+function desactivarFiltrosDinamicos() {
+    [filterCloudDisabled, filterTemperatureDisabled, filterWindDisabled, filterWaveDisabled].forEach(filterInput => {
+        if (filterInput) {
+            filterInput.checked = true;
+        }
+    });
+
+    actualizarFiltroNubosidadUI();
+    actualizarFiltroTemperaturaAmbienteUI();
+    actualizarFiltroVientoUI();
+    actualizarFiltroOleajeUI();
+}
+
+function iluminarChipFiltro(chip, timeoutId, onTimeoutChange) {
+    chip.classList.remove("is-lit");
+    void chip.offsetWidth;
+    chip.classList.add("is-lit");
+    clearTimeout(timeoutId);
+    const nextTimeoutId = setTimeout(() => {
+        chip.classList.remove("is-lit");
+    }, 500);
+    onTimeoutChange(nextTimeoutId);
+}
+
+const cantidadSlider = document.getElementById("cantidadSlider");
+const cantidadSliderValue = document.getElementById("cantidadSliderValue");
+const cantidadSliderMax = document.getElementById("cantidadSliderMax");
+
+let cantidadSeleccionada = Number(DEFAULT_QUANTITY);
 
 // =========================================================
 // UTILIDADES DE FECHA Y HORA
@@ -325,7 +602,7 @@ function actualizarTextoFecha() {
 
 function obtenerHoraMinimaPermitida() {
     const ahora = new Date();
-    const hora = ahora.getHours();
+        const hora = ahora.getHours();
     const minutos = ahora.getMinutes();
 
     if (minutos === 0) {
@@ -414,39 +691,41 @@ function renderizarWheelHoras(fechaTexto) {
     }
 }
 
-function renderizarWheelCantidad() {
-    if (!cantidadWheel) return;
-
-    const cantidades = [];
-
-    for (let i = 1; i <= 10; i++) {
-        cantidades.push(String(i));
+function actualizarCantidadSliderUI() {
+    if (!cantidadSlider || !cantidadSliderValue) {
+        return;
     }
 
-    cantidades.push("all");
+    cantidadSeleccionada = Number(cantidadSlider.value) || 0;
+    cantidadSliderValue.value = String(cantidadSeleccionada);
+    cantidadSliderValue.textContent = String(cantidadSeleccionada);
+}
 
-    cantidadWheel.innerHTML = cantidades
-        .map(num => {
-            const label = num === "all" ? "+10" : num;
-            return `<div class="hour-option" data-value="${num}">${label}</div>`;
-        })
-        .join("");
+async function configurarSliderCantidad() {
+    if (!cantidadSlider) {
+        return;
+    }
 
-    cantidadOptions = [...cantidadWheel.querySelectorAll(".hour-option")];
+    try {
+        const response = await fetch("/api/playas/count");
 
-    cantidadOptions.forEach(option => {
-        option.addEventListener("click", () => {
-            option.scrollIntoView({
-                block: "center",
-                behavior: "smooth"
-            });
+        if (!response.ok) {
+            throw new Error("No se pudo obtener el total de playas.");
+        }
 
-            cantidadSeleccionada = option.dataset.value;
-            setTimeout(actualizarCantidadActiva, 150);
-        });
-    });
+        const data = await response.json();
+        const maxPlayas = Math.max(0, Number(data.total) || 0);
+        cantidadSlider.max = String(maxPlayas);
+        cantidadSlider.value = String(Math.min(Number(DEFAULT_QUANTITY), maxPlayas));
 
-    fijarCantidadInicial(cantidadSeleccionada);
+        if (cantidadSliderMax) {
+            cantidadSliderMax.textContent = String(maxPlayas);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+    actualizarCantidadSliderUI();
 }
 
 function esFechaHoy(fechaTexto) {
@@ -650,79 +929,11 @@ function fijarHoraInicial(valor = "12:00") {
 }
 
 // =========================================================
-// RUEDA DE CANTIDAD
+// SLIDER DE CANTIDAD
 // =========================================================
 
-function actualizarCantidadActiva() {
-    const wheelRect = cantidadWheel.getBoundingClientRect();
-    /*if (wheelRect.height === 0) return;*/
-    const wheelCenter = wheelRect.top + wheelRect.height / 2;
-
-    let opcionMasCercana = null;
-    let distanciaMinima = Infinity;
-
-    cantidadOptions.forEach(option => {
-        const rect = option.getBoundingClientRect();
-        const optionCenter = rect.top + rect.height / 2;
-        const distancia = Math.abs(wheelCenter - optionCenter);
-
-        option.classList.remove("active", "near");
-
-        if (distancia < distanciaMinima) {
-            distanciaMinima = distancia;
-            opcionMasCercana = option;
-        }
-    });
-
-    cantidadOptions.forEach(option => {
-        const rect = option.getBoundingClientRect();
-        const optionCenter = rect.top + rect.height / 2;
-        const distancia = Math.abs(wheelCenter - optionCenter);
-
-        if (distancia < 18) {
-            option.classList.add("active");
-        } else if (distancia < 54) {
-            option.classList.add("near");
-        }
-    });
-
-    if (opcionMasCercana) {
-        cantidadSeleccionada = opcionMasCercana.dataset.value;
-    }
-}
-
-let scrollCantidadTimeout;
-
-cantidadWheel.addEventListener("scroll", () => {
-    actualizarCantidadActiva();
-
-    clearTimeout(scrollCantidadTimeout);
-    scrollCantidadTimeout = setTimeout(() => {
-        const activa = cantidadOptions.find(o => o.classList.contains("active"));
-
-        if (activa) {
-            activa.scrollIntoView({
-                block: "center",
-                behavior: "smooth"
-            });
-
-            cantidadSeleccionada = activa.dataset.value;
-        }
-    }, 120);
-});
-
-function fijarCantidadInicial(valor = "3") {
-    const option = cantidadWheel.querySelector(`[data-value="${valor}"]`);
-
-    if (option) {
-        option.scrollIntoView({
-            block: "center",
-            behavior: "auto"
-        });
-
-        cantidadSeleccionada = valor;
-        setTimeout(actualizarCantidadActiva, 50);
-    }
+if (cantidadSlider) {
+    cantidadSlider.addEventListener("input", actualizarCantidadSliderUI);
 }
 
 // =========================================================
@@ -762,22 +973,11 @@ fechaInput.addEventListener("change", () => {
 // BÚSQUEDA
 // =========================================================
 
-buscarBtn.addEventListener("click", async () => {
+async function buscarRecomendaciones() {
     const fecha = fechaInput.value;
     const hora = horaSeleccionada;
     ocultarAvisoSolar();
 
-    const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
-    const rango = radioSeleccionado ? radioSeleccionado.value : "15";
-    let lat = "";
-    let lon = "";
-    if (typeof selectedCoords !== 'undefined' && selectedCoords) {
-        lon = selectedCoords[0];
-        lat = selectedCoords[1];
-    } else{
-        statusEl.textContent = "Indroduzca información de localización.";
-        return;
-    }
     if (!actividadSeleccionada) {
         statusEl.textContent = "Debes seleccionar una actividad.";
         return;
@@ -807,28 +1007,30 @@ buscarBtn.addEventListener("click", async () => {
     statusEl.textContent = "Buscando recomendaciones...";
 
     try {
+        const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
+        const rango = radioSeleccionado ? radioSeleccionado.value : "5";
+        const cantidad = Math.max(0, Number(cantidadSeleccionada) || 0);
+
         const params = new URLSearchParams({
             actividad: actividadSeleccionada,
             fecha,
-            hora
+            hora,
+            radius: rango,
+            limit: String(cantidad)
         });
+
+        if (selectedCoords) {
+            const [lon, lat] = selectedCoords;
+            params.set("lat", String(lat));
+            params.set("lon", String(lon));
+        } else {
+            statusEl.textContent = "Introduce informacion de localizacion.";
+            return;
+        }
+
         aplicarFiltrosAParametros(params);
 
         const url = `/recomendaciones?${params.toString()}`;
-        let cantidad;
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            cantidad = 3;
-        } else {
-            if (cantidadSeleccionada === "all") {
-                cantidad = 100;
-            } else {
-                cantidad = Number(cantidadSeleccionada) || 3;
-            }
-        }
-
-        const url = `/recomendaciones?actividad=${actividadSeleccionada}&fecha=${fecha}&hora=${hora}&lat=${lat}&lon=${lon}&radius=${rango}&limit=${cantidad}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -836,41 +1038,16 @@ buscarBtn.addEventListener("click", async () => {
         }
 
         const data = await response.json();
-
-        // Fetch the data just once
-        const favoritesData = await getFavoriteBeachIds();
-
-        // Ensure we are working with an array, even if the backend sends an object
-        const favoritesArray = Array.isArray(favoritesData) ? favoritesData : (favoritesData.favorites || []);
-
-        console.log("favs: ", favoritesArray);  // TODO for debug
-
-        // Now map will work safely
-        const favoriteIds = favoritesArray.map(f => f.beach_id);
-
-        console.log("fav ids:", favoriteIds);  // TODO for debug
-
-        data.resultados.forEach(playa => {
-            playa.isFavorite = favoriteIds.includes(playa.beach_id);
-        });
-        console.log("Resultados obtenidos:", data.resultados);  // TODO for debug
-
+        console.log(data.resultados);
         pintarResultados(data.resultados);
+        desplazarAPlayasRecomendadas();
 
-        // If there ARE beaches AND there is a sun alert, show it.
         if (data.aviso_sol?.mensaje) {
             mostrarAvisoSolar(data.aviso_sol.mensaje);
             statusEl.textContent = "";
             return;
         }
-        // If there are NO beaches, hide the sun alert and stop.
-        if (!data.resultados || data.resultados.length === 0) {
-            ocultarAvisoSolar();
-            statusEl.textContent = "";
-            return;
-        }
 
-        // If there are beaches but NO sun alert, just show the count.
         statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
     } catch (error) {
         console.error(error);
@@ -881,58 +1058,54 @@ buscarBtn.addEventListener("click", async () => {
           </div>
         `;
     }
-});
+}
 
-resultsContainer.addEventListener("click", async (e) => {
-    const btn = e.target.closest(".favorite-btn");
-
-    if (!btn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    console.log("btn pressed:", btn);
-
-    const beachId = Number(btn.dataset.id);
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        alert("Please log in");
+function actualizarBotonBusquedaFlotante() {
+    if (!floatingBuscarBtn) {
         return;
     }
 
-    const isFavorite = btn.innerText === "❤️";
-    const method = isFavorite ? "DELETE" : "POST";
+    const rect = buscarBtn.getBoundingClientRect();
+    const debeMostrarse = rect.bottom < 0;
 
-    await authFetch(`/api/favorites/${beachId}`, {
-        method
+    floatingBuscarBtn.style.setProperty("--floating-search-left", `${rect.left}px`);
+    floatingBuscarBtn.style.setProperty("--floating-search-width", `${rect.width}px`);
+    floatingBuscarBtn.classList.toggle("is-visible", debeMostrarse);
+    floatingBuscarBtn.setAttribute("aria-hidden", debeMostrarse ? "false" : "true");
+}
+
+function configurarBotonBusquedaFlotante() {
+    if (!buscarBtn || !floatingBuscarBtn) {
+        return;
+    }
+
+    actualizarBotonBusquedaFlotante();
+    window.addEventListener("scroll", actualizarBotonBusquedaFlotante, { passive: true });
+    window.addEventListener("resize", actualizarBotonBusquedaFlotante);
+}
+
+function desplazarAPlayasRecomendadas() {
+    if (!recommendedBeachesSection) {
+        return;
+    }
+
+    recommendedBeachesSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
     });
+}
 
-    btn.innerText = isFavorite ? "🤍" : "❤️";   // backward order because we changed it
-});
+if (buscarBtn) {
+    buscarBtn.addEventListener("click", buscarRecomendaciones);
+}
 
+if (floatingBuscarBtn) {
+    floatingBuscarBtn.addEventListener("click", buscarRecomendaciones);
+}
 
 // =========================================================
 // RESULTADOS
 // =========================================================
-
-
-async function getFavoriteBeachIds() {
-    const token = localStorage.getItem("token");
-    if (!token) {   // user not logged in
-        return [];
-    }
-
-    try {
-        const response = await authFetch("/api/favorites");
-        if (!response.ok) return [];
-        return await response.json();
-    } catch (e) {
-        console.error("Failed to load favorites");
-        return [];
-    }
-}
 
 function pintarResultados(resultados) {
     if (!resultados || resultados.length === 0) {
@@ -962,12 +1135,10 @@ function pintarResultados(resultados) {
 
                 <div class="beach-summary-right">
                 <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
+                <button class="favorite-btn" data-id="${playa.beach_id}">
+                    ${playa.isFavorite ? '❤️' : '🤍'}
+                </button>
                 <span class="expand-hint" aria-hidden="true">+</span>
-                    <button class="favorite-btn" data-id="${playa.beach_id}">
-                        ${playa.isFavorite ? '❤️' : '🤍'}
-                    </button>
-                    <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
-                    <div class="expand-hint">Ver detalle</div>
                 </div>
             </summary>
 
@@ -996,6 +1167,51 @@ function pintarResultados(resultados) {
             </details>
         `;
     }).join("");
+
+    configurarAnimacionDetalles();
+}
+
+if (resultsContainer) {
+    resultsContainer.addEventListener("click", async (event) => {
+        const favoriteBtn = event.target.closest(".favorite-btn");
+        if (!favoriteBtn) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const beachId = favoriteBtn.dataset.id;
+        const isFavorite = favoriteBtn.textContent.trim() === "❤️";
+        const method = isFavorite ? "DELETE" : "POST";
+        const url = `/api/favorites/${beachId}`;
+
+        try {
+            const response = await authFetch(url, { method });
+            if (response.ok) {
+                favoriteBtn.textContent = isFavorite ? "🤍" : "❤️";
+            } else if (response.status === 401) {
+                abrirModalLogin();
+            }
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+        }
+    });
+}
+
+function configurarAnimacionDetalles() {
+    const beachCards = resultsContainer.querySelectorAll(".beach-card");
+
+    beachCards.forEach((card) => {
+        card.addEventListener("toggle", () => {
+            if (!card.open) {
+                card.classList.remove("is-revealing");
+                return;
+            }
+
+            card.classList.remove("is-revealing");
+            void card.offsetWidth;
+            card.classList.add("is-revealing");
+        });
+    });
 }
 
 function formatearServicios(servicios) {
@@ -1030,10 +1246,6 @@ function aplicarModoAuth() {
         authSubmitBtn.textContent = "Crear cuenta";
         authModeHint.textContent = "Ya tienes cuenta?";
         toggleAuthModeBtn.textContent = "Iniciar sesion";
-
-        confirmPasswordGroup.style.display = "block";
-        confirmPasswordInput.required = true;
-
         return;
     }
 
@@ -1041,10 +1253,6 @@ function aplicarModoAuth() {
     authSubmitBtn.textContent = "Entrar a mi cuenta";
     authModeHint.textContent = "¿Todavía no tienes cuenta?";
     toggleAuthModeBtn.textContent = "Registrarse";
-
-    confirmPasswordGroup.style.display = "none";
-    confirmPasswordInput.required = false;
-    confirmPasswordInput.value = "";
 }
 
 function mostrarMensajeAuth(mensaje, tipo = "error") {
@@ -1078,9 +1286,6 @@ function cerrarModalLogin() {
     loginModalEl.hidden = true;
     mostrarMensajeAuth("", "error");
     loginModalForm.reset();
-
-    confirmPasswordGroup.style.display = "none";
-    mostrarMensajeAuth("", "error");
 }
 
 function authFetch(url, options = {}) {
@@ -1136,12 +1341,6 @@ function logout() {
     localStorage.removeItem("token");
 
     loadCurrentUser();
-  
-    document.querySelectorAll(".favorite-btn").forEach(btn => {
-        btn.innerText = "🤍";
-    });
-    console.log("favorites reset after logout");  // TODO for debug
- 
     actualizarBotonesSesion();
     cerrarPanelPreferencias();
 }
@@ -1151,11 +1350,13 @@ function actualizarBotonesSesion() {
     const estaLogueado = Boolean(token);
 
     document.body.classList.toggle("is-authenticated", estaLogueado);
+    document.querySelectorAll(".loggedIn").forEach(element => {
+        element.classList.toggle("hidden", !estaLogueado);
+    });
 
     if (filtersSidebar) {
         filtersSidebar.hidden = !estaLogueado;
     }
-    const cantidadContainer = document.querySelector(".cantidad-wheel-container");
 
     if (!authActionBtn || !authActionIcon) {
         return;
@@ -1165,16 +1366,13 @@ function actualizarBotonesSesion() {
         authActionBtn.hidden = false;
         authActionBtn.setAttribute("aria-label", "Preferencias");
         authActionIcon.className = "bi bi-person-circle";
-         if (cantidadContainer) cantidadContainer.classList.remove("hidden");
+        return;
     }
-    else {
-        authActionIcon.className = "bi bi-box-arrow-in-left";
-        authActionBtn.hidden = false;
-        authActionBtn.setAttribute("aria-label", "Acceder");
-        cerrarPanelPreferencias();
 
-        if (cantidadContainer) cantidadContainer.classList.add("hidden");
-    }
+    authActionIcon.className = "bi bi-box-arrow-in-right";
+    authActionBtn.hidden = false;
+    authActionBtn.setAttribute("aria-label", "Acceder");
+    cerrarPanelPreferencias();
 }
 
 if (authActionBtn) {
@@ -1234,15 +1432,6 @@ if (loginModalForm) {
             return;
         }
 
-        if (authMode === "register") {
-            const confirmPassword = confirmPasswordInput.value;
-
-            if (password !== confirmPassword) {
-                mostrarMensajeAuth("Las contraseñas no coinciden.");
-                return;
-            }
-        }
-
         mostrarMensajeAuth(
             authMode === "register" ? "Creando cuenta..." : "Accediendo...",
             "success",
@@ -1255,7 +1444,6 @@ if (loginModalForm) {
                 aplicarModoAuth();
                 mostrarMensajeAuth("Cuenta creada. Ya puedes iniciar sesion.", "success");
                 loginPasswordInput.value = "";
-                confirmPasswordInput.value = "";
                 return;
             }
 
@@ -1308,6 +1496,26 @@ if (expandResultsPreference) {
     filterInput.addEventListener("change", limpiarResultadosPorCambioDeFiltros);
 });
 
+if (disableStaticFilters) {
+    disableStaticFilters.addEventListener("click", () => {
+        desactivarFiltrosEstaticos();
+        limpiarResultadosPorCambioDeFiltros();
+        iluminarChipFiltro(disableStaticFilters, staticFiltersLightTimeout, (timeoutId) => {
+            staticFiltersLightTimeout = timeoutId;
+        });
+    });
+}
+
+if (disableDynamicFilters) {
+    disableDynamicFilters.addEventListener("click", () => {
+        desactivarFiltrosDinamicos();
+        limpiarResultadosPorCambioDeFiltros();
+        iluminarChipFiltro(disableDynamicFilters, dynamicFiltersLightTimeout, (timeoutId) => {
+            dynamicFiltersLightTimeout = timeoutId;
+        });
+    });
+}
+
 [filterWindMin, filterWindMax].forEach(filterInput => {
     if (!filterInput) {
         return;
@@ -1319,21 +1527,103 @@ if (expandResultsPreference) {
     });
 });
 
-if (filterWindReset) {
-    filterWindReset.addEventListener("change", () => {
-        if (!filterWindReset.checked) {
-            return;
-        }
+[filterCloudMin, filterCloudMax].forEach(filterInput => {
+    if (!filterInput) {
+        return;
+    }
 
+    filterInput.addEventListener("input", () => {
+        actualizarFiltroNubosidadUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+});
+
+[filterTemperatureMin, filterTemperatureMax].forEach(filterInput => {
+    if (!filterInput) {
+        return;
+    }
+
+    filterInput.addEventListener("input", () => {
+        actualizarFiltroTemperaturaAmbienteUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+});
+
+[filterWaveMin, filterWaveMax].forEach(filterInput => {
+    if (!filterInput) {
+        return;
+    }
+
+    filterInput.addEventListener("input", () => {
+        actualizarFiltroOleajeUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+});
+
+if (filterWindReset) {
+    filterWindReset.addEventListener("click", () => {
         restablecerFiltroViento();
         limpiarResultadosPorCambioDeFiltros();
-        filterWindReset.checked = false;
+        iluminarChipFiltro(filterWindReset, windResetLightTimeout, (timeoutId) => {
+            windResetLightTimeout = timeoutId;
+        });
     });
 }
 
 if (filterWindDisabled) {
     filterWindDisabled.addEventListener("change", () => {
         actualizarFiltroVientoUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+}
+
+if (filterCloudReset) {
+    filterCloudReset.addEventListener("click", () => {
+        restablecerFiltroNubosidad();
+        limpiarResultadosPorCambioDeFiltros();
+        iluminarChipFiltro(filterCloudReset, cloudResetLightTimeout, (timeoutId) => {
+            cloudResetLightTimeout = timeoutId;
+        });
+    });
+}
+
+if (filterCloudDisabled) {
+    filterCloudDisabled.addEventListener("change", () => {
+        actualizarFiltroNubosidadUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+}
+
+if (filterTemperatureReset) {
+    filterTemperatureReset.addEventListener("click", () => {
+        restablecerFiltroTemperaturaAmbiente();
+        limpiarResultadosPorCambioDeFiltros();
+        iluminarChipFiltro(filterTemperatureReset, temperatureResetLightTimeout, (timeoutId) => {
+            temperatureResetLightTimeout = timeoutId;
+        });
+    });
+}
+
+if (filterTemperatureDisabled) {
+    filterTemperatureDisabled.addEventListener("change", () => {
+        actualizarFiltroTemperaturaAmbienteUI();
+        limpiarResultadosPorCambioDeFiltros();
+    });
+}
+
+if (filterWaveReset) {
+    filterWaveReset.addEventListener("click", () => {
+        restablecerFiltroOleaje();
+        limpiarResultadosPorCambioDeFiltros();
+        iluminarChipFiltro(filterWaveReset, waveResetLightTimeout, (timeoutId) => {
+            waveResetLightTimeout = timeoutId;
+        });
+    });
+}
+
+if (filterWaveDisabled) {
+    filterWaveDisabled.addEventListener("change", () => {
+        actualizarFiltroOleajeUI();
         limpiarResultadosPorCambioDeFiltros();
     });
 }
@@ -1358,7 +1648,9 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-window.addEventListener("resize", actualizarAlturaHeader);
+window.addEventListener("resize", () => {
+    actualizarAlturaHeader();
+});
 
 if (appHeader && "ResizeObserver" in window) {
     const headerObserver = new ResizeObserver(actualizarAlturaHeader);
@@ -1371,13 +1663,16 @@ if (appHeader && "ResizeObserver" in window) {
 
 actualizarAlturaHeader();
 actualizarFiltroVientoUI();
+actualizarFiltroNubosidadUI();
+actualizarFiltroTemperaturaAmbienteUI();
+actualizarFiltroOleajeUI();
+configurarBotonBusquedaFlotante();
 cargarPreferenciasUI();
-
 
 if (document.getElementById("fecha")) {
     seleccionarActividad(obtenerActividadInicial());
     configurarFechaYHoraIniciales();
 }
 loadCurrentUser();
-renderizarWheelCantidad();
+configurarSliderCantidad();
 actualizarBotonesSesion();
