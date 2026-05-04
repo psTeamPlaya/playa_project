@@ -98,15 +98,14 @@
     }
 
     .filters-sidebar {
-        position: sticky;
-        top: 0;
-        height: calc(100vh - var(--app-header-height, 0px));
-        min-height: 320px;
+        position: static;
+        height: auto;
+        min-height: 0;
         padding: 1.25rem;
         background: #ffffff;
         border-right: 1px solid var(--border);
         box-shadow: 8px 0 24px rgba(15, 23, 42, 0.06);
-        overflow-y: auto;
+        overflow: visible;
         border-radius: 14px;
     }
 
@@ -1451,6 +1450,25 @@
 
     .search-actions .btn-primary {
         min-width: min(100%, 18rem);
+    }
+
+    .floating-search-button {
+        position: fixed;
+        top: 0.9rem;
+        left: var(--floating-search-left, 50%);
+        z-index: 50;
+        width: var(--floating-search-width, min(calc(100% - 2rem), 18rem));
+        box-shadow: 0 14px 34px rgba(2, 62, 138, 0.28);
+        transform: translateY(-150%);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .floating-search-button.is-visible {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
     }
 
     @media (max-width: 1100px) {
