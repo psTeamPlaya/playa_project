@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mi dia de Playa</title>
+  <title>Mi díade Playa</title>
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
   <link rel="stylesheet" href="/static/css/styles.css?v=results-row-layout">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
@@ -46,7 +46,7 @@
 
         <div class="hero-logo">
           <img src="/static/img/logo.png" alt="Logo Mi dia de Playa">
-          <h1>Mi dia de Playa</h1>
+          <h1>Mi día de Playa</h1>
         </div>
       </div>
     </section>
@@ -56,6 +56,11 @@
     <aside class="filters-sidebar" id="filtersSidebar" hidden aria-label="Filtros de playa">
       <div class="filters-content">
         <h2>Filtros</h2>
+        <div class="filter-actions" aria-label="Acciones globales de filtros">
+          <button class="filter-chip-button filter-action-button" id="disableStaticFilters" type="button">
+            Desactivar filtros estáticos
+          </button>
+        </div>
         <fieldset class="filter-group">
           <legend>Tipo de playa</legend>
           <label class="filter-option">
@@ -83,6 +88,48 @@
             <span>Escuela de windsurf</span>
           </label>
         </fieldset>
+        <div class="filter-actions" aria-label="Acciones globales de filtros">
+          <button class="filter-chip-button filter-action-button" id="disableDynamicFilters" type="button">
+            Desactivar filtros dinámicos
+          </button>
+        </div>
+        <fieldset class="filter-group dynamic-filter-group">
+          <legend>Nubosidad</legend>
+          <div class="range-values">
+            <span><strong id="cloudMinValue">0</strong>%</span>
+            <span><strong id="cloudMaxValue">20</strong>%</span>
+          </div>
+          <div class="dual-range" id="cloudRangeTrack">
+            <input type="range" id="filterCloudMin" min="0" max="100" step="1" value="0" aria-label="Nubosidad minima">
+            <input type="range" id="filterCloudMax" min="0" max="100" step="1" value="20" aria-label="Nubosidad maxima">
+          </div>
+          <button class="filter-chip-button" id="filterCloudReset" type="button">
+            Restablecer filtro
+          </button>
+          <label class="filter-option filter-compact-option">
+            <input type="checkbox" id="filterCloudDisabled">
+            <span>Desactivar filtro</span>
+          </label>
+        </fieldset>
+
+        <fieldset class="filter-group dynamic-filter-group">
+          <legend>Temperatura ambiente</legend>
+          <div class="range-values">
+            <span><strong id="temperatureMinValue">20</strong> ºC</span>
+            <span><strong id="temperatureMaxValue">29</strong> ºC</span>
+          </div>
+          <div class="dual-range" id="temperatureRangeTrack">
+            <input type="range" id="filterTemperatureMin" min="0" max="45" step="1" value="20" aria-label="Temperatura ambiente minima">
+            <input type="range" id="filterTemperatureMax" min="0" max="45" step="1" value="29" aria-label="Temperatura ambiente maxima">
+          </div>
+          <button class="filter-chip-button" id="filterTemperatureReset" type="button">
+            Restablecer filtro
+          </button>
+          <label class="filter-option filter-compact-option">
+            <input type="checkbox" id="filterTemperatureDisabled">
+            <span>Desactivar filtro</span>
+          </label>
+        </fieldset>
 
         <fieldset class="filter-group dynamic-filter-group">
           <legend>Velocidad del viento</legend>
@@ -102,12 +149,32 @@
             <span>Desactivar filtro</span>
           </label>
         </fieldset>
+
+
+        <fieldset class="filter-group dynamic-filter-group">
+          <legend>Oleaje</legend>
+          <div class="range-values">
+            <span><strong id="waveMinValue">0</strong> m</span>
+            <span><strong id="waveMaxValue">1</strong> m</span>
+          </div>
+          <div class="dual-range" id="waveRangeTrack">
+            <input type="range" id="filterWaveMin" min="0" max="5" step="0.1" value="0" aria-label="Oleaje minimo">
+            <input type="range" id="filterWaveMax" min="0" max="5" step="0.1" value="1" aria-label="Oleaje maximo">
+          </div>
+          <button class="filter-chip-button" id="filterWaveReset" type="button">
+            Restablecer filtro
+          </button>
+          <label class="filter-option filter-compact-option">
+            <input type="checkbox" id="filterWaveDisabled">
+            <span>Desactivar filtro</span>
+          </label>
+        </fieldset>
       </div>
     </aside>
 
   <main class="app-main">
     <section class="panel">
-      <h2>1. ¿Qué quieres hacer en tu dia de playa?</h2>
+      <h2>1. ¿Qué quieres hacer en tu día de playa?</h2>
       <div class="activities-grid" id="activitiesGrid">
         <div class="activity-card" data-activity="tomar_sol">
           <span class="activity-icon">☀️</span>
