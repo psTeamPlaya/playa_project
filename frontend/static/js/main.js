@@ -602,7 +602,7 @@ function actualizarTextoFecha() {
 
 function obtenerHoraMinimaPermitida() {
     const ahora = new Date();
-        const hora = ahora.getHours();
+    const hora = ahora.getHours();
     const minutos = ahora.getMinutes();
 
     if (minutos === 0) {
@@ -1038,6 +1038,17 @@ async function buscarRecomendaciones() {
         }
 
         const data = await response.json();
+        const favorites = await getFavoriteBeachIds();
+        console.log("favs: ", favorites);  // TODO for debug
+
+        const favoriteIds = favorites.map(f => f.beach_id);
+        console.log("fav ids:", favoriteIds);  // TODO for debug
+
+        data.resultados.forEach(playa => {
+            playa.isFavorite = favoriteIds.includes(playa.beach_id);
+        });
+        console.log("Resultados obtenidos:", data.resultados);  // TODO for debug
+
         pintarResultados(data.resultados);
         desplazarAPlayasRecomendadas();
 
@@ -1102,9 +1113,56 @@ if (floatingBuscarBtn) {
     floatingBuscarBtn.addEventListener("click", buscarRecomendaciones);
 }
 
+resultsContainer.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".favorite-btn");
+
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    console.log("btn pressed:", btn);
+
+    const beachId = Number(btn.dataset.id);
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Please log in");
+        return;
+    }
+
+    const isFavorite = btn.innerText === "❤️";
+    const method = isFavorite ? "DELETE" : "POST";
+
+    await authFetch(`/api/favorites/${beachId}`, {
+        method
+    });
+
+    btn.innerText = isFavorite ? "🤍" : "❤️";   // backward order because we changed it
+});
+
+
 // =========================================================
 // RESULTADOS
 // =========================================================
+
+
+async function getFavoriteBeachIds() {
+    const token = localStorage.getItem("token");
+    if (!token) {   // user not logged in
+        return [];
+    }
+
+    try {
+        const response = await authFetch("/api/favorites");
+        if (!response.ok) return [];
+        return await response.json();
+    } catch (e) {
+        console.error("Failed to load favorites");
+        return [];
+    }
+}
 
 function pintarResultados(resultados) {
     if (!resultados || resultados.length === 0) {
@@ -1133,8 +1191,11 @@ function pintarResultados(resultados) {
                 </div>
 
                 <div class="beach-summary-right">
-                <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
-                <span class="expand-hint" aria-hidden="true">+</span>
+                    <button class="favorite-btn" data-id="${playa.beach_id}">
+                        ${playa.isFavorite ? '❤️' : '🤍'}
+                    </button>
+                    <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
+                    <span class="expand-hint" aria-hidden="true">+</span>
                 </div>
             </summary>
 
@@ -1311,6 +1372,12 @@ function logout() {
     localStorage.removeItem("token");
 
     loadCurrentUser();
+
+    document.querySelectorAll(".favorite-btn").forEach(btn => {
+        btn.innerText = "🤍";
+    });
+    console.log("favorites reset after logout");  // TODO for debug
+
     actualizarBotonesSesion();
     cerrarPanelPreferencias();
 }
