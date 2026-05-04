@@ -48,7 +48,7 @@ def list_favorites(
         return {"message": "not logged in"}
     favorites = db.query(FavoriteBeaches).filter_by(user_id=user.id).all()
     if not favorites:
-        return {"message": "no favorites found"}
+        return []
     return [{"beach_id": fav.beach_id} for fav in favorites]
 
 
