@@ -174,8 +174,12 @@
           <div id="suggestions" class="suggestions-dropdown"></div>
         </div>
         <div class="field range-field">
-      <label>Rango de búsqueda:</label>
-        <div class="range-selector">
+          <label>Rango de búsqueda:</label>
+          <div class="actions location-actions">
+            <button class="btn-secondary" id="btnGeolocalizar">📍 Mi ubicación</button>
+            <button class="btn-secondary" id="btnMapa">🗺️ Elige una ubicación</button>
+          </div>
+          <div class="range-selector">
             <input type="radio" id="rango5" name="rango" value="5" checked>
             <label for="rango5">5 km</label>
 
@@ -184,15 +188,13 @@
 
             <input type="radio" id="rango50" name="rango" value="50">
             <label for="rango50">50 km</label>
-        </div>
-      </div>
-        <div class="actions location-actions">
-          <button class="btn-secondary" id="btnGeolocalizar">📍 Mi ubicación</button>
-          <button class="btn-secondary" id="btnMapa">🗺️ Elige una ubicación</button>
+          </div>
         </div>
       </div>
       <div id="locationHistory" class="mini-chip-container"></div>
+    </section>
 
+    <section class="panel search-panel">
       <div class="actions search-actions">
         <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
       </div>
@@ -204,11 +206,22 @@
       <div class="results-header">
         <h2>4. Playas recomendadas</h2>
         <div class="cantidad-wheel-container loggedIn hidden">
-          <label>Cantidad</label>
-
-          <div class="hour-wheel-wrapper">
-            <div class="hour-wheel-highlight"></div>
-            <div class="hour-wheel" id="cantidadWheel"></div>
+          <div class="cantidad-slider-header">
+            <label for="cantidadSlider">Cantidad</label>
+            <output id="cantidadSliderValue" for="cantidadSlider">3</output>
+          </div>
+          <input
+            type="range"
+            id="cantidadSlider"
+            min="0"
+            max="3"
+            step="1"
+            value="3"
+            aria-label="Cantidad de playas recomendadas"
+          />
+          <div class="cantidad-slider-limits">
+            <span>0</span>
+            <span id="cantidadSliderMax">3</span>
           </div>
         </div>
       </div>
