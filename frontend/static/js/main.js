@@ -89,22 +89,18 @@ const WIND_FILTER_DEFAULTS = {
     min: 0,
     max: 15
 };
-
 const CLOUD_FILTER_DEFAULTS = {
     min: 0,
     max: 20
 };
-
 const TEMPERATURE_FILTER_DEFAULTS = {
     min: 20,
     max: 29
 };
-
 const WAVE_FILTER_DEFAULTS = {
     min: 0,
     max: 1
 };
-
 const STORAGE_KEYS = {
     rememberActivity: "preferences.rememberActivity",
     rememberSchedule: "preferences.rememberSchedule",
@@ -129,9 +125,7 @@ function guardarPreferencia(clave, valor) {
 }
 
 function actualizarAlturaHeader() {
-    if (!appHeader) {
-        return;
-    }
+    if (!appHeader) return;
 
     document.documentElement.style.setProperty(
         "--app-header-height",
@@ -143,11 +137,9 @@ function cargarPreferenciasUI() {
     if (rememberActivityPreference) {
         rememberActivityPreference.checked = leerPreferencia(STORAGE_KEYS.rememberActivity);
     }
-
     if (rememberSchedulePreference) {
         rememberSchedulePreference.checked = leerPreferencia(STORAGE_KEYS.rememberSchedule);
     }
-
     if (expandResultsPreference) {
         expandResultsPreference.checked = leerPreferencia(STORAGE_KEYS.expandResults);
     }
@@ -164,9 +156,7 @@ function cerrarPanelPreferencias() {
 }
 
 function abrirPanelPreferencias() {
-    if (!preferencesPanel) {
-        return;
-    }
+    if (!preferencesPanel) {return;}
 
     clearTimeout(preferencesCloseTimeout);
     preferencesPanel.hidden = false;
@@ -180,7 +170,6 @@ function guardarActividadRecordada() {
         localStorage.removeItem(STORAGE_KEYS.savedActivity);
         return;
     }
-
     localStorage.setItem(STORAGE_KEYS.savedActivity, actividadSeleccionada);
 }
 
@@ -190,7 +179,6 @@ function guardarHorarioRecordado() {
         localStorage.removeItem(STORAGE_KEYS.savedHour);
         return;
     }
-
     localStorage.setItem(STORAGE_KEYS.savedDate, fechaInput.value);
     localStorage.setItem(STORAGE_KEYS.savedHour, horaSeleccionada);
 }
@@ -200,27 +188,20 @@ function obtenerActividadInicial() {
     if (rememberActivityPreference?.checked && actividadGuardada) {
         return actividadGuardada;
     }
-
     return DEFAULT_ACTIVITY;
 }
 
 function obtenerHorarioInicial() {
-    if (!rememberSchedulePreference?.checked) {
-        return null;
-    }
+    if (!rememberSchedulePreference?.checked) {return null;}
 
     const fechaGuardada = localStorage.getItem(STORAGE_KEYS.savedDate);
     const horaGuardada = localStorage.getItem(STORAGE_KEYS.savedHour);
     const hoy = formatearFechaLocal(new Date());
 
-    if (!fechaGuardada || !horaGuardada || fechaGuardada < hoy) {
-        return null;
-    }
-
+    if (!fechaGuardada || !horaGuardada || fechaGuardada < hoy) {return null;}
     if (fechaGuardada === hoy && esHoraPasadaParaFecha(fechaGuardada, horaGuardada)) {
         return null;
     }
-
     return {
         fecha: fechaGuardada,
         hora: horaGuardada
@@ -271,55 +252,34 @@ function obtenerFiltrosOleaje() {
 }
 
 function aplicarFiltrosAParametros(params) {
-    if (!estaSidebarFiltrosActiva()) {
-        return;
-    }
+    if (!estaSidebarFiltrosActiva()) return;
 
     const filtros = obtenerFiltrosTipoPlaya();
-
-    if (filtros.tipoArena) {
-        params.set("tipo_arena", "true");
-    }
-
-    if (filtros.tipoPiedra) {
-        params.set("tipo_piedra", "true");
-    }
-
-    if (filterFoodPlaces?.checked) {
-        params.set("sitios_para_comer", "true");
-    }
-
-    if (filterSurfSchool?.checked) {
-        params.set("escuela_surf", "true");
-    }
-
-    if (filterWindsurfSchool?.checked) {
-        params.set("escuela_windsurf", "true");
-    }
-
+    if (filtros.tipoArena)              params.set("tipo_arena", "true");
+    if (filtros.tipoPiedra)             params.set("tipo_piedra", "true");
+    if (filterFoodPlaces?.checked)      params.set("sitios_para_comer", "true");
+    if (filterSurfSchool?.checked)      params.set("escuela_surf", "true");
+    if (filterWindsurfSchool?.checked)  params.set("escuela_windsurf", "true");
+    
     const filtrosViento = obtenerFiltrosViento();
-
     if (filtrosViento.activo) {
         params.set("min_velocidad_viento", String(filtrosViento.min));
         params.set("max_velocidad_viento", String(filtrosViento.max));
     }
 
     const filtrosNubosidad = obtenerFiltrosNubosidad();
-
     if (filtrosNubosidad.activo) {
         params.set("min_nubosidad", String(filtrosNubosidad.min));
         params.set("max_nubosidad", String(filtrosNubosidad.max));
     }
 
     const filtrosTemperatura = obtenerFiltrosTemperaturaAmbiente();
-
     if (filtrosTemperatura.activo) {
         params.set("min_temperatura_ambiente", String(filtrosTemperatura.min));
         params.set("max_temperatura_ambiente", String(filtrosTemperatura.max));
     }
 
     const filtrosOleaje = obtenerFiltrosOleaje();
-
     if (filtrosOleaje.activo) {
         params.set("min_altura_oleaje", String(filtrosOleaje.min));
         params.set("max_altura_oleaje", String(filtrosOleaje.max));
@@ -327,27 +287,18 @@ function aplicarFiltrosAParametros(params) {
 }
 
 function actualizarFiltroVientoUI() {
-    if (!filterWindMin || !filterWindMax) {
-        return;
-    }
-
+    if (!filterWindMin || !filterWindMax) return;
+    
     let min = Number(filterWindMin.value);
     let max = Number(filterWindMax.value);
-
     if (min > max) {
         [min, max] = [max, min];
         filterWindMin.value = String(min);
         filterWindMax.value = String(max);
     }
 
-    if (windMinValue) {
-        windMinValue.textContent = String(min);
-    }
-
-    if (windMaxValue) {
-        windMaxValue.textContent = String(max);
-    }
-
+    if (windMinValue) windMinValue.textContent = String(min);
+    if (windMaxValue) windMaxValue.textContent = String(max);
     if (windRangeTrack) {
         const minPermitido = Number(filterWindMin.min);
         const maxPermitido = Number(filterWindMin.max);
@@ -359,44 +310,30 @@ function actualizarFiltroVientoUI() {
         windRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
         windRangeTrack.classList.toggle("is-disabled", Boolean(filterWindDisabled?.checked));
     }
-
     const desactivado = Boolean(filterWindDisabled?.checked);
     filterWindMin.disabled = desactivado;
     filterWindMax.disabled = desactivado;
 }
 
 function restablecerFiltroViento() {
-    if (!filterWindMin || !filterWindMax) {
-        return;
-    }
-
+    if (!filterWindMin || !filterWindMax) return;
     filterWindMin.value = String(WIND_FILTER_DEFAULTS.min);
     filterWindMax.value = String(WIND_FILTER_DEFAULTS.max);
     actualizarFiltroVientoUI();
 }
 
 function actualizarFiltroNubosidadUI() {
-    if (!filterCloudMin || !filterCloudMax) {
-        return;
-    }
-
+    if (!filterCloudMin || !filterCloudMax) return;
+    
     let min = Number(filterCloudMin.value);
     let max = Number(filterCloudMax.value);
-
     if (min > max) {
         [min, max] = [max, min];
         filterCloudMin.value = String(min);
         filterCloudMax.value = String(max);
     }
-
-    if (cloudMinValue) {
-        cloudMinValue.textContent = String(min);
-    }
-
-    if (cloudMaxValue) {
-        cloudMaxValue.textContent = String(max);
-    }
-
+    if (cloudMinValue) cloudMinValue.textContent = String(min);
+    if (cloudMaxValue) cloudMaxValue.textContent = String(max);
     if (cloudRangeTrack) {
         const minPermitido = Number(filterCloudMin.min);
         const maxPermitido = Number(filterCloudMin.max);
@@ -408,16 +345,13 @@ function actualizarFiltroNubosidadUI() {
         cloudRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
         cloudRangeTrack.classList.toggle("is-disabled", Boolean(filterCloudDisabled?.checked));
     }
-
     const desactivado = Boolean(filterCloudDisabled?.checked);
     filterCloudMin.disabled = desactivado;
     filterCloudMax.disabled = desactivado;
 }
 
 function restablecerFiltroNubosidad() {
-    if (!filterCloudMin || !filterCloudMax) {
-        return;
-    }
+    if (!filterCloudMin || !filterCloudMax) return;
 
     filterCloudMin.value = String(CLOUD_FILTER_DEFAULTS.min);
     filterCloudMax.value = String(CLOUD_FILTER_DEFAULTS.max);
@@ -425,27 +359,17 @@ function restablecerFiltroNubosidad() {
 }
 
 function actualizarFiltroTemperaturaAmbienteUI() {
-    if (!filterTemperatureMin || !filterTemperatureMax) {
-        return;
-    }
+    if (!filterTemperatureMin || !filterTemperatureMax) return;
 
     let min = Number(filterTemperatureMin.value);
     let max = Number(filterTemperatureMax.value);
-
     if (min > max) {
         [min, max] = [max, min];
         filterTemperatureMin.value = String(min);
         filterTemperatureMax.value = String(max);
     }
-
-    if (temperatureMinValue) {
-        temperatureMinValue.textContent = String(min);
-    }
-
-    if (temperatureMaxValue) {
-        temperatureMaxValue.textContent = String(max);
-    }
-
+    if (temperatureMinValue) temperatureMinValue.textContent = String(min);
+    if (temperatureMaxValue) temperatureMaxValue.textContent = String(max);
     if (temperatureRangeTrack) {
         const minPermitido = Number(filterTemperatureMin.min);
         const maxPermitido = Number(filterTemperatureMin.max);
@@ -457,17 +381,13 @@ function actualizarFiltroTemperaturaAmbienteUI() {
         temperatureRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
         temperatureRangeTrack.classList.toggle("is-disabled", Boolean(filterTemperatureDisabled?.checked));
     }
-
     const desactivado = Boolean(filterTemperatureDisabled?.checked);
     filterTemperatureMin.disabled = desactivado;
     filterTemperatureMax.disabled = desactivado;
 }
 
 function restablecerFiltroTemperaturaAmbiente() {
-    if (!filterTemperatureMin || !filterTemperatureMax) {
-        return;
-    }
-
+    if (!filterTemperatureMin || !filterTemperatureMax) return;
     filterTemperatureMin.value = String(TEMPERATURE_FILTER_DEFAULTS.min);
     filterTemperatureMax.value = String(TEMPERATURE_FILTER_DEFAULTS.max);
     actualizarFiltroTemperaturaAmbienteUI();
@@ -478,27 +398,17 @@ function formatearValorDecimalFiltro(valor) {
 }
 
 function actualizarFiltroOleajeUI() {
-    if (!filterWaveMin || !filterWaveMax) {
-        return;
-    }
+    if (!filterWaveMin || !filterWaveMax) return;
 
     let min = Number(filterWaveMin.value);
     let max = Number(filterWaveMax.value);
-
     if (min > max) {
         [min, max] = [max, min];
         filterWaveMin.value = String(min);
         filterWaveMax.value = String(max);
     }
-
-    if (waveMinValue) {
-        waveMinValue.textContent = formatearValorDecimalFiltro(min);
-    }
-
-    if (waveMaxValue) {
-        waveMaxValue.textContent = formatearValorDecimalFiltro(max);
-    }
-
+    if (waveMinValue) waveMinValue.textContent = formatearValorDecimalFiltro(min);
+    if (waveMaxValue) waveMaxValue.textContent = formatearValorDecimalFiltro(max);
     if (waveRangeTrack) {
         const minPermitido = Number(filterWaveMin.min);
         const maxPermitido = Number(filterWaveMin.max);
@@ -510,37 +420,29 @@ function actualizarFiltroOleajeUI() {
         waveRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
         waveRangeTrack.classList.toggle("is-disabled", Boolean(filterWaveDisabled?.checked));
     }
-
     const desactivado = Boolean(filterWaveDisabled?.checked);
     filterWaveMin.disabled = desactivado;
     filterWaveMax.disabled = desactivado;
 }
 
 function restablecerFiltroOleaje() {
-    if (!filterWaveMin || !filterWaveMax) {
-        return;
-    }
-
+    if (!filterWaveMin || !filterWaveMax) return;
     filterWaveMin.value = String(WAVE_FILTER_DEFAULTS.min);
     filterWaveMax.value = String(WAVE_FILTER_DEFAULTS.max);
     actualizarFiltroOleajeUI();
 }
 
 function desactivarFiltrosEstaticos() {
-    [filterSandBeach, filterStoneBeach, filterFoodPlaces, filterSurfSchool, filterWindsurfSchool].forEach(filterInput => {
-        if (filterInput) {
-            filterInput.checked = false;
-        }
+    [filterSandBeach, filterStoneBeach, filterFoodPlaces, 
+        filterSurfSchool, filterWindsurfSchool].forEach(filterInput => {
+        if (filterInput) filterInput.checked = false;
     });
 }
 
 function desactivarFiltrosDinamicos() {
     [filterCloudDisabled, filterTemperatureDisabled, filterWindDisabled, filterWaveDisabled].forEach(filterInput => {
-        if (filterInput) {
-            filterInput.checked = true;
-        }
+        if (filterInput) filterInput.checked = true;
     });
-
     actualizarFiltroNubosidadUI();
     actualizarFiltroTemperaturaAmbienteUI();
     actualizarFiltroVientoUI();
@@ -561,7 +463,6 @@ function iluminarChipFiltro(chip, timeoutId, onTimeoutChange) {
 const cantidadSlider = document.getElementById("cantidadSlider");
 const cantidadSliderValue = document.getElementById("cantidadSliderValue");
 const cantidadSliderMax = document.getElementById("cantidadSliderMax");
-
 let cantidadSeleccionada = Number(DEFAULT_QUANTITY);
 
 // =========================================================
@@ -580,7 +481,6 @@ function obtenerAbreviaturaDia(fechaTexto) {
 
     const [year, month, day] = fechaTexto.split("-").map(Number);
     const fecha = new Date(year, month - 1, day);
-
     return new Intl.DateTimeFormat("es-ES", { weekday: "short" })
         .format(fecha)
         .replace(".", "")
@@ -592,7 +492,6 @@ function formatearFechaVisual(fechaTexto) {
 
     const [year, month, day] = fechaTexto.split("-");
     const diaSemana = obtenerAbreviaturaDia(fechaTexto);
-
     return `${diaSemana} · ${day}/${month}/${year}`;
 }
 
@@ -605,10 +504,7 @@ function obtenerHoraMinimaPermitida() {
     const hora = ahora.getHours();
     const minutos = ahora.getMinutes();
 
-    if (minutos === 0) {
-        return hora;
-    }
-
+    if (minutos === 0) return hora;
     return hora + 1;
 }
 
@@ -618,19 +514,13 @@ function obtenerHoraTexto(hourNumber) {
 }
 
 function mostrarAvisoSolar(mensaje) {
-    if (!sunAlertEl) {
-        return;
-    }
-
+    if (!sunAlertEl) return;
     sunAlertEl.textContent = mensaje;
     sunAlertEl.hidden = false;
 }
 
 function ocultarAvisoSolar() {
-    if (!sunAlertEl) {
-        return;
-    }
-
+    if (!sunAlertEl) return;
     sunAlertEl.textContent = "";
     sunAlertEl.hidden = true;
 }
@@ -638,17 +528,10 @@ function ocultarAvisoSolar() {
 function obtenerHorasDisponiblesParaFecha(fechaTexto) {
     const horas = [];
     const hoy = formatearFechaLocal(new Date());
-
     let horaInicio = 0;
 
-    if (fechaTexto === hoy) {
-        horaInicio = obtenerHoraMinimaPermitida();
-    }
-
-    for (let hora = horaInicio; hora <= 23; hora++) {
-        horas.push(obtenerHoraTexto(hora));
-    }
-
+    if (fechaTexto === hoy) horaInicio = obtenerHoraMinimaPermitida();
+    for (let hora = horaInicio; hora <= 23; hora++) horas.push(obtenerHoraTexto(hora));
     return horas;
 }
 
@@ -660,11 +543,9 @@ function renderizarWheelHoras(fechaTexto) {
         .join("");
 
     hourOptions = [...hourWheel.querySelectorAll(".hour-option")];
-
     hourOptions.forEach(option => {
         option.addEventListener("click", () => {
             const horaAnterior = horaSeleccionada;
-
             option.scrollIntoView({
                 block: "center",
                 behavior: "smooth"
@@ -684,7 +565,6 @@ function renderizarWheelHoras(fechaTexto) {
     if (!horasDisponibles.includes(horaSeleccionada)) {
         horaSeleccionada = horasDisponibles[0] || "";
     }
-
     if (horaSeleccionada) {
         fijarHoraInicial(horaSeleccionada);
         guardarHorarioRecordado();
@@ -692,9 +572,7 @@ function renderizarWheelHoras(fechaTexto) {
 }
 
 function actualizarCantidadSliderUI() {
-    if (!cantidadSlider || !cantidadSliderValue) {
-        return;
-    }
+    if (!cantidadSlider || !cantidadSliderValue) return;
 
     cantidadSeleccionada = Number(cantidadSlider.value) || 0;
     cantidadSliderValue.value = String(cantidadSeleccionada);
@@ -702,13 +580,9 @@ function actualizarCantidadSliderUI() {
 }
 
 async function configurarSliderCantidad() {
-    if (!cantidadSlider) {
-        return;
-    }
-
+    if (!cantidadSlider) return;
     try {
         const response = await fetch("/api/playas/count");
-
         if (!response.ok) {
             throw new Error("No se pudo obtener el total de playas.");
         }
@@ -721,10 +595,8 @@ async function configurarSliderCantidad() {
         if (cantidadSliderMax) {
             cantidadSliderMax.textContent = String(maxPlayas);
         }
-    } catch (error) {
-        console.error(error);
-    }
-
+    } 
+    catch (error) {console.error(error);}
     actualizarCantidadSliderUI();
 }
 
@@ -736,7 +608,6 @@ function esHoraPasadaParaFecha(fechaTexto, horaTexto) {
     if (fechaTexto !== formatearFechaLocal(new Date())) {
         return false;
     }
-
     const horaNumero = Number(horaTexto.split(":")[0]);
     return horaNumero < obtenerHoraMinimaPermitida();
 }
@@ -751,13 +622,9 @@ function esHoraPasadaParaHoy(horaTexto) {
 
 function seleccionarActividad(actividad, limpiarResultados = false) {
     const card = document.querySelector(`.activity-card[data-activity="${actividad}"]`);
-
-    if (!card) {
-        return;
-    }
-
+    if (!card) return;
+    
     const actividadAnterior = actividadSeleccionada;
-
     activityCards.forEach(c => c.classList.remove("selected"));
     card.classList.add("selected");
     actividadSeleccionada = actividad;
@@ -785,7 +652,6 @@ function configurarFechaYHoraIniciales() {
     }
 
     const horaMinima = obtenerHoraMinimaPermitida();
-
     if (fechaInput.value === fechaHoy && horaMinima > 23) {
         const manana = new Date();
         manana.setDate(manana.getDate() + 1);
@@ -817,7 +683,6 @@ function obtenerPrimeraHoraDisponible() {
     const primeraDisponible = [...hourOptions].find(
         option => !option.classList.contains("disabled-hour")
     );
-
     return primeraDisponible ? primeraDisponible.dataset.hour : null;
 }
 
@@ -826,12 +691,8 @@ function asegurarHoraValidaSeleccionada() {
 
     if (!horaSeleccionada || !horasDisponibles.includes(horaSeleccionada)) {
         const nuevaHoraValida = horasDisponibles[0] || null;
-
-        if (nuevaHoraValida) {
-            fijarHoraInicial(nuevaHoraValida);
-        } else {
-            horaSeleccionada = "";
-        }
+        if (nuevaHoraValida) fijarHoraInicial(nuevaHoraValida);
+        else                 horaSeleccionada = "";
     }
 }
 
@@ -845,12 +706,10 @@ function actualizarHoraActiva() {
 
     let opcionMasCercana = null;
     let distanciaMinima = Infinity;
-
     hourOptions.forEach(option => {
         const rect = option.getBoundingClientRect();
         const optionCenter = rect.top + rect.height / 2;
         const distancia = Math.abs(wheelCenter - optionCenter);
-
         option.classList.remove("active", "near");
 
         if (distancia < distanciaMinima) {
@@ -864,11 +723,8 @@ function actualizarHoraActiva() {
         const optionCenter = rect.top + rect.height / 2;
         const distancia = Math.abs(wheelCenter - optionCenter);
 
-        if (distancia < 18) {
-            option.classList.add("active");
-        } else if (distancia < 54) {
-            option.classList.add("near");
-        }
+        if (distancia < 18)      option.classList.add("active");
+        else if (distancia < 54) option.classList.add("near");
     });
 
     if (opcionMasCercana) {
@@ -878,7 +734,8 @@ function actualizarHoraActiva() {
         if (horaSeleccionada !== horaAnterior) {
             guardarHorarioRecordado();
             limpiarResultadosPorCambioDeFiltros();
-        } else {
+        } 
+        else {
             statusEl.textContent = "";
         }
     }
@@ -894,7 +751,6 @@ hourWheel.addEventListener("scroll", () => {
 
         if (activa) {
             const horaAnterior = horaSeleccionada;
-
             activa.scrollIntoView({
                 block: "center",
                 behavior: "smooth"
@@ -902,12 +758,10 @@ hourWheel.addEventListener("scroll", () => {
             horaSeleccionada = activa.dataset.hour;
             guardarHorarioRecordado();
 
-            if (horaSeleccionada !== horaAnterior) {
-                limpiarResultadosPorCambioDeFiltros();
-            } else {
-                statusEl.textContent = "";
-            }
-        } else {
+            if (horaSeleccionada !== horaAnterior) limpiarResultadosPorCambioDeFiltros();
+            else statusEl.textContent = "";
+        } 
+        else {
             asegurarHoraValidaSeleccionada();
         }
     }, 120);
@@ -921,7 +775,6 @@ function fijarHoraInicial(valor = "12:00") {
             block: "center",
             behavior: "auto"
         });
-
         horaSeleccionada = valor;
         guardarHorarioRecordado();
         setTimeout(actualizarHoraActiva, 50);
@@ -982,35 +835,28 @@ async function buscarRecomendaciones() {
         statusEl.textContent = "Debes seleccionar una actividad.";
         return;
     }
-
     if (!fecha) {
         statusEl.textContent = "Debes seleccionar una fecha.";
         return;
     }
-
     if (!hora) {
         statusEl.textContent = "Debes seleccionar una hora.";
         return;
     }
-
     if (fecha < formatearFechaLocal(new Date())) {
         statusEl.textContent = "No puedes seleccionar una fecha pasada.";
         return;
     }
-
     if (esFechaHoy(fecha) && esHoraPasadaParaHoy(hora)) {
         statusEl.textContent = "No puedes seleccionar una hora pasada para el día de hoy.";
         asegurarHoraValidaSeleccionada();
         return;
     }
-
     statusEl.textContent = "Buscando recomendaciones...";
-
     try {
         const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
         const rango = radioSeleccionado ? radioSeleccionado.value : "5";
         const cantidad = Math.max(0, Number(cantidadSeleccionada) || 0);
-
         const params = new URLSearchParams({
             actividad: actividadSeleccionada,
             fecha,
@@ -1018,21 +864,18 @@ async function buscarRecomendaciones() {
             radius: rango,
             limit: String(cantidad)
         });
-
         if (selectedCoords) {
             const [lon, lat] = selectedCoords;
             params.set("lat", String(lat));
             params.set("lon", String(lon));
-        } else {
+        } 
+        else {
             statusEl.textContent = "Introduce informacion de localizacion.";
             return;
         }
-
         aplicarFiltrosAParametros(params);
-
         const url = `/recomendaciones?${params.toString()}`;
         const response = await fetch(url);
-
         if (!response.ok) {
             throw new Error("No se pudieron obtener las recomendaciones.");
         }
@@ -1047,19 +890,18 @@ async function buscarRecomendaciones() {
         data.resultados.forEach(playa => {
             playa.isFavorite = favoriteIds.includes(playa.beach_id);
         });
-        console.log("Resultados obtenidos:", data.resultados);  // TODO for debug
+        console.log("Resultados obtenidos:", data.resultados);  // debug
 
         pintarResultados(data.resultados);
         desplazarAPlayasRecomendadas();
-
         if (data.aviso_sol?.mensaje) {
             mostrarAvisoSolar(data.aviso_sol.mensaje);
             statusEl.textContent = "";
             return;
         }
-
         statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
-    } catch (error) {
+    } 
+    catch (error) {
         console.error(error);
         statusEl.textContent = "Ha ocurrido un error al consultar la API.";
         resultsContainer.innerHTML = `
@@ -1074,7 +916,6 @@ function actualizarBotonBusquedaFlotante() {
     if (!floatingBuscarBtn) {
         return;
     }
-
     const rect = buscarBtn.getBoundingClientRect();
     const debeMostrarse = rect.bottom < 0;
 
@@ -1085,20 +926,14 @@ function actualizarBotonBusquedaFlotante() {
 }
 
 function configurarBotonBusquedaFlotante() {
-    if (!buscarBtn || !floatingBuscarBtn) {
-        return;
-    }
-
+    if (!buscarBtn || !floatingBuscarBtn) return;
     actualizarBotonBusquedaFlotante();
     window.addEventListener("scroll", actualizarBotonBusquedaFlotante, { passive: true });
     window.addEventListener("resize", actualizarBotonBusquedaFlotante);
 }
 
 function desplazarAPlayasRecomendadas() {
-    if (!recommendedBeachesSection) {
-        return;
-    }
-
+    if (!recommendedBeachesSection) return;
     recommendedBeachesSection.scrollIntoView({
         behavior: "smooth",
         block: "start"
@@ -1108,57 +943,47 @@ function desplazarAPlayasRecomendadas() {
 if (buscarBtn) {
     buscarBtn.addEventListener("click", buscarRecomendaciones);
 }
-
 if (floatingBuscarBtn) {
     floatingBuscarBtn.addEventListener("click", buscarRecomendaciones);
 }
 
 resultsContainer.addEventListener("click", async (e) => {
     const btn = e.target.closest(".favorite-btn");
-
     if (!btn) return;
 
     e.preventDefault();
     e.stopPropagation();
-
     console.log("btn pressed:", btn);
 
     const beachId = Number(btn.dataset.id);
-
     const token = localStorage.getItem("token");
-
     if (!token) {
         alert("Please log in");
         return;
     }
-
     const isFavorite = btn.innerText === "❤️";
     const method = isFavorite ? "DELETE" : "POST";
-
     await authFetch(`/api/favorites/${beachId}`, {
         method
     });
-
     btn.innerText = isFavorite ? "🤍" : "❤️";   // backward order because we changed it
 });
-
 
 // =========================================================
 // RESULTADOS
 // =========================================================
-
 
 async function getFavoriteBeachIds() {
     const token = localStorage.getItem("token");
     if (!token) {   // user not logged in
         return [];
     }
-
     try {
         const response = await authFetch("/api/favorites");
         if (!response.ok) return [];
         return await response.json();
-    } catch (e) {
+    } 
+    catch (e) {
         console.error("Failed to load favorites");
         return [];
     }
@@ -1173,7 +998,6 @@ function pintarResultados(resultados) {
         `;
         return;
     }
-
     resultsContainer.innerHTML = resultados.map((playa, index) => {
         const servicios = formatearServicios(playa.servicios);
         const condiciones = playa.condiciones;
@@ -1237,7 +1061,6 @@ function configurarAnimacionDetalles() {
                 card.classList.remove("is-revealing");
                 return;
             }
-
             card.classList.remove("is-revealing");
             void card.offsetWidth;
             card.classList.add("is-revealing");
@@ -1254,7 +1077,6 @@ function formatearServicios(servicios) {
         escuela_surf: "🏄 Escuela de surf",
         escuela_windsurf: "🌬️ Escuela de windsurf"
     };
-
     return Object.entries(servicios)
         .filter(([_, disponible]) => disponible)
         .map(([clave]) => `<span class="chip">${iconos[clave] || clave}</span>`)
@@ -1266,10 +1088,7 @@ function formatearServicios(servicios) {
 // =========================================================
 
 function aplicarModoAuth() {
-    if (!authModeHint || !toggleAuthModeBtn || !authSubmitBtn) {
-        return;
-    }
-
+    if (!authModeHint || !toggleAuthModeBtn || !authSubmitBtn) return;
     const titleEl = document.getElementById("loginModalTitle");
 
     if (authMode === "register") {
@@ -1279,7 +1098,6 @@ function aplicarModoAuth() {
         toggleAuthModeBtn.textContent = "Iniciar sesion";
         return;
     }
-
     if (titleEl) titleEl.textContent = "Iniciar sesion";
     authSubmitBtn.textContent = "Entrar a mi cuenta";
     authModeHint.textContent = "¿Todavía no tienes cuenta?";
@@ -1287,20 +1105,14 @@ function aplicarModoAuth() {
 }
 
 function mostrarMensajeAuth(mensaje, tipo = "error") {
-    if (!loginErrorMessageEl) {
-        return;
-    }
-
+    if (!loginErrorMessageEl) return;
     loginErrorMessageEl.textContent = mensaje;
     loginErrorMessageEl.classList.remove("success", "error");
     loginErrorMessageEl.classList.add(tipo);
 }
 
 function abrirModalLogin() {
-    if (!loginModalEl) {
-        return;
-    }
-
+    if (!loginModalEl) return;
     authMode = "login";
     aplicarModoAuth();
     loginModalEl.hidden = false;
@@ -1310,10 +1122,7 @@ function abrirModalLogin() {
 }
 
 function cerrarModalLogin() {
-    if (!loginModalEl) {
-        return;
-    }
-
+    if (!loginModalEl) return;
     loginModalEl.hidden = true;
     mostrarMensajeAuth("", "error");
     loginModalForm.reset();
@@ -1321,7 +1130,6 @@ function cerrarModalLogin() {
 
 function authFetch(url, options = {}) {
     const token = localStorage.getItem("token");
-
     return fetch(url, {
         ...options,
         headers: {
@@ -1333,21 +1141,16 @@ function authFetch(url, options = {}) {
 
 async function loadCurrentUser() {
     const token = localStorage.getItem("token");
-
     if (!token) {
-        if (preferencesUserInfo) {
-            preferencesUserInfo.textContent = "";
-        }
+        if (preferencesUserInfo) preferencesUserInfo.textContent = "";
         return;
     }
-
     try {
         const response = await fetch("/auth/me", {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
         });
-
         if (!response.ok) {
             localStorage.removeItem("token");
             if (preferencesUserInfo) {
@@ -1356,28 +1159,23 @@ async function loadCurrentUser() {
             actualizarBotonesSesion();
             return;
         }
-
         const data = await response.json();
-
         if (preferencesUserInfo) {
             preferencesUserInfo.textContent = data.email;
         }
-
-    } catch (e) {
+    } 
+    catch (e) {
         console.error("Failed to load user");
     }
 }
 
 function logout() {
     localStorage.removeItem("token");
-
     loadCurrentUser();
-
     document.querySelectorAll(".favorite-btn").forEach(btn => {
         btn.innerText = "🤍";
     });
-    console.log("favorites reset after logout");  // TODO for debug
-
+    console.log("favorites reset after logout");  // debug
     actualizarBotonesSesion();
     cerrarPanelPreferencias();
 }
@@ -1390,22 +1188,14 @@ function actualizarBotonesSesion() {
     document.querySelectorAll(".loggedIn").forEach(element => {
         element.classList.toggle("hidden", !estaLogueado);
     });
-
-    if (filtersSidebar) {
-        filtersSidebar.hidden = !estaLogueado;
-    }
-
-    if (!authActionBtn || !authActionIcon) {
-        return;
-    }
-
+    if (filtersSidebar) filtersSidebar.hidden = !estaLogueado;
+    if (!authActionBtn || !authActionIcon) return;
     if (estaLogueado) {
         authActionBtn.hidden = false;
         authActionBtn.setAttribute("aria-label", "Preferencias");
         authActionIcon.className = "bi bi-person-circle";
         return;
     }
-
     authActionIcon.className = "bi bi-box-arrow-in-right";
     authActionBtn.hidden = false;
     authActionBtn.setAttribute("aria-label", "Acceder");
@@ -1415,19 +1205,14 @@ function actualizarBotonesSesion() {
 if (authActionBtn) {
     authActionBtn.addEventListener("click", () => {
         if (localStorage.getItem("token")) {
-            if (!preferencesPanel) {
-                return;
-            }
-
+            if (!preferencesPanel) return;
             if (preferencesPanel.hidden) {
                 abrirPanelPreferencias();
                 return;
             }
-
             cerrarPanelPreferencias();
             return;
         }
-
         abrirModalLogin();
     });
 }
@@ -1445,13 +1230,9 @@ if (loginModalEl) {
 }
 
 document.addEventListener("click", (event) => {
-    if (!preferencesPanel || preferencesPanel.hidden) {
-        return;
-    }
-
+    if (!preferencesPanel || preferencesPanel.hidden) return;
     const clickDentroPanel = preferencesPanel.contains(event.target);
     const clickEnToggle = authActionBtn?.contains(event.target);
-
     if (!clickDentroPanel && !clickEnToggle) {
         cerrarPanelPreferencias();
     }
@@ -1460,7 +1241,6 @@ document.addEventListener("click", (event) => {
 if (loginModalForm) {
     loginModalForm.addEventListener("submit", async (event) => {
         event.preventDefault();
-
         const email = loginEmailInput.value.trim();
         const password = loginPasswordInput.value;
 
@@ -1468,12 +1248,10 @@ if (loginModalForm) {
             mostrarMensajeAuth("Debes indicar correo y contraseña.");
             return;
         }
-
         mostrarMensajeAuth(
             authMode === "register" ? "Creando cuenta..." : "Accediendo...",
             "success",
         );
-
         try {
             if (authMode === "register") {
                 await registerUser(email, password);
@@ -1483,13 +1261,13 @@ if (loginModalForm) {
                 loginPasswordInput.value = "";
                 return;
             }
-
             const data = await login(email, password);
             localStorage.setItem("token", data.access_token);
             await loadCurrentUser();
             actualizarBotonesSesion();
             cerrarModalLogin();
-        } catch (error) {
+        } 
+        catch (error) {
             console.error(error);
             mostrarMensajeAuth(error.message || "No se pudo completar la operacion.");
         }
@@ -1526,10 +1304,7 @@ if (expandResultsPreference) {
 }
 
 [filterSandBeach, filterStoneBeach, filterFoodPlaces, filterSurfSchool, filterWindsurfSchool].forEach(filterInput => {
-    if (!filterInput) {
-        return;
-    }
-
+    if (!filterInput) return;
     filterInput.addEventListener("change", limpiarResultadosPorCambioDeFiltros);
 });
 
@@ -1554,10 +1329,7 @@ if (disableDynamicFilters) {
 }
 
 [filterWindMin, filterWindMax].forEach(filterInput => {
-    if (!filterInput) {
-        return;
-    }
-
+    if (!filterInput) return;
     filterInput.addEventListener("input", () => {
         actualizarFiltroVientoUI();
         limpiarResultadosPorCambioDeFiltros();
@@ -1565,10 +1337,7 @@ if (disableDynamicFilters) {
 });
 
 [filterCloudMin, filterCloudMax].forEach(filterInput => {
-    if (!filterInput) {
-        return;
-    }
-
+    if (!filterInput) return;
     filterInput.addEventListener("input", () => {
         actualizarFiltroNubosidadUI();
         limpiarResultadosPorCambioDeFiltros();
@@ -1576,10 +1345,7 @@ if (disableDynamicFilters) {
 });
 
 [filterTemperatureMin, filterTemperatureMax].forEach(filterInput => {
-    if (!filterInput) {
-        return;
-    }
-
+    if (!filterInput) return;
     filterInput.addEventListener("input", () => {
         actualizarFiltroTemperaturaAmbienteUI();
         limpiarResultadosPorCambioDeFiltros();
@@ -1587,10 +1353,7 @@ if (disableDynamicFilters) {
 });
 
 [filterWaveMin, filterWaveMax].forEach(filterInput => {
-    if (!filterInput) {
-        return;
-    }
-
+    if (!filterInput) return;
     filterInput.addEventListener("input", () => {
         actualizarFiltroOleajeUI();
         limpiarResultadosPorCambioDeFiltros();
@@ -1672,17 +1435,9 @@ if (preferencesLogoutBtn) {
 }
 
 document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") {
-        return;
-    }
-
-    if (loginModalEl && !loginModalEl.hidden) {
-        cerrarModalLogin();
-    }
-
-    if (preferencesPanel && !preferencesPanel.hidden) {
-        cerrarPanelPreferencias();
-    }
+    if (event.key !== "Escape") return;
+    if (loginModalEl && !loginModalEl.hidden) cerrarModalLogin();
+    if (preferencesPanel && !preferencesPanel.hidden) cerrarPanelPreferencias();
 });
 
 window.addEventListener("resize", () => {
