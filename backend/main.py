@@ -5,8 +5,8 @@ from fastapi.staticfiles import StaticFiles
 
 import backend.models       # NO BORRAR, SE USA AUNQUE PONGA QUE NO
 from backend.config import settings
-from backend.routes import (api_router, views_router, auth_router, users_router, 
-                            services_router, activities_router, variables_router,  
+from backend.routes import (api_router, views_router, auth_router, users_router,
+                            services_router, activities_router, variables_router,
                             beach_conditions_router)
 from backend.routes.favorites import router as fav_router
 
@@ -29,9 +29,10 @@ STATIC_DIR = BASE_DIR / "frontend" / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 routers = [api_router, views_router, 
-           auth_router, users_router, 
+           auth_router, users_router,
            services_router, activities_router,
-           variables_router, beach_conditions_router]
+           variables_router, beach_conditions_router,
+           fav_router]
 
 for router in routers:
     app.include_router(router)
