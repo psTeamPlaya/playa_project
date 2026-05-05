@@ -75,32 +75,55 @@ let actividadSeleccionada = "";
 let horaSeleccionada = "";
 let authMode = "login";
 let preferencesCloseTimeout;
-let windResetLightTimeout;
-let cloudResetLightTimeout;
-let temperatureResetLightTimeout;
-let waveResetLightTimeout;
 let staticFiltersLightTimeout;
 let dynamicFiltersLightTimeout;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
 
-const WIND_FILTER_DEFAULTS = {
-    min: 0,
-    max: 15
-};
-const CLOUD_FILTER_DEFAULTS = {
-    min: 0,
-    max: 20
-};
-const TEMPERATURE_FILTER_DEFAULTS = {
-    min: 20,
-    max: 29
-};
-const WAVE_FILTER_DEFAULTS = {
-    min: 0,
-    max: 1
-};
+const WIND_FILTER_DEFAULTS = { min: 0, max: 15 };
+const CLOUD_FILTER_DEFAULTS = { min: 0, max: 20 };
+const TEMPERATURE_FILTER_DEFAULTS = { min: 20, max: 29 };
+const WAVE_FILTER_DEFAULTS = { min: 0, max: 1 };
+
+const DYNAMIC_FILTERS = [
+    {
+        id: "viento",
+        minInput: filterWindMin, maxInput: filterWindMax,
+        minLabel: windMinValue, maxLabel: windMaxValue,
+        rangeTrack: windRangeTrack, disabledCheck: filterWindDisabled,
+        resetBtn: filterWindReset, defaults: WIND_FILTER_DEFAULTS,
+        decimal: false, paramMin: "min_velocidad_viento", paramMax: "max_velocidad_viento",
+        timeoutId: null
+    },
+    {
+        id: "nubosidad",
+        minInput: filterCloudMin, maxInput: filterCloudMax,
+        minLabel: cloudMinValue, maxLabel: cloudMaxValue,
+        rangeTrack: cloudRangeTrack, disabledCheck: filterCloudDisabled,
+        resetBtn: filterCloudReset, defaults: CLOUD_FILTER_DEFAULTS,
+        decimal: false, paramMin: "min_nubosidad", paramMax: "max_nubosidad",
+        timeoutId: null
+    },
+    {
+        id: "temperatura_ambiente",
+        minInput: filterTemperatureMin, maxInput: filterTemperatureMax,
+        minLabel: temperatureMinValue, maxLabel: temperatureMaxValue,
+        rangeTrack: temperatureRangeTrack, disabledCheck: filterTemperatureDisabled,
+        resetBtn: filterTemperatureReset, defaults: TEMPERATURE_FILTER_DEFAULTS,
+        decimal: false, paramMin: "min_temperatura_ambiente", paramMax: "max_temperatura_ambiente",
+        timeoutId: null
+    },
+    {
+        id: "oleaje",
+        minInput: filterWaveMin, maxInput: filterWaveMax,
+        minLabel: waveMinValue, maxLabel: waveMaxValue,
+        rangeTrack: waveRangeTrack, disabledCheck: filterWaveDisabled,
+        resetBtn: filterWaveReset, defaults: WAVE_FILTER_DEFAULTS,
+        decimal: true, paramMin: "min_altura_oleaje", paramMax: "max_altura_oleaje",
+        timeoutId: null
+    }
+];
 const STORAGE_KEYS = {
     rememberActivity: "preferences.rememberActivity",
     rememberSchedule: "preferences.rememberSchedule",
@@ -219,35 +242,11 @@ function estaSidebarFiltrosActiva() {
     return Boolean(filtersSidebar && !filtersSidebar.hidden);
 }
 
-function obtenerFiltrosViento() {
+function obtenerValoresFiltroDinamico(filtro) {
     return {
-        activo: estaSidebarFiltrosActiva() && !filterWindDisabled?.checked,
-        min: Number(filterWindMin?.value ?? WIND_FILTER_DEFAULTS.min),
-        max: Number(filterWindMax?.value ?? WIND_FILTER_DEFAULTS.max)
-    };
-}
-
-function obtenerFiltrosNubosidad() {
-    return {
-        activo: estaSidebarFiltrosActiva() && !filterCloudDisabled?.checked,
-        min: Number(filterCloudMin?.value ?? CLOUD_FILTER_DEFAULTS.min),
-        max: Number(filterCloudMax?.value ?? CLOUD_FILTER_DEFAULTS.max)
-    };
-}
-
-function obtenerFiltrosTemperaturaAmbiente() {
-    return {
-        activo: estaSidebarFiltrosActiva() && !filterTemperatureDisabled?.checked,
-        min: Number(filterTemperatureMin?.value ?? TEMPERATURE_FILTER_DEFAULTS.min),
-        max: Number(filterTemperatureMax?.value ?? TEMPERATURE_FILTER_DEFAULTS.max)
-    };
-}
-
-function obtenerFiltrosOleaje() {
-    return {
-        activo: estaSidebarFiltrosActiva() && !filterWaveDisabled?.checked,
-        min: Number(filterWaveMin?.value ?? WAVE_FILTER_DEFAULTS.min),
-        max: Number(filterWaveMax?.value ?? WAVE_FILTER_DEFAULTS.max)
+        activo: estaSidebarFiltrosActiva() && !filtro.disabledCheck?.checked,
+        min: Number(filtro.minInput?.value ?? filtro.defaults.min),
+        max: Number(filtro.maxInput?.value ?? filtro.defaults.max)
     };
 }
 
@@ -261,175 +260,55 @@ function aplicarFiltrosAParametros(params) {
     if (filterSurfSchool?.checked)      params.set("escuela_surf", "true");
     if (filterWindsurfSchool?.checked)  params.set("escuela_windsurf", "true");
     
-    const filtrosViento = obtenerFiltrosViento();
-    if (filtrosViento.activo) {
-        params.set("min_velocidad_viento", String(filtrosViento.min));
-        params.set("max_velocidad_viento", String(filtrosViento.max));
-    }
-
-    const filtrosNubosidad = obtenerFiltrosNubosidad();
-    if (filtrosNubosidad.activo) {
-        params.set("min_nubosidad", String(filtrosNubosidad.min));
-        params.set("max_nubosidad", String(filtrosNubosidad.max));
-    }
-
-    const filtrosTemperatura = obtenerFiltrosTemperaturaAmbiente();
-    if (filtrosTemperatura.activo) {
-        params.set("min_temperatura_ambiente", String(filtrosTemperatura.min));
-        params.set("max_temperatura_ambiente", String(filtrosTemperatura.max));
-    }
-
-    const filtrosOleaje = obtenerFiltrosOleaje();
-    if (filtrosOleaje.activo) {
-        params.set("min_altura_oleaje", String(filtrosOleaje.min));
-        params.set("max_altura_oleaje", String(filtrosOleaje.max));
-    }
-}
-
-function actualizarFiltroVientoUI() {
-    if (!filterWindMin || !filterWindMax) return;
-    
-    let min = Number(filterWindMin.value);
-    let max = Number(filterWindMax.value);
-    if (min > max) {
-        [min, max] = [max, min];
-        filterWindMin.value = String(min);
-        filterWindMax.value = String(max);
-    }
-
-    if (windMinValue) windMinValue.textContent = String(min);
-    if (windMaxValue) windMaxValue.textContent = String(max);
-    if (windRangeTrack) {
-        const minPermitido = Number(filterWindMin.min);
-        const maxPermitido = Number(filterWindMin.max);
-        const total = maxPermitido - minPermitido;
-        const minPorcentaje = ((min - minPermitido) / total) * 100;
-        const maxPorcentaje = ((max - minPermitido) / total) * 100;
-
-        windRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
-        windRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
-        windRangeTrack.classList.toggle("is-disabled", Boolean(filterWindDisabled?.checked));
-    }
-    const desactivado = Boolean(filterWindDisabled?.checked);
-    filterWindMin.disabled = desactivado;
-    filterWindMax.disabled = desactivado;
-}
-
-function restablecerFiltroViento() {
-    if (!filterWindMin || !filterWindMax) return;
-    filterWindMin.value = String(WIND_FILTER_DEFAULTS.min);
-    filterWindMax.value = String(WIND_FILTER_DEFAULTS.max);
-    actualizarFiltroVientoUI();
-}
-
-function actualizarFiltroNubosidadUI() {
-    if (!filterCloudMin || !filterCloudMax) return;
-    
-    let min = Number(filterCloudMin.value);
-    let max = Number(filterCloudMax.value);
-    if (min > max) {
-        [min, max] = [max, min];
-        filterCloudMin.value = String(min);
-        filterCloudMax.value = String(max);
-    }
-    if (cloudMinValue) cloudMinValue.textContent = String(min);
-    if (cloudMaxValue) cloudMaxValue.textContent = String(max);
-    if (cloudRangeTrack) {
-        const minPermitido = Number(filterCloudMin.min);
-        const maxPermitido = Number(filterCloudMin.max);
-        const total = maxPermitido - minPermitido;
-        const minPorcentaje = ((min - minPermitido) / total) * 100;
-        const maxPorcentaje = ((max - minPermitido) / total) * 100;
-
-        cloudRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
-        cloudRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
-        cloudRangeTrack.classList.toggle("is-disabled", Boolean(filterCloudDisabled?.checked));
-    }
-    const desactivado = Boolean(filterCloudDisabled?.checked);
-    filterCloudMin.disabled = desactivado;
-    filterCloudMax.disabled = desactivado;
-}
-
-function restablecerFiltroNubosidad() {
-    if (!filterCloudMin || !filterCloudMax) return;
-
-    filterCloudMin.value = String(CLOUD_FILTER_DEFAULTS.min);
-    filterCloudMax.value = String(CLOUD_FILTER_DEFAULTS.max);
-    actualizarFiltroNubosidadUI();
-}
-
-function actualizarFiltroTemperaturaAmbienteUI() {
-    if (!filterTemperatureMin || !filterTemperatureMax) return;
-
-    let min = Number(filterTemperatureMin.value);
-    let max = Number(filterTemperatureMax.value);
-    if (min > max) {
-        [min, max] = [max, min];
-        filterTemperatureMin.value = String(min);
-        filterTemperatureMax.value = String(max);
-    }
-    if (temperatureMinValue) temperatureMinValue.textContent = String(min);
-    if (temperatureMaxValue) temperatureMaxValue.textContent = String(max);
-    if (temperatureRangeTrack) {
-        const minPermitido = Number(filterTemperatureMin.min);
-        const maxPermitido = Number(filterTemperatureMin.max);
-        const total = maxPermitido - minPermitido;
-        const minPorcentaje = ((min - minPermitido) / total) * 100;
-        const maxPorcentaje = ((max - minPermitido) / total) * 100;
-
-        temperatureRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
-        temperatureRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
-        temperatureRangeTrack.classList.toggle("is-disabled", Boolean(filterTemperatureDisabled?.checked));
-    }
-    const desactivado = Boolean(filterTemperatureDisabled?.checked);
-    filterTemperatureMin.disabled = desactivado;
-    filterTemperatureMax.disabled = desactivado;
-}
-
-function restablecerFiltroTemperaturaAmbiente() {
-    if (!filterTemperatureMin || !filterTemperatureMax) return;
-    filterTemperatureMin.value = String(TEMPERATURE_FILTER_DEFAULTS.min);
-    filterTemperatureMax.value = String(TEMPERATURE_FILTER_DEFAULTS.max);
-    actualizarFiltroTemperaturaAmbienteUI();
+    DYNAMIC_FILTERS.forEach(filtro => {
+        const valores = obtenerValoresFiltroDinamico(filtro);
+        if (valores.activo) {
+            params.set(filtro.paramMin, String(valores.min));
+            params.set(filtro.paramMax, String(valores.max));
+        }
+    });
 }
 
 function formatearValorDecimalFiltro(valor) {
     return Number.isInteger(valor) ? String(valor) : valor.toFixed(1);
 }
 
-function actualizarFiltroOleajeUI() {
-    if (!filterWaveMin || !filterWaveMax) return;
-
-    let min = Number(filterWaveMin.value);
-    let max = Number(filterWaveMax.value);
+function actualizarFiltroDinamicoUI(filtro) {
+    if (!filtro.minInput || !filtro.maxInput) return;
+    
+    let min = Number(filtro.minInput.value);
+    let max = Number(filtro.maxInput.value);
     if (min > max) {
         [min, max] = [max, min];
-        filterWaveMin.value = String(min);
-        filterWaveMax.value = String(max);
+        filtro.minInput.value = String(min);
+        filtro.maxInput.value = String(max);
     }
-    if (waveMinValue) waveMinValue.textContent = formatearValorDecimalFiltro(min);
-    if (waveMaxValue) waveMaxValue.textContent = formatearValorDecimalFiltro(max);
-    if (waveRangeTrack) {
-        const minPermitido = Number(filterWaveMin.min);
-        const maxPermitido = Number(filterWaveMin.max);
+
+    const formatear = val => filtro.decimal ? formatearValorDecimalFiltro(val) : String(val);
+
+    if (filtro.minLabel) filtro.minLabel.textContent = formatear(min);
+    if (filtro.maxLabel) filtro.maxLabel.textContent = formatear(max);
+    if (filtro.rangeTrack) {
+        const minPermitido = Number(filtro.minInput.min);
+        const maxPermitido = Number(filtro.minInput.max);
         const total = maxPermitido - minPermitido;
         const minPorcentaje = ((min - minPermitido) / total) * 100;
         const maxPorcentaje = ((max - minPermitido) / total) * 100;
 
-        waveRangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
-        waveRangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
-        waveRangeTrack.classList.toggle("is-disabled", Boolean(filterWaveDisabled?.checked));
+        filtro.rangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
+        filtro.rangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
+        filtro.rangeTrack.classList.toggle("is-disabled", Boolean(filtro.disabledCheck?.checked));
     }
-    const desactivado = Boolean(filterWaveDisabled?.checked);
-    filterWaveMin.disabled = desactivado;
-    filterWaveMax.disabled = desactivado;
+    const desactivado = Boolean(filtro.disabledCheck?.checked);
+    filtro.minInput.disabled = desactivado;
+    filtro.maxInput.disabled = desactivado;
 }
 
-function restablecerFiltroOleaje() {
-    if (!filterWaveMin || !filterWaveMax) return;
-    filterWaveMin.value = String(WAVE_FILTER_DEFAULTS.min);
-    filterWaveMax.value = String(WAVE_FILTER_DEFAULTS.max);
-    actualizarFiltroOleajeUI();
+function restablecerFiltroDinamico(filtro) {
+    if (!filtro.minInput || !filtro.maxInput) return;
+    filtro.minInput.value = String(filtro.defaults.min);
+    filtro.maxInput.value = String(filtro.defaults.max);
+    actualizarFiltroDinamicoUI(filtro);
 }
 
 function desactivarFiltrosEstaticos() {
@@ -440,13 +319,10 @@ function desactivarFiltrosEstaticos() {
 }
 
 function desactivarFiltrosDinamicos() {
-    [filterCloudDisabled, filterTemperatureDisabled, filterWindDisabled, filterWaveDisabled].forEach(filterInput => {
-        if (filterInput) filterInput.checked = true;
+    DYNAMIC_FILTERS.forEach(filtro => {
+        if (filtro.disabledCheck) filtro.disabledCheck.checked = true;
+        actualizarFiltroDinamicoUI(filtro);
     });
-    actualizarFiltroNubosidadUI();
-    actualizarFiltroTemperaturaAmbienteUI();
-    actualizarFiltroVientoUI();
-    actualizarFiltroOleajeUI();
 }
 
 function iluminarChipFiltro(chip, timeoutId, onTimeoutChange) {
@@ -677,13 +553,6 @@ function configurarFechaYHoraIniciales() {
 
 function actualizarHorasDisponibles() {
     renderizarWheelHoras(fechaInput.value);
-}
-
-function obtenerPrimeraHoraDisponible() {
-    const primeraDisponible = [...hourOptions].find(
-        option => !option.classList.contains("disabled-hour")
-    );
-    return primeraDisponible ? primeraDisponible.dataset.hour : null;
 }
 
 function asegurarHoraValidaSeleccionada() {
@@ -1328,105 +1197,32 @@ if (disableDynamicFilters) {
     });
 }
 
-[filterWindMin, filterWindMax].forEach(filterInput => {
-    if (!filterInput) return;
-    filterInput.addEventListener("input", () => {
-        actualizarFiltroVientoUI();
-        limpiarResultadosPorCambioDeFiltros();
-    });
-});
-
-[filterCloudMin, filterCloudMax].forEach(filterInput => {
-    if (!filterInput) return;
-    filterInput.addEventListener("input", () => {
-        actualizarFiltroNubosidadUI();
-        limpiarResultadosPorCambioDeFiltros();
-    });
-});
-
-[filterTemperatureMin, filterTemperatureMax].forEach(filterInput => {
-    if (!filterInput) return;
-    filterInput.addEventListener("input", () => {
-        actualizarFiltroTemperaturaAmbienteUI();
-        limpiarResultadosPorCambioDeFiltros();
-    });
-});
-
-[filterWaveMin, filterWaveMax].forEach(filterInput => {
-    if (!filterInput) return;
-    filterInput.addEventListener("input", () => {
-        actualizarFiltroOleajeUI();
-        limpiarResultadosPorCambioDeFiltros();
-    });
-});
-
-if (filterWindReset) {
-    filterWindReset.addEventListener("click", () => {
-        restablecerFiltroViento();
-        limpiarResultadosPorCambioDeFiltros();
-        iluminarChipFiltro(filterWindReset, windResetLightTimeout, (timeoutId) => {
-            windResetLightTimeout = timeoutId;
+DYNAMIC_FILTERS.forEach(filtro => {
+    [filtro.minInput, filtro.maxInput].forEach(filterInput => {
+        if (!filterInput) return;
+        filterInput.addEventListener("input", () => {
+            actualizarFiltroDinamicoUI(filtro);
+            limpiarResultadosPorCambioDeFiltros();
         });
     });
-}
 
-if (filterWindDisabled) {
-    filterWindDisabled.addEventListener("change", () => {
-        actualizarFiltroVientoUI();
-        limpiarResultadosPorCambioDeFiltros();
-    });
-}
-
-if (filterCloudReset) {
-    filterCloudReset.addEventListener("click", () => {
-        restablecerFiltroNubosidad();
-        limpiarResultadosPorCambioDeFiltros();
-        iluminarChipFiltro(filterCloudReset, cloudResetLightTimeout, (timeoutId) => {
-            cloudResetLightTimeout = timeoutId;
+    if (filtro.resetBtn) {
+        filtro.resetBtn.addEventListener("click", () => {
+            restablecerFiltroDinamico(filtro);
+            limpiarResultadosPorCambioDeFiltros();
+            iluminarChipFiltro(filtro.resetBtn, filtro.timeoutId, (timeoutId) => {
+                filtro.timeoutId = timeoutId;
+            });
         });
-    });
-}
+    }
 
-if (filterCloudDisabled) {
-    filterCloudDisabled.addEventListener("change", () => {
-        actualizarFiltroNubosidadUI();
-        limpiarResultadosPorCambioDeFiltros();
-    });
-}
-
-if (filterTemperatureReset) {
-    filterTemperatureReset.addEventListener("click", () => {
-        restablecerFiltroTemperaturaAmbiente();
-        limpiarResultadosPorCambioDeFiltros();
-        iluminarChipFiltro(filterTemperatureReset, temperatureResetLightTimeout, (timeoutId) => {
-            temperatureResetLightTimeout = timeoutId;
+    if (filtro.disabledCheck) {
+        filtro.disabledCheck.addEventListener("change", () => {
+            actualizarFiltroDinamicoUI(filtro);
+            limpiarResultadosPorCambioDeFiltros();
         });
-    });
-}
-
-if (filterTemperatureDisabled) {
-    filterTemperatureDisabled.addEventListener("change", () => {
-        actualizarFiltroTemperaturaAmbienteUI();
-        limpiarResultadosPorCambioDeFiltros();
-    });
-}
-
-if (filterWaveReset) {
-    filterWaveReset.addEventListener("click", () => {
-        restablecerFiltroOleaje();
-        limpiarResultadosPorCambioDeFiltros();
-        iluminarChipFiltro(filterWaveReset, waveResetLightTimeout, (timeoutId) => {
-            waveResetLightTimeout = timeoutId;
-        });
-    });
-}
-
-if (filterWaveDisabled) {
-    filterWaveDisabled.addEventListener("change", () => {
-        actualizarFiltroOleajeUI();
-        limpiarResultadosPorCambioDeFiltros();
-    });
-}
+    }
+});
 
 if (preferencesLogoutBtn) {
     preferencesLogoutBtn.addEventListener("click", () => {
@@ -1454,10 +1250,7 @@ if (appHeader && "ResizeObserver" in window) {
 // =========================================================
 
 actualizarAlturaHeader();
-actualizarFiltroVientoUI();
-actualizarFiltroNubosidadUI();
-actualizarFiltroTemperaturaAmbienteUI();
-actualizarFiltroOleajeUI();
+DYNAMIC_FILTERS.forEach(f => actualizarFiltroDinamicoUI(f));
 configurarBotonBusquedaFlotante();
 cargarPreferenciasUI();
 
