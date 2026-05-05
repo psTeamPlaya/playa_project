@@ -1,25 +1,20 @@
-// import { authFetch, loadCurrentUser, getFavoriteBeachIds } from "../main.js";
-
 const favoritesLabel = document.getElementById("favoritesLabel");
 const preferencesPanel = document.getElementById("preferencesPanel");
+const resultsContainer = document.getElementById("resultsContainer");
 
 let isFavoritesMode = false;
 let preferencesCloseTimeout;
 
 favoritesLabel.addEventListener("click", (e) => {
-    // Prevent default if you find it double-triggering
+    // prevent default
     e.preventDefault(); 
-    console.log("Favorites label clicked");  // TODO for debug    
-    // cerrarPanelPreferencias(); 
-
+    console.log("Favorites label clicked");  // TODO for debug
     console.log("isFavoritesMode before toggle:", isFavoritesMode);  // TODO for debug
-    isFavoritesMode = !isFavoritesMode;  // Toggle the mode
+    isFavoritesMode = !isFavoritesMode;  // toggle the mode
 
-    toggleSearchUI(!isFavoritesMode);  // Toggle search UI based on current visibility
+    toggleSearchUI(!isFavoritesMode);  // toggle search UI based on current visibility
     if (isFavoritesMode) {
         loadFavoriteBeaches();
-    } else {
-        resultsContainer.innerHTML = "";  // Clear results when exiting favorites mode
     }
 
     closePreferencePanel();
@@ -44,31 +39,26 @@ function toggleSearchUI(show) {
     searchUIIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            // Use .hidden for the sidebar because your CSS depends on it
+            // use .hidden for the sidebar because CSS depends on it
             el.hidden = !show; 
-            // Use your .hidden class for the others
+            // use .hidden class for the others
             show ? el.classList.remove("hidden") : el.classList.add("hidden");
         }
     });
 
-    // Add/Remove body class to trigger the layout fix from Tip #1
+    // Add/Remove body class to trigger the layout fix
     document.body.classList.toggle("showing-favorites", !show);
-/*     searchUIIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            if (show) {
-                el.classList.remove("hidden");
-            } else {
-                el.classList.add("hidden");
-            }
-        }
-    });
- */ 
     const beachesLabel = document.getElementById("beachesLabel");
     if (show) {
         beachesLabel.textContent = "Playas recomendadas";
     } else {
         beachesLabel.textContent = "Mis playas favoritas";
+        resultsContainer.innerHTML = `
+            <div class="empty-state">
+                Por ahora no hay ninguna recomendacion de playas.
+            </div>
+        `;  // put back when exiting favorites mode
+
     }
 }
 
@@ -116,8 +106,6 @@ function getNextHourFormatted() {
 
 async function loadFavoriteBeaches() {
     console.log("Loading favorite beaches...");  // TODO for debug
-    // const response = await fetch(`/api/favorites?${params.toString()}`);
-    // const response = await authFetch(`/api/favorites?fecha=2026-05-05&hora=08:00`);  // TODO hardcoded for debug
     const { fecha, hora } = getNextHourFormatted();
     const response = await authFetch(`/api/favorites?fecha=${fecha}&hora=${hora}`);
     console.log(`Fetching favorites for: ${fecha} at ${hora}`);  // TODO for debug
@@ -126,7 +114,7 @@ async function loadFavoriteBeaches() {
     }
 
     const data = await response.json();
-    console.log("DATA COMPLETA DEL BACKEND:", data);
+    console.log("DATA COMPLETA DEL BACKEND:", data);    // TODO for debug
 
     pintarResultados(data.resultados);
     
@@ -221,63 +209,3 @@ function formatearServicios(servicios) {
         .map(([clave]) => `<span class="chip">${iconos[clave] || clave}</span>`)
         .join("");
 }
-
-
-/* export async function loadFavoritesPage() {
-    console.log("Loading favorites page...");  // TODO for debug
-    const user = await loadCurrentUser();
-    if (!user) {
-        alert("Please log in to view your favorites.");
-        window.location.href = "/login";
-        return;
-    }
-
-    const favoriteBeachIds = await getFavoriteBeachIds();
-    const favoritesContainer = document.getElementById("favoritesContainer");
-    favoritesContainer.innerHTML = "";  // Clear previous content
-
-    if (favoriteBeachIds.length === 0) {
-        favoritesContainer.innerHTML = "<p>You have no favorite beaches yet.</p>";
-        return;
-    }
-
-    for (const beachId of favoriteBeachIds) {
-        try {
-            const response = await authFetch(`/api/beaches/${beachId}`);
-            if (!response.ok) {
-                console.error(`Failed to fetch beach with ID ${beachId}`);
-                continue;
-            }
-            const beachData = await response.json();
-            const beachItem = document.createElement("div");
-            beachItem.className = "favorite-beach-item";
-            beachItem.innerHTML = `
-                <h3>${beachData.name}</h3>
-                <p>${beachData.description}</p>
-                <button onclick="removeFromFavorites(${beachId})">Remove from Favorites</button>
-            `;
-            favoritesContainer.appendChild(beachItem);
-        } catch (error) {
-            console.error(`Error fetching beach with ID ${beachId}:`, error);
-        }
-    }
-}
-
-export async function removeFromFavorites(beachId) {
-    try {
-        const response = await authFetch(`/api/favorites/${beachId}`, {
-            method: "DELETE"
-        });
-        if (!response.ok) {
-            alert("Failed to remove beach from favorites.");
-            return;
-        }
-        alert("Beach removed from favorites.");
-        loadFavoritesPage();  // Refresh the list
-    } catch (error) {
-        console.error(`Error removing beach with ID ${beachId} from favorites:`, error);
-        alert("An error occurred while trying to remove the beach from favorites.");
-    }
-}
-
-loadFavoritesPage(); */
