@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,44 +9,97 @@
   <link rel="stylesheet" href="/static/css/styles.css?v=results-row-layout">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/static/css/favorites.css">
 </head>
+
 <body>
   <header class="container" id="appHeader">
-  <header class="container" id="appHeader">
-    <section class="hero">
-      <div class="hero-brand">
-        <div class="hero-logo">
-          <img src="/static/img/logo.png" alt="Logo Mi dia de Playa">
+    <header class="container" id="appHeader">
+      <section class="hero">
+        <div class="hero-brand">
+          <div class="hero-logo">
+            <img src="/static/img/logo.png" alt="Logo Mi dia de Playa">
+          </div>
+
+          <h1>Mi día de Playa</h1>
+          <section class="auth-container">
+            <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
+              <span class="auth-trigger-icon" aria-hidden="true">
+                <i class="bi bi-box-arrow-in-right" id="authActionIcon"></i>
+              </span>
+            </button>
+            <div class="preferences-panel" id="preferencesPanel" hidden>
+              <h3>Preferencias</h3>
+              <div class="preferences-user" id="preferencesUserInfo"></div>
+              <label class="preference-item fav-item" id="favoritesLabel">
+                <button id="showFavoritesBtn" class="invisible-button" onclick="toggleSearchUI()">
+                  <i class="fas fa-heart fav-icon"></i><span>Mis Playas Favoritas</span>
+                </button>
+                <!-- <input type="checkbox" id="rememberActivityPreference"> -->
+                <!-- <span>Playas favoritas</span> -->
+              </label>
+              <label class="preference-item">
+                <input type="checkbox" id="rememberSchedulePreference">
+                <span>Filtros personalizados</span>
+              </label>
+              <label class="preference-item">
+                <input type="checkbox" id="expandResultsPreference">
+                <span>Configurar alertas</span>
+              </label>
+              <div class="preferences-divider"></div>
+              <button class="preferences-logout" id="preferencesLogoutBtn" type="button" aria-label="Cerrar sesion">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </section>
         </div>
-        
-        <h1>Mi día de Playa</h1>
-        <section class="auth-container">
-          <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
-            <span class="auth-trigger-icon" aria-hidden="true">
-              <i class="bi bi-box-arrow-in-right" id="authActionIcon"></i>
-            </span>
-          </button>
-          <div class="preferences-panel" id="preferencesPanel" hidden>
-            <h3>Preferencias</h3>
-            <div class="preferences-user" id="preferencesUserInfo"></div>
-            <label class="preference-item">
-              <input type="checkbox" id="rememberActivityPreference">
-              <span>Playas favoritas</span>
+      </section>
+    </header>
+
+    <div class="app-shell container">
+      <aside class="filters-sidebar" id="filtersSidebar" hidden aria-label="Filtros de playa">
+        <div class="filters-content">
+          <h2>Filtros</h2>
+          <div class="filter-actions" aria-label="Acciones globales de filtros">
+            <button class="filter-chip-button filter-action-button" id="disableStaticFilters" type="button">
+              Desactivar filtros estáticos
+            </button>
+          </div>
+          <fieldset class="filter-group">
+            <legend>Tipo de playa</legend>
+            <label class="filter-option">
+              <input type="checkbox" id="filterSandBeach" value="arena">
+              <span>Arena</span>
             </label>
-            <label class="preference-item">
-              <input type="checkbox" id="rememberSchedulePreference">
-              <span>Filtros personalizados</span>
+            <label class="filter-option">
+              <input type="checkbox" id="filterStoneBeach" value="piedra">
+              <span>Piedra</span>
             </label>
-            <label class="preference-item">
-              <input type="checkbox" id="expandResultsPreference">
-              <span>Configurar alertas</span>
+          </fieldset>
+
+          <fieldset class="filter-group">
+            <legend>Servicios</legend>
+            <label class="filter-option">
+              <input type="checkbox" id="filterFoodPlaces" value="sitios_para_comer">
+              <span>Sitios para comer</span>
             </label>
-            <div class="preferences-divider"></div>
-            <button class="preferences-logout" id="preferencesLogoutBtn" type="button" aria-label="Cerrar sesion">
-              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            <label class="filter-option">
+              <input type="checkbox" id="filterSurfSchool" value="escuela_surf">
+              <span>Escuela de surf</span>
+            </label>
+            <label class="filter-option">
+              <input type="checkbox" id="filterWindsurfSchool" value="escuela_windsurf">
+              <span>Escuela de windsurf</span>
+            </label>
+          </fieldset>
+          <div class="filter-actions" aria-label="Acciones globales de filtros">
+            <button class="filter-chip-button filter-action-button" id="disableDynamicFilters" type="button">
+              Desactivar filtros dinámicos
             </button>
           </div>
         </section>
@@ -186,153 +240,217 @@
           <span class="activity-name">Tomar el sol</span>
         </div>
 
-        <div class="activity-card" data-activity="nadar">
-          <span class="activity-icon">🏊</span>
-          <span class="activity-name">Nadar</span>
+          <fieldset class="filter-group dynamic-filter-group">
+            <legend>Temperatura ambiente</legend>
+            <div class="range-values">
+              <span><strong id="temperatureMinValue">20</strong> ºC</span>
+              <span><strong id="temperatureMaxValue">29</strong> ºC</span>
+            </div>
+            <div class="dual-range" id="temperatureRangeTrack">
+              <input type="range" id="filterTemperatureMin" min="0" max="45" step="1" value="20"
+                aria-label="Temperatura ambiente minima">
+              <input type="range" id="filterTemperatureMax" min="0" max="45" step="1" value="29"
+                aria-label="Temperatura ambiente maxima">
+            </div>
+            <button class="filter-chip-button" id="filterTemperatureReset" type="button">
+              Restablecer filtro
+            </button>
+            <label class="filter-option filter-compact-option">
+              <input type="checkbox" id="filterTemperatureDisabled">
+              <span>Desactivar filtro</span>
+            </label>
+          </fieldset>
+
+          <fieldset class="filter-group dynamic-filter-group">
+            <legend>Velocidad del viento</legend>
+            <div class="range-values">
+              <span><strong id="windMinValue">0</strong> km/h</span>
+              <span><strong id="windMaxValue">15</strong> km/h</span>
+            </div>
+            <div class="dual-range" id="windRangeTrack">
+              <input type="range" id="filterWindMin" min="0" max="60" step="1" value="0" aria-label="Viento minimo">
+              <input type="range" id="filterWindMax" min="0" max="60" step="1" value="15" aria-label="Viento maximo">
+            </div>
+            <button class="filter-chip-button" id="filterWindReset" type="button">
+              Restablecer filtro
+            </button>
+            <label class="filter-option filter-compact-option">
+              <input type="checkbox" id="filterWindDisabled">
+              <span>Desactivar filtro</span>
+            </label>
+          </fieldset>
+
+
+          <fieldset class="filter-group dynamic-filter-group">
+            <legend>Oleaje</legend>
+            <div class="range-values">
+              <span><strong id="waveMinValue">0</strong> m</span>
+              <span><strong id="waveMaxValue">1</strong> m</span>
+            </div>
+            <div class="dual-range" id="waveRangeTrack">
+              <input type="range" id="filterWaveMin" min="0" max="5" step="0.1" value="0" aria-label="Oleaje minimo">
+              <input type="range" id="filterWaveMax" min="0" max="5" step="0.1" value="1" aria-label="Oleaje maximo">
+            </div>
+            <button class="filter-chip-button" id="filterWaveReset" type="button">
+              Restablecer filtro
+            </button>
+            <label class="filter-option filter-compact-option">
+              <input type="checkbox" id="filterWaveDisabled">
+              <span>Desactivar filtro</span>
+            </label>
+          </fieldset>
         </div>
+      </aside>
 
-        <div class="activity-card" data-activity="surf">
-          <span class="activity-icon">🏄</span>
-          <span class="activity-name">Surf</span>
-        </div>
+      <main class="app-main">
+        <section id="activitySection" class="panel">
+          <h2>1. ¿Qué quieres hacer en tu día de playa?</h2>
+          <div class="activities-grid" id="activitiesGrid">
+            <div class="activity-card" data-activity="tomar_sol">
+              <span class="activity-icon">☀️</span>
+              <span class="activity-name">Tomar el sol</span>
+            </div>
 
-        <div class="activity-card" data-activity="windsurf">
-          <span class="activity-icon">🌬️</span>
-          <span class="activity-name">Windsurf</span>
-        </div>
+            <div class="activity-card" data-activity="nadar">
+              <span class="activity-icon">🏊</span>
+              <span class="activity-name">Nadar</span>
+            </div>
 
-        <div class="activity-card" data-activity="bucear">
-          <span class="activity-icon">🤿</span>
-          <span class="activity-name">Bucear</span>
-        </div>
+            <div class="activity-card" data-activity="surf">
+              <span class="activity-icon">🏄</span>
+              <span class="activity-name">Surf</span>
+            </div>
 
-        <div class="activity-card" data-activity="caminar">
-          <span class="activity-icon">🚶</span>
-          <span class="activity-name">Pasear</span>
-        </div>
-      </div>
-    </section>
+            <div class="activity-card" data-activity="windsurf">
+              <span class="activity-icon">🌬️</span>
+              <span class="activity-name">Windsurf</span>
+            </div>
 
-    <section class="panel">
-      <h2>2. ¿Cuándo quieres ir a la playa?</h2>
+            <div class="activity-card" data-activity="bucear">
+              <span class="activity-icon">🤿</span>
+              <span class="activity-name">Bucear</span>
+            </div>
 
-      <div class="form-grid">
-        <div class="field">
-          <label for="fecha">Fecha</label>
-
-          <div class="date-picker-shell" id="fechaShell">
-            <div class="date-display" id="fechaDisplay">---</div>
-            <div class="date-icon" aria-hidden="true">📅</div>
-            <input type="date" id="fecha" />
+            <div class="activity-card" data-activity="caminar">
+              <span class="activity-icon">🚶</span>
+              <span class="activity-name">Pasear</span>
+            </div>
           </div>
-        </div>
-        <div class="field">
-          <label for="hourWheel">Hora</label>
-          <div class="hour-wheel-wrapper">
-            <div class="hour-wheel-highlight"></div>
-            <div class="hour-wheel" id="hourWheel"></div>
+        </section>
+
+        <section id="dateSection" class="panel">
+          <h2>2. ¿Cuándo quieres ir a la playa?</h2>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="fecha">Fecha</label>
+
+              <div class="date-picker-shell" id="fechaShell">
+                <div class="date-display" id="fechaDisplay">---</div>
+                <div class="date-icon" aria-hidden="true">📅</div>
+                <input type="date" id="fecha" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="hourWheel">Hora</label>
+              <div class="hour-wheel-wrapper">
+                <div class="hour-wheel-highlight"></div>
+                <div class="hour-wheel" id="hourWheel"></div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </section>
+        </section>
 
-    <section class="panel location-panel">
-      <h2>3. Elige tu ubicación</h2>
-      <div class="form-grid location-grid">
-        <div class="field">
-          <label for="locationInput">Ciudad / Ubicación</label>
-          <input type="text" id="locationInput" placeholder="Ej: Las Palmas">
-          <div id="suggestions" class="suggestions-dropdown"></div>
-        </div>
-        <div class="field range-field">
-          <label>Rango de búsqueda:</label>
-          <div class="actions location-actions">
-            <button class="btn-secondary" id="btnGeolocalizar">📍 Mi ubicación</button>
-            <button class="btn-secondary" id="btnMapa">🗺️ Elige una ubicación</button>
+        <section id="locationSection" class="panel location-panel">
+          <h2>3. Elige tu ubicación</h2>
+          <div class="form-grid location-grid">
+            <div class="field">
+              <label for="locationInput">Ciudad / Ubicación</label>
+              <input type="text" id="locationInput" placeholder="Ej: Las Palmas">
+              <div id="suggestions" class="suggestions-dropdown"></div>
+            </div>
+            <div class="field range-field">
+              <label>Rango de búsqueda:</label>
+              <div class="actions location-actions">
+                <button class="btn-secondary" id="btnGeolocalizar">📍 Mi ubicación</button>
+                <button class="btn-secondary" id="btnMapa">🗺️ Elige una ubicación</button>
+              </div>
+              <div class="range-selector">
+                <input type="radio" id="rango5" name="rango" value="5" checked>
+                <label for="rango5">5 km</label>
+
+                <input type="radio" id="rango15" name="rango" value="15">
+                <label for="rango15">15 km</label>
+
+                <input type="radio" id="rango50" name="rango" value="50">
+                <label for="rango50">50 km</label>
+              </div>
+            </div>
           </div>
-          <div class="range-selector">
-            <input type="radio" id="rango5" name="rango" value="5" checked>
-            <label for="rango5">5 km</label>
+          <div id="locationHistory" class="mini-chip-container"></div>
+        </section>
 
-            <input type="radio" id="rango15" name="rango" value="15">
-            <label for="rango15">15 km</label>
-
-            <input type="radio" id="rango50" name="rango" value="50">
-            <label for="rango50">50 km</label>
+        <section id="searchSection" class="panel search-panel">
+          <div class="actions search-actions">
+            <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
           </div>
-        </div>
-      </div>
-      <div id="locationHistory" class="mini-chip-container"></div>
-    </section>
+          <div class="sun-alert" id="sunAlert" hidden></div>
+          <div class="status" id="status"></div>
+        </section>
 
-    <section class="panel search-panel">
-      <div class="actions search-actions">
-        <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
-      </div>
-      <div class="sun-alert" id="sunAlert" hidden></div>
-      <div class="status" id="status"></div>
-    </section>
-
-    <section class="panel" id="recommendedBeachesSection">
-      <div class="results-header">
-        <h2>Playas recomendadas</h2>
-        <div class="cantidad-wheel-container loggedIn hidden">
-          <div class="cantidad-slider-header">
-            <label for="cantidadSlider">Cantidad</label>
-            <output id="cantidadSliderValue" for="cantidadSlider">3</output>
+        <section class="panel" id="recommendedBeachesSection">
+          <div class="results-header">
+            <h2 id="beachesLabel">Playas recomendadas</h2>
+            <div id="quantitySlider" class="cantidad-wheel-container loggedIn hidden">
+              <div class="cantidad-slider-header">
+                <label for="cantidadSlider">Cantidad</label>
+                <output id="cantidadSliderValue" for="cantidadSlider">3</output>
+              </div>
+              <input type="range" id="cantidadSlider" min="0" max="3" step="1" value="3"
+                aria-label="Cantidad de playas recomendadas" />
+              <div class="cantidad-slider-limits">
+                <span>0</span>
+                <span id="cantidadSliderMax">3</span>
+              </div>
+            </div>
           </div>
-          <input
-            type="range"
-            id="cantidadSlider"
-            min="0"
-            max="3"
-            step="1"
-            value="3"
-            aria-label="Cantidad de playas recomendadas"
-          />
-          <div class="cantidad-slider-limits">
-            <span>0</span>
-            <span id="cantidadSliderMax">3</span>
+
+          <div id="resultsContainer" class="results-grid">
+            <div class="empty-state">
+              Por ahora no hay ninguna recomendacion de playas.
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div id="resultsContainer" class="results-grid">
-        <div class="empty-state">
-          Por ahora no hay ninguna recomendacion de playas.
-        </div>
-      </div>
-    </section>
-  </main>
-  </div>
-
-  <button class="btn-primary floating-search-button" id="floatingBuscarBtn" type="button" aria-hidden="true">
-    Buscar playas recomendadas
-  </button>
-
-  <div id="mapModal" class="map-modal hidden">
-    <div class="map-container">
-      <button id="closeMap" type="button" aria-label="Cerrar mapa">x</button>
-      <div id="map" style="height: 400px;"></div>
-      <button id="confirmLocation" class="btn-primary" type="button">Seleccionar ubicacion</button>
+        </section>
+      </main>
     </div>
-  </div>
 
-  <div class="modal-backdrop" id="loginModal" hidden>
-    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
-      <button class="modal-close" id="closeLoginModal" type="button" aria-label="Cerrar">×</button>
-      <h2 id="loginModalTitle">Iniciar sesion</h2>
+    <button class="btn-primary floating-search-button" id="floatingBuscarBtn" type="button" aria-hidden="true">
+      Buscar playas recomendadas
+    </button>
 
-      <form id="loginModalForm">
-        <div class="field auth-field">
-          <label for="loginEmail">Correo electronico</label>
-          <input id="loginEmail" type="email" placeholder="tu@correo.com" required>
-        </div>
+    <div id="mapModal" class="map-modal hidden">
+      <div class="map-container">
+        <button id="closeMap" type="button" aria-label="Cerrar mapa">x</button>
+        <div id="map" style="height: 400px;"></div>
+        <button id="confirmLocation" class="btn-primary" type="button">Seleccionar ubicacion</button>
+      </div>
+    </div>
 
-        <div class="field auth-field">
-          <label for="loginPassword">Contraseña</label>
-          <input id="loginPassword" type="password" placeholder="********" required>
-        </div>
+    <div class="modal-backdrop" id="loginModal" hidden>
+      <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+        <button class="modal-close" id="closeLoginModal" type="button" aria-label="Cerrar">×</button>
+        <h2 id="loginModalTitle">Iniciar sesion</h2>
+
+        <form id="loginModalForm">
+          <div class="field auth-field">
+            <label for="loginEmail">Correo electronico</label>
+            <input id="loginEmail" type="email" placeholder="tu@correo.com" required>
+          </div>
+
+          <div class="field auth-field">
+            <label for="loginPassword">Contraseña</label>
+            <input id="loginPassword" type="password" placeholder="********" required>
+          </div>
 
         <div class="field auth-field" id="confirmPasswordGroup" style="display: none;">
           <label for="confirmPassword">Confirmar contraseña</label>
@@ -342,16 +460,18 @@
         <button class="btn-primary auth-submit" id="authSubmitBtn" type="submit">Entrar a mi cuenta</button>
       </form>
 
-      <div class="auth-error" id="loginErrorMessage"></div>
+        <div class="auth-error" id="loginErrorMessage"></div>
 
-      <div class="auth-register-row">
-        <span id="authModeHint">¿Sin cuenta?</span>
-        <button class="btn-secondary" id="toggleAuthModeBtn" type="button">Registrarse</button>
+        <div class="auth-register-row">
+          <span id="authModeHint">¿Sin cuenta?</span>
+          <button class="btn-secondary" id="toggleAuthModeBtn" type="button">Registrarse</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script type="module" src="/static/js/main.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script type="module" src="/static/js/main.js"></script>
+    <script src="/static/js/favorites/favorites.js"></script>
 </body>
+
 </html>
