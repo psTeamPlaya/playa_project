@@ -1,7 +1,10 @@
 // import { authFetch, loadCurrentUser, getFavoriteBeachIds } from "../main.js";
 
 const favoritesLabel = document.getElementById("favoritesLabel");
+const preferencesPanel = document.getElementById("preferencesPanel");
+
 let isFavoritesMode = false;
+let preferencesCloseTimeout;
 
 favoritesLabel.addEventListener("click", (e) => {
     // Prevent default if you find it double-triggering
@@ -13,6 +16,12 @@ favoritesLabel.addEventListener("click", (e) => {
     isFavoritesMode = !isFavoritesMode;  // Toggle the mode
 
     toggleSearchUI(!isFavoritesMode);  // Toggle search UI based on current visibility
+    if (isFavoritesMode) {
+        loadFavoriteBeaches();
+        cerrarPanelPreferencias();
+    } else {
+        resultsContainer.innerHTML = "";  // Clear results when exiting favorites mode
+    }
 });
 
 const searchUIIds = [
@@ -20,6 +29,8 @@ const searchUIIds = [
     "dateSection", 
     "locationSection", 
     "searchSection",
+    "quantitySlider",
+    // "filtersSidebar"
 ];
 
 
@@ -38,6 +49,151 @@ function toggleSearchUI(show) {
             }
         }
     });
+    const beachesLabel = document.getElementById("beachesLabel");
+    if (show) {
+        beachesLabel.textContent = "Playas recomendadas";
+    } else {
+        beachesLabel.textContent = "Mis playas favoritas";
+    }
+}
+
+function authFetch(url, options = {}) {
+    const token = localStorage.getItem("token");
+    return fetch(url, {
+        ...options,
+        headers: {
+            ...(options.headers || {}),
+            "Authorization": `Bearer ${token}`
+        }
+    });
+}
+
+function cerrarPanelPreferencias() {
+    if (preferencesPanel) {
+        preferencesPanel.classList.remove("is-open");
+        clearTimeout(preferencesCloseTimeout);
+        preferencesCloseTimeout = setTimeout(() => {
+            preferencesPanel.hidden = true;
+        }, 220);
+    }
+}
+
+
+async function loadFavoriteBeaches() {
+    console.log("Loading favorite beaches...");  // TODO for debug
+    // const response = await fetch(`/api/favorites?${params.toString()}`);
+    const response = await authFetch(`/api/favorites?fecha=2026-05-05&hora=08:00`);  // TODO hardcoded for debug
+        if (!response.ok) {
+            throw new Error("No se pudieron obtener las recomendaciones.");
+        }
+
+        const data = await response.json();
+        console.log("DATA COMPLETA DEL BACKEND:", data);
+
+/*         const favorites = await getFavoriteBeachIds();
+        const favoriteIds = favorites.map(f => f.beach_id);
+        console.log("favs: ", favorites);  // TODO for debug
+
+        data.resultados.forEach(playa => {
+            playa.isFavorite = favoriteIds.includes(playa.beach_id);
+        });
+ */        
+        pintarResultados(data.resultados);
+        
+}
+
+
+function pintarResultados(resultados) {
+    if (!resultados || resultados.length === 0) {
+        resultsContainer.innerHTML = `
+            <div class="empty-state">
+            No hay resultados para esa búsqueda.
+            </div>
+        `;
+        return;
+    }
+    resultsContainer.innerHTML = resultados.map((playa, index) => {
+        const servicios = formatearServicios(playa.servicios);
+        const condiciones = playa.condiciones;
+
+        return `
+            <details class="beach-card desplegable">
+            <summary class="beach-summary">
+                <div class="beach-summary-left">
+                <div class="ranking-badge">#${index + 1}</div>
+                <div>
+                    <h3 class="beach-title">${playa.nombre}</h3>
+                    <div class="beach-location">${playa.ubicacion}</div>
+                    <div class="beach-short-motivo"></div>
+                </div>
+                </div>
+
+            <div class="beach-summary-right">
+                <button class="favorite-btn" data-id="${playa.beach_id}">
+                    ${playa.isFavorite ? '❤️' : '🤍'}
+                </button>
+                <span class="expand-hint" aria-hidden="true">+</span>
+            </div>
+            </summary>
+
+            <div class="beach-detail">
+                <p class="beach-desc">${playa.descripcion}</p>
+
+                <div class="meta-list">
+                <span class="chip">🏖️ Tipo: ${playa.tipo}</span>
+                <span class="chip">🌡️ Temp. aire: ${condiciones.air_temp ?? "N/A"} ºC</span>
+                <span class="chip">🌊 Oleaje: ${condiciones.wave_height ?? "N/A"} m</span>
+                <span class="chip">💨 Viento: ${condiciones.wind_speed ?? "N/A"} km/h</span>
+                <span class="chip">🌡️ Agua: ${condiciones.water_temp ?? "N/A"} ºC</span>
+                <span class="chip">🌤️ Nubosidad: ${condiciones.cloud_cover ?? "N/A"}%</span>
+                <span class="chip">🌧️ Lluvia: ${condiciones.rain_probability ?? "N/A"}%</span>
+                <span class="chip">🌙 Marea: ${condiciones.tide ?? "N/A"}</span>
+                </div>
+
+                <div class="motivo detalle-box">
+                <strong>Explicación de la recomendación:</strong> ${playa.motivo}
+                </div>
+
+                <div class="services-list">
+                ${servicios}
+                </div>
+            </div>
+            </details>
+        `;
+    }).join("");
+
+    configurarAnimacionDetalles();
+}
+
+function configurarAnimacionDetalles() {
+    const beachCards = resultsContainer.querySelectorAll(".beach-card");
+
+    beachCards.forEach((card) => {
+        card.addEventListener("toggle", () => {
+            if (!card.open) {
+                card.classList.remove("is-revealing");
+                return;
+            }
+            card.classList.remove("is-revealing");
+            void card.offsetWidth;
+            card.classList.add("is-revealing");
+        });
+    });
+}
+
+function formatearServicios(servicios) {
+    const iconos = {
+        restaurantes: "🍽️ Restaurantes",
+        comida_para_llevar: "🥡 Comida para llevar",
+        balneario: "🚿 Balneario",
+        zona_deportiva: "🏐 Zona deportiva",
+        escuela_surf: "🏄 Escuela de surf",
+        escuela_windsurf: "🌬️ Escuela de windsurf"
+    };
+    return Object.entries(servicios)
+        .filter(([_, disponible]) => disponible)
+        .map(([clave]) => `<span class="chip">${iconos[clave] || clave}</span>`)
+        .join("");
 }
 
 
