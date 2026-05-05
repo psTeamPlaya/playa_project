@@ -39,6 +39,17 @@
     justify-content: center;
 }
 
+/* When we are in favorites mode, force a single column layout */
+body.showing-favorites .app-shell {
+    grid-template-columns: 1fr !important;
+}
+
+/* Ensure the results grid takes up the full width */
+body.showing-favorites .results-grid {
+    width: 100%;
+}
+
+
 /* Hover effect to match the rest of the menu */
 .preference-item.fav-item:hover {
     background-color: rgba(0, 0, 0, 0.05); /* Or whatever your theme uses */
