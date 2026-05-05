@@ -38,9 +38,12 @@ const disableStaticFilters = document.getElementById("disableStaticFilters");
 const disableDynamicFilters = document.getElementById("disableDynamicFilters");
 const filterSandBeach = document.getElementById("filterSandBeach");
 const filterStoneBeach = document.getElementById("filterStoneBeach");
-const filterFoodPlaces = document.getElementById("filterFoodPlaces");
-const filterSurfSchool = document.getElementById("filterSurfSchool");
-const filterWindsurfSchool = document.getElementById("filterWindsurfSchool");
+
+const filterRestaurant = document.getElementById("filterRestaurant");
+const filterTakeAwayFood = document.getElementById("filterTakeAwayFood");
+const filterBalneario = document.getElementById("filterBalneario");
+const filterSportZone = document.getElementById("filterSportZone");
+
 const filterWindMin = document.getElementById("filterWindMin");
 const filterWindMax = document.getElementById("filterWindMax");
 const filterWindReset = document.getElementById("filterWindReset");
@@ -251,14 +254,19 @@ function obtenerValoresFiltroDinamico(filtro) {
 }
 
 function aplicarFiltrosAParametros(params) {
+    console.log("PARAMS INICIALES:", params.toString());
     if (!estaSidebarFiltrosActiva()) return;
 
     const filtros = obtenerFiltrosTipoPlaya();
-    if (filtros.tipoArena)              params.set("tipo_arena", "true");
-    if (filtros.tipoPiedra)             params.set("tipo_piedra", "true");
-    if (filterFoodPlaces?.checked)      params.set("sitios_para_comer", "true");
-    if (filterSurfSchool?.checked)      params.set("escuela_surf", "true");
-    if (filterWindsurfSchool?.checked)  params.set("escuela_windsurf", "true");
+    if (filtros.tipoArena)  params.set("tipo_arena", true);
+    if (filtros.tipoPiedra) params.set("tipo_piedra", true);
+
+    if (filterRestaurant?.checked)   params.set("restaurantes", true);
+    if (filterTakeAwayFood?.checked) params.set("comida_para_llevar", true);
+    if (filterBalneario?.checked)    params.set("balnearios", true);
+    if (filterSportZone?.checked)    params.set("zona_deportiva", true);
+
+    console.log("PARAMS FINALES:", params.toString());
     
     DYNAMIC_FILTERS.forEach(filtro => {
         const valores = obtenerValoresFiltroDinamico(filtro);
@@ -312,8 +320,8 @@ function restablecerFiltroDinamico(filtro) {
 }
 
 function desactivarFiltrosEstaticos() {
-    [filterSandBeach, filterStoneBeach, filterFoodPlaces, 
-        filterSurfSchool, filterWindsurfSchool].forEach(filterInput => {
+    [filterSandBeach, filterStoneBeach, filterRestaurant, 
+        filterTakeAwayFood, filterBalneario, filterSportZone].forEach(filterInput => {
         if (filterInput) filterInput.checked = false;
     });
 }
@@ -730,37 +738,36 @@ async function buscarRecomendaciones() {
             actividad: actividadSeleccionada,
             fecha,
             hora,
-            radius: rango,
-            limit: String(cantidad)
+            radio_km: rango,
+            top_n: String(cantidad)
         });
+
         if (selectedCoords) {
             const [lon, lat] = selectedCoords;
             params.set("lat", String(lat));
             params.set("lon", String(lon));
-        } 
+        }
         else {
             statusEl.textContent = "Introduce informacion de localizacion.";
             return;
         }
         aplicarFiltrosAParametros(params);
-        const url = `/recomendaciones?${params.toString()}`;
-        const response = await fetch(url);
+        const response = await fetch(`/recomendaciones?${params.toString()}`);
         if (!response.ok) {
             throw new Error("No se pudieron obtener las recomendaciones.");
         }
 
         const data = await response.json();
-        const favorites = await getFavoriteBeachIds();
-        console.log("favs: ", favorites);  // TODO for debug
+        console.log("DATA COMPLETA DEL BACKEND:", data);
 
+        const favorites = await getFavoriteBeachIds();
         const favoriteIds = favorites.map(f => f.beach_id);
-        console.log("fav ids:", favoriteIds);  // TODO for debug
+        console.log("favs: ", favorites);  // TODO for debug
 
         data.resultados.forEach(playa => {
             playa.isFavorite = favoriteIds.includes(playa.beach_id);
         });
-        console.log("Resultados obtenidos:", data.resultados);  // debug
-
+        
         pintarResultados(data.resultados);
         desplazarAPlayasRecomendadas();
         if (data.aviso_sol?.mensaje) {
@@ -897,13 +904,13 @@ function pintarResultados(resultados) {
 
                 <div class="meta-list">
                 <span class="chip">🏖️ Tipo: ${playa.tipo}</span>
-                <span class="chip">🌡️ Temp. aire: ${condiciones.temperatura_ambiente} ºC</span>
-                <span class="chip">🌊 Oleaje: ${condiciones.altura_oleaje} m</span>
-                <span class="chip">💨 Viento: ${condiciones.velocidad_viento} km/h</span>
-                <span class="chip">🌡️ Agua: ${condiciones.temperatura_agua} ºC</span>
-                <span class="chip">🌤️ Nubosidad: ${condiciones.nubosidad}%</span>
-                <span class="chip">🌧️ Lluvia: ${condiciones.probabilidad_lluvia}%</span>
-                <span class="chip">🌙 Marea: ${condiciones.marea}</span>
+                <span class="chip">🌡️ Temp. aire: ${condiciones.air_temp ?? "N/A"} ºC</span>
+                <span class="chip">🌊 Oleaje: ${condiciones.wave_height ?? "N/A"} m</span>
+                <span class="chip">💨 Viento: ${condiciones.wind_speed ?? "N/A"} km/h</span>
+                <span class="chip">🌡️ Agua: ${condiciones.water_temp ?? "N/A"} ºC</span>
+                <span class="chip">🌤️ Nubosidad: ${condiciones.cloud_cover ?? "N/A"}%</span>
+                <span class="chip">🌧️ Lluvia: ${condiciones.rain_probability ?? "N/A"}%</span>
+                <span class="chip">🌙 Marea: ${condiciones.tide ?? "N/A"}</span>
                 </div>
 
                 <div class="motivo detalle-box">
@@ -941,10 +948,8 @@ function formatearServicios(servicios) {
     const iconos = {
         restaurantes: "🍽️ Restaurantes",
         comida_para_llevar: "🥡 Comida para llevar",
-        balneario: "🚿 Balneario",
-        zona_deportiva: "🏐 Zona deportiva",
-        escuela_surf: "🏄 Escuela de surf",
-        escuela_windsurf: "🌬️ Escuela de windsurf"
+        balnearios: "🚿 Balneario",
+        zona_deportiva: "🏐 Zona deportiva"
     };
     return Object.entries(servicios)
         .filter(([_, disponible]) => disponible)
@@ -1044,7 +1049,6 @@ function logout() {
     document.querySelectorAll(".favorite-btn").forEach(btn => {
         btn.innerText = "🤍";
     });
-    console.log("favorites reset after logout");  // debug
     actualizarBotonesSesion();
     cerrarPanelPreferencias();
 }
@@ -1172,7 +1176,8 @@ if (expandResultsPreference) {
     });
 }
 
-[filterSandBeach, filterStoneBeach, filterFoodPlaces, filterSurfSchool, filterWindsurfSchool].forEach(filterInput => {
+[filterSandBeach, filterStoneBeach, filterRestaurant, filterTakeAwayFood, 
+    filterBalneario, filterSportZone].forEach(filterInput => {
     if (!filterInput) return;
     filterInput.addEventListener("change", limpiarResultadosPorCambioDeFiltros);
 });
