@@ -16,6 +16,7 @@ dependencies = [
     "requests >= 2.32.3",
     "python-jose>=3.5.0",
     "fastapi-mail>=1.6.2",
+    "passlib >= 1.7.4"
 ]
 
 [dependency-groups]

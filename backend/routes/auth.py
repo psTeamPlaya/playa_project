@@ -27,9 +27,9 @@ conf = ConnectionConfig(
 
 async def send_welcome_email(email: str):
     message = MessageSchema(
-        subject="¡Bienvenido a Playas App!",
+        subject="\u00a1Bienvenido a Playas App!",
         recipients=[email],
-        body=f"Hola {email}, gracias por registrarte. ¡Disfruta de tus actividades!",
+        body=f"Hola {email}, gracias por registrarte. \u00a1Disfruta de tus actividades!",
         subtype=MessageType.html
     )
     fm = FastMail(conf)
@@ -44,7 +44,7 @@ async def send_welcome_email(email: str):
 async def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user_exist = db.query(User).filter(User.email == user.email).first()
     if db_user_exist:
-        raise HTTPException(status_code=400, detail="Este correo ya está registrado.")
+        raise HTTPException(status_code=400, detail="Este correo ya est\u00e1 registrado.")
 
     db_user = User(email=user.email, hashed_password=hash_password(user.password))
     db.add(db_user)
