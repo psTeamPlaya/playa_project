@@ -22,6 +22,8 @@ const closeLoginModalBtn = document.getElementById("closeLoginModal");
 const loginModalForm = document.getElementById("loginModalForm");
 const loginEmailInput = document.getElementById("loginEmail");
 const loginPasswordInput = document.getElementById("loginPassword");
+const confirmPasswordInput = document.getElementById("confirmPassword");
+const confirmPasswordGroup = document.getElementById("confirmPasswordGroup");
 const loginErrorMessageEl = document.getElementById("loginErrorMessage");
 const authSubmitBtn = document.getElementById("authSubmitBtn");
 const authModeHint = document.getElementById("authModeHint");
@@ -968,14 +970,27 @@ function aplicarModoAuth() {
     if (authMode === "register") {
         if (titleEl) titleEl.textContent = "Registrarse";
         authSubmitBtn.textContent = "Crear cuenta";
-        authModeHint.textContent = "Ya tienes cuenta?";
+        authModeHint.textContent = "¿Ya tienes cuenta?";
         toggleAuthModeBtn.textContent = "Iniciar sesion";
+        if (confirmPasswordGroup) {
+            confirmPasswordGroup.style.display = "block";
+        }
+        if (confirmPasswordInput) {
+            confirmPasswordInput.required = true;
+        }
         return;
     }
     if (titleEl) titleEl.textContent = "Iniciar sesion";
     authSubmitBtn.textContent = "Entrar a mi cuenta";
     authModeHint.textContent = "¿Todavía no tienes cuenta?";
     toggleAuthModeBtn.textContent = "Registrarse";
+    if (confirmPasswordGroup) {
+        confirmPasswordGroup.style.display = "none";
+    }
+    if (confirmPasswordInput) {
+        confirmPasswordInput.required = false;
+        confirmPasswordInput.value = "";
+    }
 }
 
 function mostrarMensajeAuth(mensaje, tipo = "error") {
@@ -1000,6 +1015,9 @@ function cerrarModalLogin() {
     loginModalEl.hidden = true;
     mostrarMensajeAuth("", "error");
     loginModalForm.reset();
+    if (confirmPasswordGroup) {
+        confirmPasswordGroup.style.display = "none";
+    }
 }
 
 function authFetch(url, options = {}) {
@@ -1121,6 +1139,13 @@ if (loginModalForm) {
             mostrarMensajeAuth("Debes indicar correo y contraseña.");
             return;
         }
+        if (authMode === "register") {
+            const confirmPassword = confirmPasswordInput?.value ?? "";
+            if (password !== confirmPassword) {
+                mostrarMensajeAuth("Las contraseñas no coinciden.");
+                return;
+            }
+        }
         mostrarMensajeAuth(
             authMode === "register" ? "Creando cuenta..." : "Accediendo...",
             "success",
@@ -1132,6 +1157,9 @@ if (loginModalForm) {
                 aplicarModoAuth();
                 mostrarMensajeAuth("Cuenta creada. Ya puedes iniciar sesion.", "success");
                 loginPasswordInput.value = "";
+                if (confirmPasswordInput) {
+                    confirmPasswordInput.value = "";
+                }
                 return;
             }
             const data = await login(email, password);
