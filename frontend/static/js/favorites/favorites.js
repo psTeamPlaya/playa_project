@@ -78,28 +78,43 @@ function cerrarPanelPreferencias() {
     }
 }
 
+function getNextHourFormatted() {
+    const now = new Date();
+    
+    // Create a new date object for the "next hour"
+    const nextHourDate = new Date(now);
+    nextHourDate.setHours(now.getHours() + 1);
+    nextHourDate.setMinutes(0);
+    nextHourDate.setSeconds(0);
+
+    // Format Date: YYYY-MM-DD
+    const year = nextHourDate.getFullYear();
+    const month = String(nextHourDate.getMonth() + 1).padStart(2, '0');
+    const day = String(nextHourDate.getDate()).padStart(2, '0');
+    const fecha = `${year}-${month}-${day}`;
+
+    // Format Time: HH:mm
+    const hora = String(nextHourDate.getHours()).padStart(2, '0') + ":00";
+
+    return { fecha, hora };
+}
 
 async function loadFavoriteBeaches() {
     console.log("Loading favorite beaches...");  // TODO for debug
     // const response = await fetch(`/api/favorites?${params.toString()}`);
-    const response = await authFetch(`/api/favorites?fecha=2026-05-05&hora=08:00`);  // TODO hardcoded for debug
-        if (!response.ok) {
-            throw new Error("No se pudieron obtener las recomendaciones.");
-        }
+    // const response = await authFetch(`/api/favorites?fecha=2026-05-05&hora=08:00`);  // TODO hardcoded for debug
+    const { fecha, hora } = getNextHourFormatted();
+    const response = await authFetch(`/api/favorites?fecha=${fecha}&hora=${hora}`);
+    console.log(`Fetching favorites for: ${fecha} at ${hora}`);  // TODO for debug
+    if (!response.ok) {
+        throw new Error("No se pudieron obtener las recomendaciones.");
+    }
 
-        const data = await response.json();
-        console.log("DATA COMPLETA DEL BACKEND:", data);
+    const data = await response.json();
+    console.log("DATA COMPLETA DEL BACKEND:", data);
 
-/*         const favorites = await getFavoriteBeachIds();
-        const favoriteIds = favorites.map(f => f.beach_id);
-        console.log("favs: ", favorites);  // TODO for debug
-
-        data.resultados.forEach(playa => {
-            playa.isFavorite = favoriteIds.includes(playa.beach_id);
-        });
- */        
-        pintarResultados(data.resultados);
-        
+    pintarResultados(data.resultados);
+    
 }
 
 
@@ -148,10 +163,6 @@ function pintarResultados(resultados) {
                 <span class="chip">🌤️ Nubosidad: ${condiciones.cloud_cover ?? "N/A"}%</span>
                 <span class="chip">🌧️ Lluvia: ${condiciones.rain_probability ?? "N/A"}%</span>
                 <span class="chip">🌙 Marea: ${condiciones.tide ?? "N/A"}</span>
-                </div>
-
-                <div class="motivo detalle-box">
-                <strong>Explicación de la recomendación:</strong> ${playa.motivo}
                 </div>
 
                 <div class="services-list">
