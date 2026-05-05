@@ -857,7 +857,7 @@ async function getFavoriteBeachIds() {
         return [];
     }
     try {
-        const response = await authFetch("/api/favorites");
+        const response = await authFetch("/api/favorites/ids");
         if (!response.ok) return [];
         return await response.json();
     } 
