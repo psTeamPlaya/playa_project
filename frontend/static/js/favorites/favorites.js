@@ -18,10 +18,12 @@ favoritesLabel.addEventListener("click", (e) => {
     toggleSearchUI(!isFavoritesMode);  // Toggle search UI based on current visibility
     if (isFavoritesMode) {
         loadFavoriteBeaches();
-        cerrarPanelPreferencias();
     } else {
         resultsContainer.innerHTML = "";  // Clear results when exiting favorites mode
     }
+
+    closePreferencePanel();
+ 
 });
 
 const searchUIIds = [
@@ -30,7 +32,7 @@ const searchUIIds = [
     "locationSection", 
     "searchSection",
     "quantitySlider",
-    // "filtersSidebar"
+    "filtersSidebar"
 ];
 
 
@@ -42,6 +44,18 @@ function toggleSearchUI(show) {
     searchUIIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
+            // Use .hidden for the sidebar because your CSS depends on it
+            el.hidden = !show; 
+            // Use your .hidden class for the others
+            show ? el.classList.remove("hidden") : el.classList.add("hidden");
+        }
+    });
+
+    // Add/Remove body class to trigger the layout fix from Tip #1
+    document.body.classList.toggle("showing-favorites", !show);
+/*     searchUIIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
             if (show) {
                 el.classList.remove("hidden");
             } else {
@@ -49,6 +63,7 @@ function toggleSearchUI(show) {
             }
         }
     });
+ */ 
     const beachesLabel = document.getElementById("beachesLabel");
     if (show) {
         beachesLabel.textContent = "Playas recomendadas";
@@ -68,7 +83,7 @@ function authFetch(url, options = {}) {
     });
 }
 
-function cerrarPanelPreferencias() {
+function closePreferencePanel() {
     if (preferencesPanel) {
         preferencesPanel.classList.remove("is-open");
         clearTimeout(preferencesCloseTimeout);
