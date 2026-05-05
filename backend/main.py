@@ -50,14 +50,12 @@ def obtener_recomendaciones(
     # Filtros
     tipo_arena: bool | None = None,
     tipo_piedra: bool | None = None,
-    escuela_surf: bool | None = None,
-    escuela_windsurf: bool | None = None,
-    zona_beachvolley: bool | None = None,
-    zona_deportiva: bool | None = None,
-    escuela_kayak: bool | None = None,
-    sitios_para_comer: bool | None = None,
+
     restaurantes: bool | None = None,
     comida_para_llevar: bool | None = None,
+    balnearios: bool | None = None,
+    zona_deportiva: bool | None = None,
+
     min_temperatura_ambiente: float | None = None,
     max_temperatura_ambiente: float | None = None,
     min_nubosidad: float | None = None,
@@ -93,14 +91,12 @@ def obtener_recomendaciones(
         filtros = {
             "tipo_arena": tipo_arena,
             "tipo_piedra": tipo_piedra,
-            "escuela_surf": escuela_surf,
-            "escuela_windsurf": escuela_windsurf,
-            "zona_beachvolley": zona_beachvolley,
-            "zona_deportiva": zona_deportiva,
-            "escuela_kayak": escuela_kayak,
-            "sitios_para_comer": sitios_para_comer,
+
             "restaurantes": restaurantes,
             "comida_para_llevar": comida_para_llevar,
+            "balnearios": balnearios,
+            "zona_deportiva": zona_deportiva,
+
             "min_temperatura_ambiente": min_temperatura_ambiente,
             "max_temperatura_ambiente": max_temperatura_ambiente,
             "min_nubosidad": min_nubosidad,

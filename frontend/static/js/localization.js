@@ -260,10 +260,20 @@ btnMapa.addEventListener("click", () => {
 
     if (!map) {
         map = L.map("map").setView([28.1235, -15.4363], 10); // Default: Gran Canaria
+        const mapContainer = map.getContainer();
+        mapContainer.classList.add("location-picker-map");
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: "&copy; OpenStreetMap contributors"
         }).addTo(map);
+
+        map.on("dragstart", () => {
+            mapContainer.classList.add("is-dragging");
+        });
+
+        map.on("dragend", () => {
+            mapContainer.classList.remove("is-dragging");
+        });
 
         /**
          * Click on map → select location
