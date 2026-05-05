@@ -153,20 +153,47 @@ def calcular_score(condicion, actividad):
     return total / suma_pesos if suma_pesos else 0
 
 
-def filtrar(playa, cond, filtros: dict):
+def filtrar(playa, conditions, filtros: dict):
+    # Filtros de datos fijos
     if filtros.get("tipo_arena") and playa["tipo"] != "arena":
         return False
     if filtros.get("tipo_piedra") and playa["tipo"] != "piedra":
         return False
-    if filtros.get("escuela_surf") and not playa["servicios"].get("escuela_surf"):
+    
+    if filtros.get("restaurantes") and not playa["servicios"].get("restaurantes"):
         return False
-    if filtros.get("escuela_windsurf") and not playa["servicios"].get("escuela_windsurf"):
+    if filtros.get("comida_para_llevar") and not playa["servicios"].get("comida_para_llevar"):
         return False
-    if filtros.get("sitios_para_comer") and not any([
-        playa["servicios"].get("restaurantes"),
-        playa["servicios"].get("comida_para_llevar")
-    ]):
+    if filtros.get("balnearios") and not playa["servicios"].get("balnearios"):
         return False
+    if filtros.get("zona_deportiva") and not playa["servicios"].get("zona_deportiva"):
+        return False
+
+    # Filtros de datos dinámicos
+    if "min_velocidad_viento" in filtros:
+        if conditions.get("wind_speed", 0) < filtros["min_velocidad_viento"]:
+            return False
+    if "max_velocidad_viento" in filtros:
+        if conditions.get("wind_speed", 0) > filtros["max_velocidad_viento"]:
+            return False
+    if "min_temperatura_ambiente" in filtros:
+        if conditions.get("air_temp", 0) < filtros["min_temperatura_ambiente"]:
+            return False
+    if "max_temperatura_ambiente" in filtros:
+        if conditions.get("air_temp", 0) > filtros["max_temperatura_ambiente"]:
+            return False
+    if "min_nubosidad" in filtros:
+        if conditions.get("cloud_cover", 0) < filtros["min_nubosidad"]:
+            return False
+    if "max_nubosidad" in filtros:
+        if conditions.get("cloud_cover", 0) > filtros["max_nubosidad"]:
+            return False
+    if "min_altura_oleaje" in filtros:
+        if conditions.get("wave_height", 0) < filtros["min_altura_oleaje"]:
+            return False
+    if "max_altura_oleaje" in filtros:
+        if conditions.get("wave_height", 0) > filtros["max_altura_oleaje"]:
+            return False
     return True
 
 

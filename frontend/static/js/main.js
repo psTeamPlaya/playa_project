@@ -38,9 +38,12 @@ const disableStaticFilters = document.getElementById("disableStaticFilters");
 const disableDynamicFilters = document.getElementById("disableDynamicFilters");
 const filterSandBeach = document.getElementById("filterSandBeach");
 const filterStoneBeach = document.getElementById("filterStoneBeach");
-const filterFoodPlaces = document.getElementById("filterFoodPlaces");
-const filterSurfSchool = document.getElementById("filterSurfSchool");
-const filterWindsurfSchool = document.getElementById("filterWindsurfSchool");
+
+const filterRestaurant = document.getElementById("filterRestaurant");
+const filterTakeAwayFood = document.getElementById("filterTakeAwayFood");
+const filterBalneario = document.getElementById("filterBalneario");
+const filterSportZone = document.getElementById("filterSportZone");
+
 const filterWindMin = document.getElementById("filterWindMin");
 const filterWindMax = document.getElementById("filterWindMax");
 const filterWindReset = document.getElementById("filterWindReset");
@@ -252,14 +255,19 @@ function obtenerFiltrosOleaje() {
 }
 
 function aplicarFiltrosAParametros(params) {
+    console.log("PARAMS INICIALES:", params.toString());
     if (!estaSidebarFiltrosActiva()) return;
 
     const filtros = obtenerFiltrosTipoPlaya();
-    if (filtros.tipoArena)              params.set("tipo_arena", "true");
-    if (filtros.tipoPiedra)             params.set("tipo_piedra", "true");
-    if (filterFoodPlaces?.checked)      params.set("sitios_para_comer", "true");
-    if (filterSurfSchool?.checked)      params.set("escuela_surf", "true");
-    if (filterWindsurfSchool?.checked)  params.set("escuela_windsurf", "true");
+    if (filtros.tipoArena)  params.set("tipo_arena", true);
+    if (filtros.tipoPiedra) params.set("tipo_piedra", true);
+
+    if (filterRestaurant?.checked)   params.set("restaurantes", true);
+    if (filterTakeAwayFood?.checked) params.set("comida_para_llevar", true);
+    if (filterBalneario?.checked)    params.set("balnearios", true);
+    if (filterSportZone?.checked)    params.set("zona_deportiva", true);
+
+    console.log("PARAMS FINALES:", params.toString());
     
     const filtrosViento = obtenerFiltrosViento();
     if (filtrosViento.activo) {
@@ -433,8 +441,8 @@ function restablecerFiltroOleaje() {
 }
 
 function desactivarFiltrosEstaticos() {
-    [filterSandBeach, filterStoneBeach, filterFoodPlaces, 
-        filterSurfSchool, filterWindsurfSchool].forEach(filterInput => {
+    [filterSandBeach, filterStoneBeach, filterRestaurant, 
+        filterTakeAwayFood, filterBalneario, filterSportZone].forEach(filterInput => {
         if (filterInput) filterInput.checked = false;
     });
 }
@@ -1071,10 +1079,8 @@ function formatearServicios(servicios) {
     const iconos = {
         restaurantes: "🍽️ Restaurantes",
         comida_para_llevar: "🥡 Comida para llevar",
-        balneario: "🚿 Balneario",
-        zona_deportiva: "🏐 Zona deportiva",
-        escuela_surf: "🏄 Escuela de surf",
-        escuela_windsurf: "🌬️ Escuela de windsurf"
+        balnearios: "🚿 Balneario",
+        zona_deportiva: "🏐 Zona deportiva"
     };
     return Object.entries(servicios)
         .filter(([_, disponible]) => disponible)
@@ -1301,7 +1307,8 @@ if (expandResultsPreference) {
     });
 }
 
-[filterSandBeach, filterStoneBeach, filterFoodPlaces, filterSurfSchool, filterWindsurfSchool].forEach(filterInput => {
+[filterSandBeach, filterStoneBeach, filterRestaurant, filterTakeAwayFood, 
+    filterBalneario, filterSportZone].forEach(filterInput => {
     if (!filterInput) return;
     filterInput.addEventListener("change", limpiarResultadosPorCambioDeFiltros);
 });
