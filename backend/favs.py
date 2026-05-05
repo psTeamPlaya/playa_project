@@ -1,4 +1,3 @@
-
 from backend.engine_recomendation import cargar_condiciones
 from backend.seed_beaches import cargar_playas
 
@@ -7,8 +6,8 @@ def getFavouriteBeaches(beachesIds, fecha=None, hora=None):
     playas = cargar_playas()
     if fecha and hora:
         condiciones = cargar_condiciones(playas, fecha, hora)
-        print("Condiciones cargadas para fecha y hora:", fecha, hora, "; condiciones: ", condiciones)
-        # Create a lookup dictionary: {beach_id: condition_data}
+        # print("Condiciones cargadas para fecha y hora:", fecha, hora, "; condiciones: ", condiciones)
+        # create a lookup dictionary: {beach_id: condition_data}
         condiciones_dict = {cond['beach_id']: cond for cond in condiciones}
 
     resultados = []
@@ -25,8 +24,6 @@ def getFavouriteBeaches(beachesIds, fecha=None, hora=None):
             "condiciones": cond,
             "servicios": playa["servicios"],
             "isFavorite": True
-            # "motivo": generar_motivo(actividad, cond)
         })
 
     return resultados
-
