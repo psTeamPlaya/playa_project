@@ -1354,6 +1354,26 @@
         overflow: hidden;
     }
 
+    #map.location-picker-map,
+    #map.location-picker-map .leaflet-container,
+    #map.location-picker-map .leaflet-pane,
+    #map.location-picker-map .leaflet-top,
+    #map.location-picker-map .leaflet-bottom,
+    #map.location-picker-map .leaflet-control,
+    #map.location-picker-map .leaflet-interactive {
+        cursor: crosshair !important;
+    }
+
+    #map.location-picker-map.is-dragging,
+    #map.location-picker-map.is-dragging .leaflet-container,
+    #map.location-picker-map.is-dragging .leaflet-pane,
+    #map.location-picker-map.is-dragging .leaflet-top,
+    #map.location-picker-map.is-dragging .leaflet-bottom,
+    #map.location-picker-map.is-dragging .leaflet-control,
+    #map.location-picker-map.is-dragging .leaflet-interactive {
+        cursor: grabbing !important;
+    }
+
     @media (max-width: 1100px) {
 
         .app-main>.panel:nth-of-type(3) .location-grid,
@@ -1724,3 +1744,6 @@
             flex-wrap: wrap;
         }
     }
+
+
+}
