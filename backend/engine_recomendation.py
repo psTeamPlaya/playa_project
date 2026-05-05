@@ -1,6 +1,8 @@
 import math, logging, requests
 from pathlib import Path
 from typing import Any
+import os
+import requests
 from backend.db import SessionLocal
 from backend.models.beach import Beach
 
@@ -82,7 +84,9 @@ def cargar_playas() -> list[dict[str, Any]]:
 
 
 def cargar_condiciones(playas, fecha, hora):
-    url = "http://127.0.0.1:8000/beach-conditions"
+    base_url = os.getenv("BEACH_API_URL", "http://127.0.0.1:8000")
+    url = f"{base_url}/beach-conditions"
+    # url = "http://127.0.0.1:8000/beach-conditions"
     datetime = f"{fecha} {hora}"
     r = requests.post(
         url,
