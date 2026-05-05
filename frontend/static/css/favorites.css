@@ -1,0 +1,219 @@
+:root {
+    --bg-color: #F8F6F0; /* Fondo general beige claro */
+    --card-bg: #F0EDE6; /* Beige un poco más oscuro para la tarjeta */
+    --primary-brown: #7E543F; /* Marrón de los botones y footer */
+    --primary-brown-hover: #63402E;
+    --text-dark: #333333;
+}
+
+/* Container to match your other preference-items */
+.preference-item.fav-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+/* Make the button invisible so only the content shows */
+.invisible-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    font: inherit; /* Inherits font size/family from label */
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+}
+
+/* Style the heart to sit exactly where the checkbox was */
+.fav-icon {
+    margin-right: 12px; /* Matches the spacing of your checkboxes */
+    color: #ff4d6d;    /* A nice soft red/pink for the heart */
+    font-size: 1.1rem;
+    width: 20px;       /* Fixed width ensures text aligns with checkboxes above */
+    display: flex;
+    justify-content: center;
+}
+
+/* When we are in favorites mode, force a single column layout */
+body.showing-favorites .app-shell {
+    grid-template-columns: 1fr !important;
+}
+
+/* Ensure the results grid takes up the full width */
+body.showing-favorites .results-grid {
+    width: 100%;
+}
+
+
+/* Hover effect to match the rest of the menu */
+.preference-item.fav-item:hover {
+    background-color: rgba(0, 0, 0, 0.05); /* Or whatever your theme uses */
+}
+
+
+body {
+    margin: 0;
+    font-family: 'Atma', sans-serif, system-ui;
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- CABECERA --- */
+.login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 3rem;
+    background-color: var(--bg-color);
+    border-bottom: 1px solid #E5E0D8;
+}
+
+.login-header .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.login-header .logo img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--text-dark);
+}
+
+.login-header .auth-buttons button {
+    background-color: var(--primary-brown);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-left: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.login-header .auth-buttons button:hover {
+    background-color: var(--primary-brown-hover);
+}
+
+/* --- CONTENIDO CENTRAL --- */
+.login-main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.login-card {
+    background-color: var(--card-bg);
+    padding: 3rem 4rem;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.login-card h2 {
+    text-align: center;
+    font-family: serif;
+    font-size: 2rem;
+    color: var(--text-dark);
+    margin-bottom: 2rem;
+    margin-top: 0;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.form-group input {
+    padding: 12px 15px;
+    border: 1px solid #E0D9CC;
+    border-radius: 8px;
+    background-color: #F8F6F0;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-brown);
+}
+
+.login-btn {
+    width: 100%;
+    background-color: var(--primary-brown);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.3s;
+}
+
+.login-btn:hover {
+    background-color: var(--primary-brown-hover);
+}
+
+.error-message {
+    color: #d9534f;
+    text-align: center;
+    margin-top: 15px;
+    font-weight: 500;
+    min-height: 20px;
+}
+
+/* --- FOOTER --- */
+.login-footer {
+    background-color: var(--primary-brown);
+    color: white;
+    padding: 2rem 3rem;
+    display: flex;
+    justify-content: flex-start;
+    gap: 100px;
+}
+
+.footer-section h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.footer-section ul li::before {
+    content: "• ";
+    color: white;
+}
