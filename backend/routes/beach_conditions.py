@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query
 from datetime import date, timedelta, datetime
 from sqlalchemy.orm import Session
 import requests
@@ -6,6 +6,7 @@ import requests
 from backend.db import get_db
 from backend.models.beach import Beach
 from backend.models.beach_condition import BeachCondition
+from backend.schemas.beach_condition import BeachConditionResponse
 
 router = APIRouter(prefix="/beach-conditions", tags=["Beach Conditions"])
 
@@ -127,32 +128,9 @@ def seed_all(db: Session = Depends(get_db)):
     }
 
 
-"""
-Formato de parámetros a enviar desde el frontend:
-1) beach_id
-   - obtenerlo desde el endpoint /beaches
-   - guardado en el frontend cuando el usuario selecciona la playa
-
-2) datetime
-   - formateado exactamente como: '2026-05-02 03:00:00' ó '2026-05-02T03:00:00' (sin comillas) 
-"""
-@router.get("")
-def read_beach_condition(
-    beach_id: int,
+@router.post("", response_model=list[BeachConditionResponse])
+def read_beach_conditions(
     dt: datetime = Query(..., alias="datetime"),
     db: Session = Depends(get_db)
 ):
-    record = (
-        db.query(BeachCondition)
-        .filter(
-            BeachCondition.beach_id == beach_id,
-            BeachCondition.datetime == dt
-        )
-        .first()
-    )
-    if not record:
-        raise HTTPException(
-            status_code=404,
-            detail="No data found for this beach at that datetime"
-        )
-    return record
+    return db.query(BeachCondition).filter(BeachCondition.datetime == dt).all()
