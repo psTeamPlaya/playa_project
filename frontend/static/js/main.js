@@ -912,7 +912,7 @@ function pintarResultados(resultados) {
                 <span class="chip">🌡️ Agua: ${condiciones.water_temp ?? "N/A"} ºC</span>
                 <span class="chip">🌤️ Nubosidad: ${condiciones.cloud_cover ?? "N/A"}%</span>
                 <span class="chip">🌧️ Lluvia: ${condiciones.rain_probability ?? "N/A"}%</span>
-                <span class="chip">🌙 Marea: ${condiciones.tide ?? "N/A"}</span>
+                <span class="chip">🌙 Marea: ${formatearMarea(condiciones)}</span>
                 </div>
 
                 <div class="motivo detalle-box">
@@ -957,6 +957,24 @@ function formatearServicios(servicios) {
         .filter(([_, disponible]) => disponible)
         .map(([clave]) => `<span class="chip">${iconos[clave] || clave}</span>`)
         .join("");
+}
+
+function formatearMarea(condiciones) {
+    if (typeof condiciones.marea === "string" && condiciones.marea.trim()) {
+        return condiciones.marea;
+    }
+
+    const tideValue = Number(condiciones.tide);
+    if (Number.isNaN(tideValue)) {
+        return "N/A";
+    }
+    if (tideValue <= -0.10) {
+        return "baja";
+    }
+    if (tideValue >= 0.10) {
+        return "alta";
+    }
+    return "media";
 }
 
 // =========================================================
