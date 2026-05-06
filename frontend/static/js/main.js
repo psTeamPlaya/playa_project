@@ -27,6 +27,7 @@ import {
     initDateTime
 } from "./search/date-time.js";
 import { initQuantity } from "./search/quantity.js";
+import { initResultsMap } from "./results/results-map.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -136,6 +137,7 @@ let preferencesUIController;
 let authModalController;
 let sessionUIController;
 let adminUIController;
+let resultsMapController;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
@@ -384,6 +386,8 @@ function initControllers() {
         getCurrentUser: () => sessionUIController?.getCurrentUser?.(),
         onClosePreferences: () => preferencesUIController?.cerrarPanelPreferencias(),
     });
+
+    resultsMapController = initResultsMap();
 }
 
 // ============================================================
@@ -483,6 +487,7 @@ async function buscarRecomendaciones() {
         console.log("DATA COMPLETA DEL BACKEND:", data);
 
         pintarResultados(data.resultados);
+        resultsMapController?.setResults(data.resultados);
         desplazarAPlayasRecomendadas();
         if (data.aviso_sol?.mensaje) {
             mostrarAvisoSolar(data.aviso_sol.mensaje);
@@ -494,6 +499,7 @@ async function buscarRecomendaciones() {
     catch (error) {
         console.error(error);
         statusEl.textContent = "Ha ocurrido un error al consultar la API.";
+        resultsMapController?.setResults([]);
         resultsContainer.innerHTML = `
           <div class="empty-state">
             No se pudieron cargar los resultados.

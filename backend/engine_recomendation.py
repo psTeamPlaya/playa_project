@@ -283,6 +283,8 @@ def recomendar_playas(
             "beach_id": playa["id"],
             "nombre": playa["nombre"],
             "ubicacion": playa["ubicacion"],
+            "latitud": playa["latitud"],
+            "longitud": playa["longitud"],
             "descripcion": playa["descripcion"],
             "tipo": playa["tipo"],
             "score": round(score, 2),

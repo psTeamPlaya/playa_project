@@ -529,6 +529,17 @@
         margin-bottom: 1rem;
     }
 
+    .results-title-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .results-title-row h2 {
+        margin-bottom: 0;
+    }
+
     .results-grid {
         display: flex;
         flex-direction: column;
@@ -1613,6 +1624,25 @@
         box-shadow: 0 22px 60px rgba(15, 23, 42, 0.24);
     }
 
+    .results-map-container {
+        width: min(100%, 900px);
+    }
+
+    .results-map-header {
+        margin: 0.5rem 0 1rem;
+    }
+
+    .results-map-header h3 {
+        margin: 0;
+        font-size: 1.35rem;
+    }
+
+    .results-map-header p {
+        margin: 0.35rem 0 0;
+        color: var(--muted);
+        font-size: 1rem;
+    }
+
     #closeMap {
         float: right;
         width: 2rem;
@@ -1628,6 +1658,55 @@
         margin: 2.5rem 0 1rem;
         border-radius: 12px;
         overflow: hidden;
+    }
+
+    #resultsMap {
+        width: 100%;
+        margin: 0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .results-map-marker-wrapper {
+        background: transparent;
+        border: 0;
+    }
+
+    .results-map-marker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        min-width: 84px;
+        justify-content: center;
+        padding: 0.35rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(2, 62, 138, 0.94);
+        color: #ffffff;
+        border: 2px solid rgba(255, 255, 255, 0.92);
+        box-shadow: 0 10px 18px rgba(2, 62, 138, 0.28);
+        font-family: Arial, sans-serif;
+        font-size: 0.8rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .results-map-marker-rank {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2rem;
+        padding: 0.1rem 0.35rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .results-map-marker-score {
+        letter-spacing: 0.01em;
+    }
+
+    .results-map-popup {
+        font-family: Arial, sans-serif;
+        line-height: 1.35;
     }
 
     #map.location-picker-map,

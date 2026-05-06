@@ -27,9 +27,14 @@ class BeachConditionResponse(BaseModel):
 class BeachRecommendationResponse(BaseModel):
     beach_id: int
     nombre: str
+    ubicacion: str
+    latitud: float
+    longitud: float
+    descripcion: Optional[str] = None
     tipo: str
     score: float
     condiciones: BeachConditionResponse
     servicios: Dict[str, bool] = {} 
+    motivo: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
