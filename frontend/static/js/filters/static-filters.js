@@ -5,6 +5,20 @@ export function obtenerFiltrosTipoPlaya(elements) {
     };
 }
 
+export function obtenerFiltrosSeleccionados(staticElements) {
+    const filtrosTipo = obtenerFiltrosTipoPlaya(staticElements);
+
+    return {
+        tipo_arena: filtrosTipo.tipoArena,
+        tipo_piedra: filtrosTipo.tipoPiedra,
+        restaurantes: Boolean(staticElements.filterRestaurant?.checked),
+        comida_para_llevar: Boolean(staticElements.filterTakeAwayFood?.checked),
+        balnearios: Boolean(staticElements.filterBalneario?.checked),
+        zona_deportiva: Boolean(staticElements.filterSportZone?.checked),
+        pet_friendly: Boolean(staticElements.filterPetFriendly?.checked)
+    };
+}
+
 export function estaSidebarFiltrosActiva(filtersSidebar) {
     return Boolean(filtersSidebar && !filtersSidebar.hidden);
 }
@@ -24,15 +38,12 @@ export function aplicarFiltrosAParametros({
 }) {
     if (!estaSidebarFiltrosActiva(filtersSidebar)) return;
 
-    const filtros = obtenerFiltrosTipoPlaya(staticElements);
-    if (filtros.tipoArena) params.set("tipo_arena", true);
-    if (filtros.tipoPiedra) params.set("tipo_piedra", true);
-
-    if (staticElements.filterRestaurant?.checked) params.set("restaurantes", true);
-    if (staticElements.filterTakeAwayFood?.checked) params.set("comida_para_llevar", true);
-    if (staticElements.filterBalneario?.checked) params.set("balnearios", true);
-    if (staticElements.filterSportZone?.checked) params.set("zona_deportiva", true);
-    if (staticElements.filterPetFriendly?.checked) params.set("pet_friendly", true);
+    const filtros = obtenerFiltrosSeleccionados(staticElements);
+    Object.entries(filtros).forEach(([clave, activo]) => {
+        if (activo) {
+            params.set(clave, true);
+        }
+    });
 
     dynamicController.dynamicFilters.forEach(filtro => {
         const valores = dynamicController.obtenerValoresFiltroDinamico(

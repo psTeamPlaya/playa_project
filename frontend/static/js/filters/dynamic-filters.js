@@ -80,6 +80,22 @@ export function obtenerValoresFiltroDinamico(filtro, estaSidebarFiltrosActiva) {
     };
 }
 
+export function obtenerFiltrosDinamicosSeleccionados(dynamicFilters, estaSidebarFiltrosActiva) {
+    const filtros = {};
+
+    dynamicFilters.forEach(filtro => {
+        const valores = obtenerValoresFiltroDinamico(filtro, estaSidebarFiltrosActiva);
+        if (!valores.activo) {
+            return;
+        }
+
+        filtros[filtro.paramMin] = valores.min;
+        filtros[filtro.paramMax] = valores.max;
+    });
+
+    return filtros;
+}
+
 export function actualizarFiltroDinamicoUI(filtro) {
     if (!filtro.minInput || !filtro.maxInput) return;
 
