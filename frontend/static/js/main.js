@@ -2,6 +2,21 @@ import { login } from "./auth/login.js";
 import { registerUser } from "./auth/register.js";
 import { selectedCoords } from "./localization.js";
 import { pintarResultados as renderizarResultados } from "./results/render-results.js";
+import {
+    esHoraPasadaParaFecha,
+    formatearFechaLocal,
+    initDateTime
+} from "./search/date-time.js";
+import { initQuantity } from "./search/quantity.js";
+import {
+    createDynamicFilters,
+    iluminarChipFiltro,
+    initDynamicFilters
+} from "./filters/dynamic-filters.js";
+import {
+    aplicarFiltrosAParametros as buildFilterParams,
+    initStaticFilters
+} from "./filters/static-filters.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -77,60 +92,68 @@ const waveRangeTrack = document.getElementById("waveRangeTrack");
 const waveMinValue = document.getElementById("waveMinValue");
 const waveMaxValue = document.getElementById("waveMaxValue");
 
-let hourOptions = [];
 let actividadSeleccionada = "";
-let horaSeleccionada = "";
 let authMode = "login";
 let preferencesCloseTimeout;
-let staticFiltersLightTimeout;
-let dynamicFiltersLightTimeout;
+let dateTimeController;
+let quantityController;
+let dynamicFiltersController;
+let staticFiltersController;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
 
-const WIND_FILTER_DEFAULTS = { min: 0, max: 15 };
-const CLOUD_FILTER_DEFAULTS = { min: 0, max: 20 };
-const TEMPERATURE_FILTER_DEFAULTS = { min: 20, max: 29 };
-const WAVE_FILTER_DEFAULTS = { min: 0, max: 1 };
+const staticFilterElements = {
+    filterSandBeach,
+    filterStoneBeach,
+    filterRestaurant,
+    filterTakeAwayFood,
+    filterBalneario,
+    filterSportZone,
+    filterPetFriendly
+};
 
-const DYNAMIC_FILTERS = [
-    {
-        id: "viento",
-        minInput: filterWindMin, maxInput: filterWindMax,
-        minLabel: windMinValue, maxLabel: windMaxValue,
-        rangeTrack: windRangeTrack, disabledCheck: filterWindDisabled,
-        resetBtn: filterWindReset, defaults: WIND_FILTER_DEFAULTS,
-        decimal: false, paramMin: "min_velocidad_viento", paramMax: "max_velocidad_viento",
-        timeoutId: null
-    },
-    {
-        id: "nubosidad",
-        minInput: filterCloudMin, maxInput: filterCloudMax,
-        minLabel: cloudMinValue, maxLabel: cloudMaxValue,
-        rangeTrack: cloudRangeTrack, disabledCheck: filterCloudDisabled,
-        resetBtn: filterCloudReset, defaults: CLOUD_FILTER_DEFAULTS,
-        decimal: false, paramMin: "min_nubosidad", paramMax: "max_nubosidad",
-        timeoutId: null
-    },
-    {
-        id: "temperatura_ambiente",
-        minInput: filterTemperatureMin, maxInput: filterTemperatureMax,
-        minLabel: temperatureMinValue, maxLabel: temperatureMaxValue,
-        rangeTrack: temperatureRangeTrack, disabledCheck: filterTemperatureDisabled,
-        resetBtn: filterTemperatureReset, defaults: TEMPERATURE_FILTER_DEFAULTS,
-        decimal: false, paramMin: "min_temperatura_ambiente", paramMax: "max_temperatura_ambiente",
-        timeoutId: null
-    },
-    {
-        id: "oleaje",
-        minInput: filterWaveMin, maxInput: filterWaveMax,
-        minLabel: waveMinValue, maxLabel: waveMaxValue,
-        rangeTrack: waveRangeTrack, disabledCheck: filterWaveDisabled,
-        resetBtn: filterWaveReset, defaults: WAVE_FILTER_DEFAULTS,
-        decimal: true, paramMin: "min_altura_oleaje", paramMax: "max_altura_oleaje",
-        timeoutId: null
-    }
+const staticFilterInputs = [
+    filterSandBeach,
+    filterStoneBeach,
+    filterRestaurant,
+    filterTakeAwayFood,
+    filterBalneario,
+    filterSportZone,
+    filterPetFriendly
 ];
+
+const dynamicFilters = createDynamicFilters({
+    filterWindMin,
+    filterWindMax,
+    filterWindReset,
+    filterWindDisabled,
+    windRangeTrack,
+    windMinValue,
+    windMaxValue,
+    filterCloudMin,
+    filterCloudMax,
+    filterCloudReset,
+    filterCloudDisabled,
+    cloudRangeTrack,
+    cloudMinValue,
+    cloudMaxValue,
+    filterTemperatureMin,
+    filterTemperatureMax,
+    filterTemperatureReset,
+    filterTemperatureDisabled,
+    temperatureRangeTrack,
+    temperatureMinValue,
+    temperatureMaxValue,
+    filterWaveMin,
+    filterWaveMax,
+    filterWaveReset,
+    filterWaveDisabled,
+    waveRangeTrack,
+    waveMinValue,
+    waveMaxValue
+});
+
 const STORAGE_KEYS = {
     rememberActivity: "preferences.rememberActivity",
     rememberSchedule: "preferences.rememberSchedule",
@@ -204,12 +227,15 @@ function guardarActividadRecordada() {
 }
 
 function guardarHorarioRecordado() {
-    if (!rememberSchedulePreference?.checked || !fechaInput.value || !horaSeleccionada) {
+    const fechaSeleccionada = dateTimeController?.getFecha() || fechaInput.value;
+    const horaSeleccionada = dateTimeController?.getHoraSeleccionada() || "";
+
+    if (!rememberSchedulePreference?.checked || !fechaSeleccionada || !horaSeleccionada) {
         localStorage.removeItem(STORAGE_KEYS.savedDate);
         localStorage.removeItem(STORAGE_KEYS.savedHour);
         return;
     }
-    localStorage.setItem(STORAGE_KEYS.savedDate, fechaInput.value);
+    localStorage.setItem(STORAGE_KEYS.savedDate, fechaSeleccionada);
     localStorage.setItem(STORAGE_KEYS.savedHour, horaSeleccionada);
 }
 
@@ -229,7 +255,7 @@ function obtenerHorarioInicial() {
     const hoy = formatearFechaLocal(new Date());
 
     if (!fechaGuardada || !horaGuardada || fechaGuardada < hoy) {return null;}
-    if (fechaGuardada === hoy && esHoraPasadaParaFecha(fechaGuardada, horaGuardada)) {
+    if ((dateTimeController?.esHoraPasadaParaFecha || esHoraPasadaParaFecha)(fechaGuardada, horaGuardada)) {
         return null;
     }
     return {
@@ -238,203 +264,13 @@ function obtenerHorarioInicial() {
     };
 }
 
-function obtenerFiltrosTipoPlaya() {
-    return {
-        tipoArena: Boolean(filterSandBeach?.checked),
-        tipoPiedra: Boolean(filterStoneBeach?.checked)
-    };
-}
-
-function estaSidebarFiltrosActiva() {
-    return Boolean(filtersSidebar && !filtersSidebar.hidden);
-}
-
-function obtenerValoresFiltroDinamico(filtro) {
-    return {
-        activo: estaSidebarFiltrosActiva() && !filtro.disabledCheck?.checked,
-        min: Number(filtro.minInput?.value ?? filtro.defaults.min),
-        max: Number(filtro.maxInput?.value ?? filtro.defaults.max)
-    };
-}
-
-function aplicarFiltrosAParametros(params) {
-    console.log("PARAMS INICIALES:", params.toString());
-    if (!estaSidebarFiltrosActiva()) return;
-
-    const filtros = obtenerFiltrosTipoPlaya();
-    if (filtros.tipoArena)  params.set("tipo_arena", true);
-    if (filtros.tipoPiedra) params.set("tipo_piedra", true);
-
-    if (filterRestaurant?.checked)   params.set("restaurantes", true);
-    if (filterTakeAwayFood?.checked) params.set("comida_para_llevar", true);
-    if (filterBalneario?.checked)    params.set("balnearios", true);
-    if (filterSportZone?.checked)    params.set("zona_deportiva", true);
-    if (filterPetFriendly?.checked)  params.set("pet_friendly", true);
-
-    console.log("PARAMS FINALES:", params.toString());
-    
-    DYNAMIC_FILTERS.forEach(filtro => {
-        const valores = obtenerValoresFiltroDinamico(filtro);
-        if (valores.activo) {
-            params.set(filtro.paramMin, String(valores.min));
-            params.set(filtro.paramMax, String(valores.max));
-        }
-    });
-}
-
-function formatearValorDecimalFiltro(valor) {
-    return Number.isInteger(valor) ? String(valor) : valor.toFixed(1);
-}
-
-function actualizarFiltroDinamicoUI(filtro) {
-    if (!filtro.minInput || !filtro.maxInput) return;
-    
-    let min = Number(filtro.minInput.value);
-    let max = Number(filtro.maxInput.value);
-    if (min > max) {
-        [min, max] = [max, min];
-        filtro.minInput.value = String(min);
-        filtro.maxInput.value = String(max);
-    }
-
-    const formatear = val => filtro.decimal ? formatearValorDecimalFiltro(val) : String(val);
-
-    if (filtro.minLabel) filtro.minLabel.textContent = formatear(min);
-    if (filtro.maxLabel) filtro.maxLabel.textContent = formatear(max);
-    if (filtro.rangeTrack) {
-        const minPermitido = Number(filtro.minInput.min);
-        const maxPermitido = Number(filtro.minInput.max);
-        const total = maxPermitido - minPermitido;
-        const minPorcentaje = ((min - minPermitido) / total) * 100;
-        const maxPorcentaje = ((max - minPermitido) / total) * 100;
-
-        filtro.rangeTrack.style.setProperty("--range-min", `${minPorcentaje}%`);
-        filtro.rangeTrack.style.setProperty("--range-max", `${maxPorcentaje}%`);
-        filtro.rangeTrack.classList.toggle("is-disabled", Boolean(filtro.disabledCheck?.checked));
-    }
-    const desactivado = Boolean(filtro.disabledCheck?.checked);
-    filtro.minInput.disabled = desactivado;
-    filtro.maxInput.disabled = desactivado;
-
-    const toggleLabel = filtro.disabledCheck?.closest(".filter-toggle-button");
-    const toggleText = toggleLabel?.querySelector(".filter-toggle-text");
-    if (toggleText) {
-        toggleText.textContent = desactivado ? "Activar filtro" : "Desactivar filtro";
-    }
-    if (toggleLabel) {
-        toggleLabel.classList.toggle("is-active", desactivado);
-        toggleLabel.setAttribute("aria-pressed", desactivado ? "true" : "false");
-    }
-}
-
-function restablecerFiltroDinamico(filtro) {
-    if (!filtro.minInput || !filtro.maxInput) return;
-    filtro.minInput.value = String(filtro.defaults.min);
-    filtro.maxInput.value = String(filtro.defaults.max);
-    actualizarFiltroDinamicoUI(filtro);
-}
-
-function desactivarFiltrosEstaticos() {
-    [filterSandBeach, filterStoneBeach, filterRestaurant, 
-        filterTakeAwayFood, filterBalneario, filterSportZone, filterPetFriendly].forEach(filterInput => {
-        if (filterInput) filterInput.checked = false;
-    });
-}
-
-function desactivarFiltrosDinamicos() {
-    DYNAMIC_FILTERS.forEach(filtro => {
-        if (filtro.disabledCheck) filtro.disabledCheck.checked = true;
-        actualizarFiltroDinamicoUI(filtro);
-    });
-}
-
-function estanTodosLosFiltrosDinamicosDesactivados() {
-    return DYNAMIC_FILTERS.every(filtro => Boolean(filtro.disabledCheck?.checked));
-}
-
-function actualizarToggleFiltrosDinamicos() {
-    if (!disableDynamicFilters) return;
-
-    const desactivados = estanTodosLosFiltrosDinamicosDesactivados();
-    disableDynamicFilters.textContent = desactivados
-        ? "Activar filtros din\u00e1micos"
-        : "Desactivar filtros din\u00e1micos";
-    disableDynamicFilters.setAttribute("aria-pressed", desactivados ? "true" : "false");
-    disableDynamicFilters.classList.toggle("is-active", desactivados);
-}
-
-function alternarFiltrosDinamicos() {
-    const desactivar = !estanTodosLosFiltrosDinamicosDesactivados();
-    DYNAMIC_FILTERS.forEach(filtro => {
-        if (filtro.disabledCheck) filtro.disabledCheck.checked = desactivar;
-        actualizarFiltroDinamicoUI(filtro);
-    });
-    actualizarToggleFiltrosDinamicos();
-}
-
-function iluminarChipFiltro(chip, timeoutId, onTimeoutChange) {
-    chip.classList.remove("is-lit");
-    void chip.offsetWidth;
-    chip.classList.add("is-lit");
-    clearTimeout(timeoutId);
-    const nextTimeoutId = setTimeout(() => {
-        chip.classList.remove("is-lit");
-    }, 500);
-    onTimeoutChange(nextTimeoutId);
-}
-
 const cantidadSlider = document.getElementById("cantidadSlider");
 const cantidadSliderValue = document.getElementById("cantidadSliderValue");
 const cantidadSliderMax = document.getElementById("cantidadSliderMax");
-let cantidadSeleccionada = Number(DEFAULT_QUANTITY);
 
 // =========================================================
-// UTILIDADES DE FECHA Y HORA
+// FECHA, HORA Y CANTIDAD
 // =========================================================
-
-function formatearFechaLocal(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-}
-
-function obtenerAbreviaturaDia(fechaTexto) {
-    if (!fechaTexto) return "---";
-
-    const [year, month, day] = fechaTexto.split("-").map(Number);
-    const fecha = new Date(year, month - 1, day);
-    return new Intl.DateTimeFormat("es-ES", { weekday: "short" })
-        .format(fecha)
-        .replace(".", "")
-        .toLowerCase();
-}
-
-function formatearFechaVisual(fechaTexto) {
-    if (!fechaTexto) return "---";
-
-    const [year, month, day] = fechaTexto.split("-");
-    const diaSemana = obtenerAbreviaturaDia(fechaTexto);
-    return `${diaSemana} \u00b7 ${day}/${month}/${year}`;
-}
-
-function actualizarTextoFecha() {
-    fechaDisplay.textContent = formatearFechaVisual(fechaInput.value);
-}
-
-function obtenerHoraMinimaPermitida() {
-    const ahora = new Date();
-    const hora = ahora.getHours();
-    const minutos = ahora.getMinutes();
-
-    if (minutos === 0) return hora;
-    return hora + 1;
-}
-
-function obtenerHoraTexto(hourNumber) {
-    const horaNormalizada = Math.min(hourNumber, 23);
-    return `${String(horaNormalizada).padStart(2, "0")}:00`;
-}
 
 function mostrarAvisoSolar(mensaje) {
     if (!sunAlertEl) return;
@@ -448,105 +284,49 @@ function ocultarAvisoSolar() {
     sunAlertEl.hidden = true;
 }
 
-function obtenerHorasDisponiblesParaFecha(fechaTexto) {
-    const horas = [];
-    const hoy = formatearFechaLocal(new Date());
-    let horaInicio = 0;
-
-    if (fechaTexto === hoy) horaInicio = obtenerHoraMinimaPermitida();
-    for (let hora = horaInicio; hora <= 23; hora++) horas.push(obtenerHoraTexto(hora));
-    return horas;
-}
-
-function renderizarWheelHoras(fechaTexto) {
-    const horasDisponibles = obtenerHorasDisponiblesParaFecha(fechaTexto);
-
-    hourWheel.innerHTML = horasDisponibles
-        .map(hora => `<div class="hour-option" data-hour="${hora}">${hora}</div>`)
-        .join("");
-
-    hourOptions = [...hourWheel.querySelectorAll(".hour-option")];
-    hourOptions.forEach(option => {
-        option.addEventListener("click", () => {
-            const horaAnterior = horaSeleccionada;
-            option.scrollIntoView({
-                block: "center",
-                behavior: "smooth"
-            });
-
-            horaSeleccionada = option.dataset.hour;
-            guardarHorarioRecordado();
-            if (horaSeleccionada !== horaAnterior) {
-                limpiarResultadosPorCambioDeFiltros();
-            } else {
-                statusEl.textContent = "";
-            }
-            setTimeout(actualizarHoraActiva, 180);
-        });
-    });
-
-    if (!horasDisponibles.includes(horaSeleccionada)) {
-        horaSeleccionada = horasDisponibles[0] || "";
-    }
-    if (horaSeleccionada) {
-        fijarHoraInicial(horaSeleccionada);
-        guardarHorarioRecordado();
+function manejarCambioHorario({ changed }) {
+    guardarHorarioRecordado();
+    if (changed) {
+        limpiarResultadosPorCambioDeFiltros();
+    } else {
+        statusEl.textContent = "";
     }
 }
 
-function actualizarCantidadSliderUI() {
-    if (!cantidadSlider || !cantidadSliderValue) return;
-
-    cantidadSeleccionada = Number(cantidadSlider.value) || 0;
-    cantidadSliderValue.value = String(cantidadSeleccionada);
-    cantidadSliderValue.textContent = String(cantidadSeleccionada);
-}
-
-function restablecerCantidadPorDefecto() {
-    cantidadSeleccionada = Number(DEFAULT_QUANTITY);
-    if (!cantidadSlider || !cantidadSliderValue) return;
-
-    cantidadSlider.value = DEFAULT_QUANTITY;
-    cantidadSliderValue.value = DEFAULT_QUANTITY;
-    cantidadSliderValue.textContent = DEFAULT_QUANTITY;
-}
-
-async function configurarSliderCantidad() {
-    if (!cantidadSlider) return;
-    try {
-        const response = await fetch("/api/playas/count");
-        if (!response.ok) {
-            throw new Error("No se pudo obtener el total de playas.");
-        }
-
-        const data = await response.json();
-        const maxPlayas = Math.max(0, Number(data.total) || 0);
-        cantidadSlider.max = String(maxPlayas);
-        cantidadSlider.value = String(Math.min(Number(DEFAULT_QUANTITY), maxPlayas));
-
-        if (cantidadSliderMax) {
-            cantidadSliderMax.textContent = String(maxPlayas);
-        }
-    } 
-    catch (error) {console.error(error);}
-    actualizarCantidadSliderUI();
-}
-
-function esFechaHoy(fechaTexto) {
-    return fechaTexto === formatearFechaLocal(new Date());
-}
-
-function esHoraPasadaParaFecha(fechaTexto, horaTexto) {
-    if (fechaTexto !== formatearFechaLocal(new Date())) {
-        return false;
+function manejarCambioCantidad({ changed }) {
+    if (changed) {
+        limpiarResultadosPorCambioDeFiltros();
     }
-    const horaNumero = Number(horaTexto.split(":")[0]);
-    return horaNumero < obtenerHoraMinimaPermitida();
 }
 
-function esHoraPasadaParaHoy(horaTexto) {
-    return esHoraPasadaParaFecha(fechaInput.value, horaTexto);
-}
+dateTimeController = initDateTime({
+    fechaInput,
+    fechaShell,
+    fechaDisplay,
+    hourWheel,
+    onScheduleChange: manejarCambioHorario
+});
+
+quantityController = initQuantity({
+    cantidadSlider,
+    cantidadSliderValue,
+    cantidadSliderMax,
+    defaultQuantity: DEFAULT_QUANTITY,
+    onChange: manejarCambioCantidad
+});
+
+dynamicFiltersController = initDynamicFilters({
+    dynamicFilters,
+    disableDynamicFilters,
+    onFiltersChange: limpiarResultadosPorCambioDeFiltros
+});
+
+staticFiltersController = initStaticFilters({
+    staticFilterInputs,
+    disableStaticFilters,
+    onFiltersChange: limpiarResultadosPorCambioDeFiltros,
+    iluminarChipFiltro
+});
 
 // ============================================================
 // CONFIGURACION INICIAL POR DEFECTO: actividad, fecha y hora
@@ -568,154 +348,12 @@ function seleccionarActividad(actividad, limpiarResultados = false) {
 }
 
 function configurarFechaYHoraIniciales() {
-    const hoy = new Date();
-    const fechaHoy = formatearFechaLocal(hoy);
-    const horarioInicial = obtenerHorarioInicial();
-
-    fechaInput.min = fechaHoy;
-    fechaInput.value = horarioInicial?.fecha || fechaHoy;
-    actualizarTextoFecha();
-    actualizarHorasDisponibles();
-
-    if (horarioInicial?.hora && obtenerHorasDisponiblesParaFecha(fechaInput.value).includes(horarioInicial.hora)) {
-        fijarHoraInicial(horarioInicial.hora);
-        guardarHorarioRecordado();
-        return;
-    }
-
-    const horaMinima = obtenerHoraMinimaPermitida();
-    if (fechaInput.value === fechaHoy && horaMinima > 23) {
-        const manana = new Date();
-        manana.setDate(manana.getDate() + 1);
-        fechaInput.value = formatearFechaLocal(manana);
-        actualizarTextoFecha();
-        actualizarHorasDisponibles();
-        fijarHoraInicial("00:00");
-        guardarHorarioRecordado();
-        return;
-    }
-
-    const horaInicial = fechaInput.value === fechaHoy
-        ? obtenerHoraTexto(horaMinima)
-        : "00:00";
-
-    fijarHoraInicial(horaInicial);
+    dateTimeController?.configurarFechaYHoraIniciales(obtenerHorarioInicial());
     guardarHorarioRecordado();
 }
 
 // =========================================================
-// DISPONIBILIDAD DE HORAS
-// =========================================================
-
-function actualizarHorasDisponibles() {
-    renderizarWheelHoras(fechaInput.value);
-}
-
-function asegurarHoraValidaSeleccionada() {
-    const horasDisponibles = obtenerHorasDisponiblesParaFecha(fechaInput.value);
-
-    if (!horaSeleccionada || !horasDisponibles.includes(horaSeleccionada)) {
-        const nuevaHoraValida = horasDisponibles[0] || null;
-        if (nuevaHoraValida) fijarHoraInicial(nuevaHoraValida);
-        else                 horaSeleccionada = "";
-    }
-}
-
-// =========================================================
-// RUEDA DE HORAS
-// =========================================================
-
-function actualizarHoraActiva() {
-    const wheelRect = hourWheel.getBoundingClientRect();
-    const wheelCenter = wheelRect.top + wheelRect.height / 2;
-
-    let opcionMasCercana = null;
-    let distanciaMinima = Infinity;
-    hourOptions.forEach(option => {
-        const rect = option.getBoundingClientRect();
-        const optionCenter = rect.top + rect.height / 2;
-        const distancia = Math.abs(wheelCenter - optionCenter);
-        option.classList.remove("active", "near");
-
-        if (distancia < distanciaMinima) {
-            distanciaMinima = distancia;
-            opcionMasCercana = option;
-        }
-    });
-
-    hourOptions.forEach(option => {
-        const rect = option.getBoundingClientRect();
-        const optionCenter = rect.top + rect.height / 2;
-        const distancia = Math.abs(wheelCenter - optionCenter);
-
-        if (distancia < 18)      option.classList.add("active");
-        else if (distancia < 54) option.classList.add("near");
-    });
-
-    if (opcionMasCercana) {
-        const horaAnterior = horaSeleccionada;
-        horaSeleccionada = opcionMasCercana.dataset.hour;
-
-        if (horaSeleccionada !== horaAnterior) {
-            guardarHorarioRecordado();
-            limpiarResultadosPorCambioDeFiltros();
-        } 
-        else {
-            statusEl.textContent = "";
-        }
-    }
-}
-
-let scrollTimeout;
-hourWheel.addEventListener("scroll", () => {
-    actualizarHoraActiva();
-
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-        const activa = [...hourOptions].find(option => option.classList.contains("active"));
-
-        if (activa) {
-            const horaAnterior = horaSeleccionada;
-            activa.scrollIntoView({
-                block: "center",
-                behavior: "smooth"
-            });
-            horaSeleccionada = activa.dataset.hour;
-            guardarHorarioRecordado();
-
-            if (horaSeleccionada !== horaAnterior) limpiarResultadosPorCambioDeFiltros();
-            else statusEl.textContent = "";
-        } 
-        else {
-            asegurarHoraValidaSeleccionada();
-        }
-    }, 120);
-});
-
-function fijarHoraInicial(valor = "12:00") {
-    const option = document.querySelector(`.hour-option[data-hour="${valor}"]`);
-
-    if (option) {
-        option.scrollIntoView({
-            block: "center",
-            behavior: "auto"
-        });
-        horaSeleccionada = valor;
-        guardarHorarioRecordado();
-        setTimeout(actualizarHoraActiva, 50);
-    }
-}
-
-// =========================================================
-// SLIDER DE CANTIDAD
-// =========================================================
-
-if (cantidadSlider) {
-    cantidadSlider.addEventListener("input", actualizarCantidadSliderUI);
-}
-
-// =========================================================
-// EVENTOS DE ACTIVIDAD Y FECHA
+// EVENTOS DE ACTIVIDAD
 // =========================================================
 
 activityCards.forEach(card => {
@@ -724,36 +362,13 @@ activityCards.forEach(card => {
     });
 });
 
-fechaShell.addEventListener("click", () => {
-    if (typeof fechaInput.showPicker === "function") {
-        fechaInput.showPicker();
-    } else {
-        fechaInput.focus();
-        fechaInput.click();
-    }
-});
-
-fechaInput.addEventListener("change", () => {
-    const hoy = formatearFechaLocal(new Date());
-
-    if (fechaInput.value < hoy) {
-        fechaInput.value = hoy;
-    }
-
-    actualizarTextoFecha();
-    actualizarHorasDisponibles();
-    asegurarHoraValidaSeleccionada();
-    guardarHorarioRecordado();
-    limpiarResultadosPorCambioDeFiltros();
-});
-
 // =========================================================
 // BUSQUEDA
 // =========================================================
 
 async function buscarRecomendaciones() {
     const fecha = fechaInput.value;
-    const hora = horaSeleccionada;
+    const hora = dateTimeController?.getHoraSeleccionada() || "";
     ocultarAvisoSolar();
 
     if (!actividadSeleccionada) {
@@ -772,16 +387,17 @@ async function buscarRecomendaciones() {
         statusEl.textContent = "No puedes seleccionar una fecha pasada.";
         return;
     }
-    if (esFechaHoy(fecha) && esHoraPasadaParaHoy(hora)) {
+    if (dateTimeController?.esFechaHoy(fecha) && dateTimeController?.esHoraPasadaParaHoy(hora)) {
         statusEl.textContent = "No puedes seleccionar una hora pasada para el d\u00eda de hoy.";
-        asegurarHoraValidaSeleccionada();
+        dateTimeController?.asegurarHoraValidaSeleccionada({ silent: true });
+        guardarHorarioRecordado();
         return;
     }
     statusEl.textContent = "Buscando recomendaciones...";
     try {
         const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
         const rango = radioSeleccionado ? radioSeleccionado.value : "5";
-        const cantidad = Math.max(0, Number(cantidadSeleccionada) || 0);
+        const cantidad = Math.max(0, Number(quantityController?.getCantidadSeleccionada() || 0));
         const params = new URLSearchParams({
             actividad: actividadSeleccionada,
             fecha,
@@ -799,7 +415,13 @@ async function buscarRecomendaciones() {
             statusEl.textContent = "Introduce informacion de localizacion.";
             return;
         }
-        aplicarFiltrosAParametros(params);
+        buildFilterParams({
+            params,
+            filtersSidebar,
+            staticElements: staticFilterElements,
+            staticFilterInputs,
+            dynamicController: dynamicFiltersController
+        });
         const response = await fetch(`/recomendaciones?${params.toString()}`);
         if (!response.ok) {
             throw new Error("No se pudieron obtener las recomendaciones.");
@@ -1042,9 +664,9 @@ function actualizarBotonesSesion() {
         filtersSidebar.classList.toggle("hidden", !estaLogueado);
     }
     if (estaLogueado) {
-        configurarSliderCantidad();
+        quantityController?.configurarSlider();
     } else {
-        restablecerCantidadPorDefecto();
+        quantityController?.restablecerCantidadPorDefecto();
     }
     if (!authActionBtn || !authActionIcon) return;
     if (estaLogueado) {
@@ -1170,60 +792,6 @@ if (expandResultsPreference) {
     });
 }
 
-[filterSandBeach, filterStoneBeach, filterRestaurant, filterTakeAwayFood, 
-    filterBalneario, filterSportZone, filterPetFriendly].forEach(filterInput => {
-    if (!filterInput) return;
-    filterInput.addEventListener("change", limpiarResultadosPorCambioDeFiltros);
-});
-
-if (disableStaticFilters) {
-    disableStaticFilters.addEventListener("click", () => {
-        desactivarFiltrosEstaticos();
-        limpiarResultadosPorCambioDeFiltros();
-        iluminarChipFiltro(disableStaticFilters, staticFiltersLightTimeout, (timeoutId) => {
-            staticFiltersLightTimeout = timeoutId;
-        });
-    });
-}
-
-if (disableDynamicFilters) {
-    disableDynamicFilters.addEventListener("click", () => {
-        alternarFiltrosDinamicos();
-        limpiarResultadosPorCambioDeFiltros();
-        iluminarChipFiltro(disableDynamicFilters, dynamicFiltersLightTimeout, (timeoutId) => {
-            dynamicFiltersLightTimeout = timeoutId;
-        });
-    });
-}
-
-DYNAMIC_FILTERS.forEach(filtro => {
-    [filtro.minInput, filtro.maxInput].forEach(filterInput => {
-        if (!filterInput) return;
-        filterInput.addEventListener("input", () => {
-            actualizarFiltroDinamicoUI(filtro);
-            limpiarResultadosPorCambioDeFiltros();
-        });
-    });
-
-    if (filtro.resetBtn) {
-        filtro.resetBtn.addEventListener("click", () => {
-            restablecerFiltroDinamico(filtro);
-            limpiarResultadosPorCambioDeFiltros();
-            iluminarChipFiltro(filtro.resetBtn, filtro.timeoutId, (timeoutId) => {
-                filtro.timeoutId = timeoutId;
-            });
-        });
-    }
-
-    if (filtro.disabledCheck) {
-        filtro.disabledCheck.addEventListener("change", () => {
-            actualizarFiltroDinamicoUI(filtro);
-            actualizarToggleFiltrosDinamicos();
-            limpiarResultadosPorCambioDeFiltros();
-        });
-    }
-});
-
 if (preferencesLogoutBtn) {
     preferencesLogoutBtn.addEventListener("click", () => {
         logout();
@@ -1250,8 +818,6 @@ if (appHeader && "ResizeObserver" in window) {
 // =========================================================
 
 actualizarAlturaHeader();
-DYNAMIC_FILTERS.forEach(f => actualizarFiltroDinamicoUI(f));
-actualizarToggleFiltrosDinamicos();
 configurarBotonBusquedaFlotante();
 cargarPreferenciasUI();
 
