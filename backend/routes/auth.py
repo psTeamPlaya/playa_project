@@ -46,7 +46,7 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     if db_user_exist:
         raise HTTPException(status_code=400, detail="Este correo ya est\u00e1 registrado.")
 
-    db_user = User(email=user.email, hashed_password=hash_password(user.password))
+    db_user = User(email=user.email, hashed_password=hash_password(user.password), is_admin=False)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -73,5 +73,6 @@ def me(current_user=Depends(get_current_user)):
 
     return {
         "id": current_user.id,
-        "email": current_user.email
+        "email": current_user.email,
+        "is_admin": current_user.is_admin,
     }

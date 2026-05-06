@@ -13,9 +13,12 @@ export function initSessionUI({
     onSessionChange,
     onLogout
 }) {
+    let currentUser = null;
+
     async function loadCurrentUser() {
         const token = localStorage.getItem("token");
         if (!token) {
+            currentUser = null;
             if (preferencesUserInfo) preferencesUserInfo.textContent = "";
             return null;
         }
@@ -23,6 +26,7 @@ export function initSessionUI({
             const response = await authFetch("/auth/me");
             if (!response.ok) {
                 localStorage.removeItem("token");
+                currentUser = null;
                 if (preferencesUserInfo) {
                     preferencesUserInfo.textContent = "";
                 }
@@ -30,12 +34,14 @@ export function initSessionUI({
                 return null;
             }
             const data = await response.json();
+            currentUser = data;
             if (preferencesUserInfo) {
                 preferencesUserInfo.textContent = data.email;
             }
             return data;
         } catch (error) {
             console.error("Failed to load user");
+            currentUser = null;
             return null;
         }
     }
@@ -52,7 +58,7 @@ export function initSessionUI({
             filtersSidebar.hidden = !estaLogueado;
             filtersSidebar.classList.toggle("hidden", !estaLogueado);
         }
-        onSessionChange?.(estaLogueado);
+        onSessionChange?.(estaLogueado, currentUser);
         if (!authActionBtn || !authActionIcon) return;
         if (estaLogueado) {
             authActionBtn.hidden = false;
@@ -102,6 +108,7 @@ export function initSessionUI({
     return {
         loadCurrentUser,
         actualizarBotonesSesion,
-        logout
+        logout,
+        getCurrentUser: () => currentUser
     };
 }

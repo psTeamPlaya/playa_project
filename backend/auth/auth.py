@@ -4,6 +4,7 @@ import bcrypt
 
 from jose import JWTError, jwt
 from fastapi import Depends, Request
+from fastapi import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from backend.db import get_db
 from backend.models.user import User
@@ -40,6 +41,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
     payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
     user_id = int(payload["sub"])
     return db.query(User).get(user_id)
+
+
+def require_admin(current_user: User = Depends(get_current_user)):
+    if not current_user or not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
 
 def is_logged_in(request: Request) -> bool:
     auth = request.headers.get("Authorization")
