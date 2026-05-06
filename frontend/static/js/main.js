@@ -312,6 +312,16 @@ function actualizarFiltroDinamicoUI(filtro) {
     const desactivado = Boolean(filtro.disabledCheck?.checked);
     filtro.minInput.disabled = desactivado;
     filtro.maxInput.disabled = desactivado;
+
+    const toggleLabel = filtro.disabledCheck?.closest(".filter-toggle-button");
+    const toggleText = toggleLabel?.querySelector(".filter-toggle-text");
+    if (toggleText) {
+        toggleText.textContent = desactivado ? "Activar filtro" : "Desactivar filtro";
+    }
+    if (toggleLabel) {
+        toggleLabel.classList.toggle("is-active", desactivado);
+        toggleLabel.setAttribute("aria-pressed", desactivado ? "true" : "false");
+    }
 }
 
 function restablecerFiltroDinamico(filtro) {

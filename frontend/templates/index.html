@@ -101,80 +101,95 @@
           </button>
         </div>
         <fieldset class="filter-group dynamic-filter-group">
-          <legend>Nubosidad</legend>
-          <div class="range-values">
-            <span><strong id="cloudMinValue">0</strong>%</span>
-            <span><strong id="cloudMaxValue">20</strong>%</span>
+          <div class="dynamic-filter-title">Nubosidad</div>
+          <div class="dynamic-filter-slider">
+            <div class="range-values">
+              <span><strong id="cloudMinValue">0</strong>%</span>
+              <span><strong id="cloudMaxValue">20</strong>%</span>
+            </div>
+            <div class="dual-range" id="cloudRangeTrack">
+              <input type="range" id="filterCloudMin" min="0" max="100" step="1" value="0" aria-label="Nubosidad minima">
+              <input type="range" id="filterCloudMax" min="0" max="100" step="1" value="20" aria-label="Nubosidad maxima">
+            </div>
           </div>
-          <div class="dual-range" id="cloudRangeTrack">
-            <input type="range" id="filterCloudMin" min="0" max="100" step="1" value="0" aria-label="Nubosidad minima">
-            <input type="range" id="filterCloudMax" min="0" max="100" step="1" value="20" aria-label="Nubosidad maxima">
+          <div class="dynamic-filter-actions-row">
+            <button class="filter-chip-button" id="filterCloudReset" type="button">
+              reset
+            </button>
+            <label class="filter-option filter-compact-option filter-toggle-button">
+              <input type="checkbox" id="filterCloudDisabled">
+              <span class="filter-toggle-text">Desactivar filtro</span>
+            </label>
           </div>
-          <button class="filter-chip-button" id="filterCloudReset" type="button">
-            Restablecer filtro
-          </button>
-          <label class="filter-option filter-compact-option">
-            <input type="checkbox" id="filterCloudDisabled">
-            <span>Desactivar filtro</span>
-          </label>
         </fieldset>
-
+        
         <fieldset class="filter-group dynamic-filter-group">
-          <legend>Temperatura ambiente</legend>
-          <div class="range-values">
+          <div class="dynamic-filter-title">Viento(km/h)</div>
+          <div class="dynamic-filter-slider">
+            <div class="range-values">
+              <span><strong id="windMinValue">0</strong> km/h</span>
+              <span><strong id="windMaxValue">15</strong> km/h</span>
+            </div>
+            <div class="dual-range" id="windRangeTrack">
+              <input type="range" id="filterWindMin" min="0" max="60" step="1" value="0" aria-label="Viento minimo">
+              <input type="range" id="filterWindMax" min="0" max="60" step="1" value="15" aria-label="Viento maximo">
+            </div>
+          </div>
+          <div class="dynamic-filter-actions-row">
+            <button class="filter-chip-button" id="filterWindReset" type="button">
+              reset
+            </button>
+            <label class="filter-option filter-compact-option filter-toggle-button">
+              <input type="checkbox" id="filterWindDisabled">
+              <span class="filter-toggle-text">Desactivar filtro</span>
+            </label>
+          </div>
+        </fieldset>
+        
+        <fieldset class="filter-group dynamic-filter-group">
+          <div class="dynamic-filter-title">Temp.(&ordm;C)</div>
+          <div class="dynamic-filter-slider">
+            <div class="range-values">
             <span><strong id="temperatureMinValue">20</strong> ºC</span>
             <span><strong id="temperatureMaxValue">29</strong> ºC</span>
           </div>
-          <div class="dual-range" id="temperatureRangeTrack">
+            <div class="dual-range" id="temperatureRangeTrack">
             <input type="range" id="filterTemperatureMin" min="0" max="45" step="1" value="20" aria-label="Temperatura ambiente minima">
             <input type="range" id="filterTemperatureMax" min="0" max="45" step="1" value="29" aria-label="Temperatura ambiente maxima">
+            </div>
           </div>
-          <button class="filter-chip-button" id="filterTemperatureReset" type="button">
-            Restablecer filtro
-          </button>
-          <label class="filter-option filter-compact-option">
-            <input type="checkbox" id="filterTemperatureDisabled">
-            <span>Desactivar filtro</span>
-          </label>
+          <div class="dynamic-filter-actions-row">
+            <button class="filter-chip-button" id="filterTemperatureReset" type="button">
+              reset
+            </button>
+            <label class="filter-option filter-compact-option filter-toggle-button">
+              <input type="checkbox" id="filterTemperatureDisabled">
+              <span class="filter-toggle-text">Desactivar filtro</span>
+            </label>
+          </div>
         </fieldset>
 
         <fieldset class="filter-group dynamic-filter-group">
-          <legend>Velocidad del viento</legend>
-          <div class="range-values">
-            <span><strong id="windMinValue">0</strong> km/h</span>
-            <span><strong id="windMaxValue">15</strong> km/h</span>
-          </div>
-          <div class="dual-range" id="windRangeTrack">
-            <input type="range" id="filterWindMin" min="0" max="60" step="1" value="0" aria-label="Viento minimo">
-            <input type="range" id="filterWindMax" min="0" max="60" step="1" value="15" aria-label="Viento maximo">
-          </div>
-          <button class="filter-chip-button" id="filterWindReset" type="button">
-            Restablecer filtro
-          </button>
-          <label class="filter-option filter-compact-option">
-            <input type="checkbox" id="filterWindDisabled">
-            <span>Desactivar filtro</span>
-          </label>
-        </fieldset>
-
-
-        <fieldset class="filter-group dynamic-filter-group">
-          <legend>Oleaje</legend>
-          <div class="range-values">
+          <div class="dynamic-filter-title">Olas(m)</div>
+          <div class="dynamic-filter-slider">
+            <div class="range-values">
             <span><strong id="waveMinValue">0</strong> m</span>
             <span><strong id="waveMaxValue">1</strong> m</span>
           </div>
-          <div class="dual-range" id="waveRangeTrack">
+            <div class="dual-range" id="waveRangeTrack">
             <input type="range" id="filterWaveMin" min="0" max="5" step="0.1" value="0" aria-label="Oleaje minimo">
             <input type="range" id="filterWaveMax" min="0" max="5" step="0.1" value="1" aria-label="Oleaje maximo">
+            </div>
           </div>
-          <button class="filter-chip-button" id="filterWaveReset" type="button">
-            Restablecer filtro
-          </button>
-          <label class="filter-option filter-compact-option">
-            <input type="checkbox" id="filterWaveDisabled">
-            <span>Desactivar filtro</span>
-          </label>
+          <div class="dynamic-filter-actions-row">
+            <button class="filter-chip-button" id="filterWaveReset" type="button">
+              reset
+            </button>
+            <label class="filter-option filter-compact-option filter-toggle-button">
+              <input type="checkbox" id="filterWaveDisabled">
+              <span class="filter-toggle-text">Desactivar filtro</span>
+            </label>
+          </div>
         </fieldset>
       </div>
     </aside>
