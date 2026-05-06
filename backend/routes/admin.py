@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import unicodedata
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -12,10 +13,29 @@ from backend.models.beach import Beach
 from backend.models.service import Service
 from backend.models.user import User
 from backend.schemas.user import UserResponse
+from backend.engine_recomendation import PESOS_ACTIVIDAD
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 PLAYAS_FILE = Path(__file__).resolve().parents[1] / "playas.json"
+
+ACTIVITY_ALIASES = {
+    "tomar_sol": "tomar_sol",
+    "tomar sol": "tomar_sol",
+    "nadar": "nadar",
+    "surf": "surf",
+    "windsurf": "windsurf",
+    "wind surf": "windsurf",
+    "bucear": "bucear",
+    "caminar": "caminar",
+    "pasear": "caminar",
+    "pescar": "pescar",
+    "kayak": "kayak",
+    "kitesurf": "kitesurf",
+    "kite surf": "kitesurf",
+    "piscina_natural": "piscina_natural",
+    "piscina natural": "piscina_natural",
+}
 
 
 class AdminBeachPayload(BaseModel):
@@ -29,6 +49,34 @@ class AdminBeachPayload(BaseModel):
     image: str | None = None
     service_names: list[str] = Field(default_factory=list)
     activity_names: list[str] = Field(default_factory=list)
+
+
+def normalize_activity_name(name: str | None) -> str | None:
+    if not name:
+        return None
+
+    normalized = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
+    normalized = normalized.strip().lower().replace("-", " ").replace("_", " ")
+    normalized = " ".join(normalized.split())
+
+    return ACTIVITY_ALIASES.get(normalized, normalized.replace(" ", "_"))
+
+
+def collect_available_activities(db: Session) -> list[str]:
+    activities = set(PESOS_ACTIVIDAD.keys())
+    activities.update(
+        normalize_activity_name(activity.name)
+        for activity in db.query(Activity).order_by(Activity.name.asc()).all()
+        if normalize_activity_name(activity.name)
+    )
+
+    for metadata in load_beach_metadata():
+        for activity in metadata.get("actividades_ideales", []):
+            normalized = normalize_activity_name(activity.get("actividad"))
+            if normalized:
+                activities.add(normalized)
+
+    return sorted(activities)
 
 
 def load_beach_metadata() -> list[dict]:
@@ -63,7 +111,12 @@ def serialize_beach(beach: Beach, metadata: dict | None = None) -> dict:
         "longitude": float(beach.longitude),
         "accessibility": beach.accessibility,
         "image": beach.image,
-        "activities": [item.get("actividad") for item in activities if item.get("actividad")],
+        "activities": [
+            normalized
+            for item in activities
+            for normalized in [normalize_activity_name(item.get("actividad"))]
+            if normalized
+        ],
         "services": sorted([name for name, enabled in services_map.items() if enabled]),
     }
 
@@ -72,10 +125,17 @@ def update_metadata_entry(existing: dict | None, beach: Beach, payload: AdminBea
     existing = existing or {"id": beach.id}
     previous_services = existing.get("servicios", {}).copy()
     previous_activities = {
-        item.get("actividad"): item.get("condicion", "gestionado desde panel admin")
+        normalized: item.get("condicion", "gestionado desde panel admin")
         for item in existing.get("actividades_ideales", [])
-        if item.get("actividad")
+        for normalized in [normalize_activity_name(item.get("actividad"))]
+        if normalized
     }
+    normalized_activity_names = [
+        normalized
+        for activity_name in payload.activity_names
+        for normalized in [normalize_activity_name(activity_name)]
+        if normalized
+    ]
 
     for service_name in payload.service_names:
         previous_services[service_name] = True
@@ -99,7 +159,7 @@ def update_metadata_entry(existing: dict | None, beach: Beach, payload: AdminBea
                 "actividad": activity_name,
                 "condicion": previous_activities.get(activity_name, "gestionado desde panel admin"),
             }
-            for activity_name in payload.activity_names
+            for activity_name in normalized_activity_names
         ],
         "servicios": previous_services,
         "imagen": payload.image,
@@ -139,7 +199,7 @@ def get_catalog(
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
 ):
-    activities = [activity.name for activity in db.query(Activity).order_by(Activity.name.asc()).all()]
+    activities = collect_available_activities(db)
     services = [service.name for service in db.query(Service).order_by(Service.name.asc()).all()]
     return {
         "activities": activities,
