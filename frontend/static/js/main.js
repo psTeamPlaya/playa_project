@@ -1,5 +1,3 @@
-import { login } from "./auth/login.js";
-import { registerUser } from "./auth/register.js";
 import { selectedCoords } from "./localization.js";
 import { pintarResultados as renderizarResultados } from "./results/render-results.js";
 import {
@@ -26,6 +24,8 @@ import {
 import { initPreferencesUI } from "./preferences/preferences-ui.js";
 import { authFetch } from "./api/auth-fetch.js";
 import { fetchRecommendations } from "./api/recommendations-api.js";
+import { initAuthModal } from "./auth/auth-modal.js";
+import { initSessionUI } from "./auth/session-ui.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -102,12 +102,13 @@ const waveMinValue = document.getElementById("waveMinValue");
 const waveMaxValue = document.getElementById("waveMaxValue");
 
 let actividadSeleccionada = "";
-let authMode = "login";
 let dateTimeController;
 let quantityController;
 let dynamicFiltersController;
 let staticFiltersController;
 let preferencesUIController;
+let authModalController;
+let sessionUIController;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
@@ -292,6 +293,44 @@ function cerrarPanelPreferencias() {
     preferencesUIController?.cerrarPanelPreferencias();
 }
 
+authModalController = initAuthModal({
+    loginModalEl,
+    closeLoginModalBtn,
+    loginModalForm,
+    loginEmailInput,
+    loginPasswordInput,
+    confirmPasswordInput,
+    confirmPasswordGroup,
+    loginErrorMessageEl,
+    authSubmitBtn,
+    authModeHint,
+    toggleAuthModeBtn
+});
+
+sessionUIController = initSessionUI({
+    preferencesUserInfo,
+    preferencesPanel,
+    authActionBtn,
+    authActionIcon,
+    filtersSidebar,
+    preferencesLogoutBtn,
+    onOpenPreferences: abrirPanelPreferencias,
+    onClosePreferences: cerrarPanelPreferencias,
+    onOpenLogin: () => authModalController?.abrirModalLogin(),
+    onSessionChange: (estaLogueado) => {
+        if (estaLogueado) {
+            quantityController?.configurarSlider();
+        } else {
+            quantityController?.restablecerCantidadPorDefecto();
+        }
+    },
+    onLogout: () => {
+        document.querySelectorAll(".favorite-btn").forEach(btn => {
+            btn.innerText = "\u{1F90D}";
+        });
+    }
+});
+
 // ============================================================
 // CONFIGURACION INICIAL POR DEFECTO: actividad, fecha y hora
 // ============================================================
@@ -475,218 +514,32 @@ function pintarResultados(resultados) {
 // Login
 // =========================================================
 
-function aplicarModoAuth() {
-    if (!authModeHint || !toggleAuthModeBtn || !authSubmitBtn) return;
-    const titleEl = document.getElementById("loginModalTitle");
-
-    if (authMode === "register") {
-        if (titleEl) titleEl.textContent = "Registrarse";
-        authSubmitBtn.textContent = "Crear cuenta";
-        authModeHint.textContent = "\u00bfYa tienes cuenta?";
-        toggleAuthModeBtn.textContent = "Iniciar sesion";
-        if (confirmPasswordGroup) {
-            confirmPasswordGroup.style.display = "block";
-        }
-        if (confirmPasswordInput) {
-            confirmPasswordInput.required = true;
-        }
-        return;
-    }
-    if (titleEl) titleEl.textContent = "Iniciar sesion";
-    authSubmitBtn.textContent = "Entrar a mi cuenta";
-    authModeHint.textContent = "\u00bfTodav\u00eda no tienes cuenta?";
-    toggleAuthModeBtn.textContent = "Registrarse";
-    if (confirmPasswordGroup) {
-        confirmPasswordGroup.style.display = "none";
-    }
-    if (confirmPasswordInput) {
-        confirmPasswordInput.required = false;
-        confirmPasswordInput.value = "";
-    }
-}
-
-function mostrarMensajeAuth(mensaje, tipo = "error") {
-    if (!loginErrorMessageEl) return;
-    loginErrorMessageEl.textContent = mensaje;
-    loginErrorMessageEl.classList.remove("success", "error");
-    loginErrorMessageEl.classList.add(tipo);
-}
-
 function abrirModalLogin() {
-    if (!loginModalEl) return;
-    authMode = "login";
-    aplicarModoAuth();
-    loginModalEl.hidden = false;
-    mostrarMensajeAuth("", "error");
-    loginModalForm.reset();
-    setTimeout(() => loginEmailInput?.focus(), 0);
+    authModalController?.abrirModalLogin();
 }
 
 function cerrarModalLogin() {
-    if (!loginModalEl) return;
-    loginModalEl.hidden = true;
-    mostrarMensajeAuth("", "error");
-    loginModalForm.reset();
-    if (confirmPasswordGroup) {
-        confirmPasswordGroup.style.display = "none";
-    }
+    authModalController?.cerrarModalLogin();
 }
 
 async function loadCurrentUser() {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        if (preferencesUserInfo) preferencesUserInfo.textContent = "";
-        return;
-    }
-    try {
-        const response = await fetch("/auth/me", {
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        });
-        if (!response.ok) {
-            localStorage.removeItem("token");
-            if (preferencesUserInfo) {
-                preferencesUserInfo.textContent = "";
-            }
-            actualizarBotonesSesion();
-            return;
-        }
-        const data = await response.json();
-        if (preferencesUserInfo) {
-            preferencesUserInfo.textContent = data.email;
-        }
-    } 
-    catch (e) {
-        console.error("Failed to load user");
-    }
+    return sessionUIController?.loadCurrentUser();
 }
 
-function logout() {
-    localStorage.removeItem("token");
-    loadCurrentUser();
-    document.querySelectorAll(".favorite-btn").forEach(btn => {
-        btn.innerText = "\u{1F90D}";
-    });
-    actualizarBotonesSesion();
-    cerrarPanelPreferencias();
+async function logout() {
+    await sessionUIController?.logout();
 }
 
 function actualizarBotonesSesion() {
-    const token = localStorage.getItem("token");
-    const estaLogueado = Boolean(token);
-
-    document.body.classList.toggle("is-authenticated", estaLogueado);
-    document.querySelectorAll(".loggedIn").forEach(element => {
-        element.classList.toggle("hidden", !estaLogueado);
-    });
-    if (filtersSidebar) {
-        filtersSidebar.hidden = !estaLogueado;
-        filtersSidebar.classList.toggle("hidden", !estaLogueado);
-    }
-    if (estaLogueado) {
-        quantityController?.configurarSlider();
-    } else {
-        quantityController?.restablecerCantidadPorDefecto();
-    }
-    if (!authActionBtn || !authActionIcon) return;
-    if (estaLogueado) {
-        authActionBtn.hidden = false;
-        authActionBtn.setAttribute("aria-label", "Preferencias");
-        authActionIcon.className = "bi bi-person-circle";
-        return;
-    }
-    authActionIcon.className = "bi bi-box-arrow-in-right";
-    authActionBtn.hidden = false;
-    authActionBtn.setAttribute("aria-label", "Acceder");
-    cerrarPanelPreferencias();
-}
-
-if (authActionBtn) {
-    authActionBtn.addEventListener("click", () => {
-        if (localStorage.getItem("token")) {
-            if (!preferencesPanel) return;
-            if (preferencesPanel.hidden) {
-                abrirPanelPreferencias();
-                return;
-            }
-            cerrarPanelPreferencias();
-            return;
-        }
-        abrirModalLogin();
-    });
-}
-
-if (closeLoginModalBtn) {
-    closeLoginModalBtn.addEventListener("click", cerrarModalLogin);
-}
-
-if (loginModalEl) {
-    loginModalEl.addEventListener("click", (event) => {
-        if (event.target === loginModalEl) {
-            cerrarModalLogin();
-        }
-    });
+    sessionUIController?.actualizarBotonesSesion();
 }
 
 if (loginModalForm) {
     loginModalForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const email = loginEmailInput.value.trim();
-        const password = loginPasswordInput.value;
-
-        if (!email || !password) {
-            mostrarMensajeAuth("Debes indicar correo y contrase\u00f1a.");
-            return;
-        }
-        if (authMode === "register") {
-            const confirmPassword = confirmPasswordInput?.value ?? "";
-            if (password !== confirmPassword) {
-                mostrarMensajeAuth("Las contrase\u00f1as no coinciden.");
-                return;
-            }
-        }
-        mostrarMensajeAuth(
-            authMode === "register" ? "Creando cuenta..." : "Accediendo...",
-            "success",
-        );
-        try {
-            if (authMode === "register") {
-                await registerUser(email, password);
-                authMode = "login";
-                aplicarModoAuth();
-                mostrarMensajeAuth("Cuenta creada. Ya puedes iniciar sesion.", "success");
-                loginPasswordInput.value = "";
-                if (confirmPasswordInput) {
-                    confirmPasswordInput.value = "";
-                }
-                return;
-            }
-            const data = await login(email, password);
-            localStorage.setItem("token", data.access_token);
+        await authModalController?.handleSubmit(event, async () => {
             await loadCurrentUser();
             actualizarBotonesSesion();
-            cerrarModalLogin();
-        } 
-        catch (error) {
-            console.error(error);
-            mostrarMensajeAuth(error.message || "No se pudo completar la operacion.");
-        }
-    });
-}
-
-if (toggleAuthModeBtn) {
-    toggleAuthModeBtn.addEventListener("click", () => {
-        authMode = authMode === "login" ? "register" : "login";
-        aplicarModoAuth();
-        mostrarMensajeAuth("", "error");
-        loginPasswordInput.value = "";
-    });
-}
-
-if (preferencesLogoutBtn) {
-    preferencesLogoutBtn.addEventListener("click", () => {
-        logout();
+        });
     });
 }
 
