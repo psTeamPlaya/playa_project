@@ -1,4 +1,5 @@
 import { pintarResultados } from "../results/render-results.js";
+import { authFetch } from "../api/auth-fetch.js";
 
 const favoritesLabel = document.getElementById("favoritesLabel");
 const showFavoritesBtn = document.getElementById("showFavoritesBtn");
@@ -8,17 +9,6 @@ const closeFavoritesModalBtn = document.getElementById("closeFavoritesModal");
 const favoritesResultsContainer = document.getElementById("favoritesResultsContainer");
 
 let preferencesCloseTimeout;
-
-function authFetch(url, options = {}) {
-    const token = localStorage.getItem("token");
-    return fetch(url, {
-        ...options,
-        headers: {
-            ...(options.headers || {}),
-            Authorization: `Bearer ${token}`
-        }
-    });
-}
 
 function closePreferencePanel() {
     if (preferencesPanel) {

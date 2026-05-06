@@ -24,6 +24,8 @@ import {
     obtenerHorarioInicial as getInitialSchedule
 } from "./preferences/storage.js";
 import { initPreferencesUI } from "./preferences/preferences-ui.js";
+import { authFetch } from "./api/auth-fetch.js";
+import { fetchRecommendations } from "./api/recommendations-api.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -360,45 +362,29 @@ async function buscarRecomendaciones() {
         const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
         const rango = radioSeleccionado ? radioSeleccionado.value : "5";
         const cantidad = Math.max(0, Number(quantityController?.getCantidadSeleccionada() || 0));
-        const params = new URLSearchParams({
+        const recommendationResult = await fetchRecommendations({
             actividad: actividadSeleccionada,
             fecha,
             hora,
-            radio_km: rango,
-            top_n: String(cantidad)
+            rango,
+            cantidad,
+            selectedCoords,
+            applyFilters: (params) => buildFilterParams({
+                params,
+                filtersSidebar,
+                staticElements: staticFilterElements,
+                staticFilterInputs,
+                dynamicController: dynamicFiltersController
+            })
         });
 
-        if (selectedCoords) {
-            const [lon, lat] = selectedCoords;
-            params.set("lat", String(lat));
-            params.set("lon", String(lon));
-        }
-        else {
+        if (!recommendationResult.ok && recommendationResult.reason === "missing-location") {
             statusEl.textContent = "Introduce informacion de localizacion.";
             return;
         }
-        buildFilterParams({
-            params,
-            filtersSidebar,
-            staticElements: staticFilterElements,
-            staticFilterInputs,
-            dynamicController: dynamicFiltersController
-        });
-        const response = await fetch(`/recomendaciones?${params.toString()}`);
-        if (!response.ok) {
-            throw new Error("No se pudieron obtener las recomendaciones.");
-        }
 
-        const data = await response.json();
+        const { data } = recommendationResult;
         console.log("DATA COMPLETA DEL BACKEND:", data);
-
-        const favorites = await getFavoriteBeachIds();
-        const favoriteIds = favorites.map(f => f.beach_id);
-        console.log("favs: ", favorites);  // TODO for debug
-
-        data.resultados.forEach(playa => {
-            playa.isFavorite = favoriteIds.includes(playa.beach_id);
-        });
         
         pintarResultados(data.resultados);
         desplazarAPlayasRecomendadas();
@@ -481,22 +467,6 @@ resultsContainer.addEventListener("click", async (e) => {
 // RESULTADOS
 // =========================================================
 
-async function getFavoriteBeachIds() {
-    const token = localStorage.getItem("token");
-    if (!token) {   // user not logged in
-        return [];
-    }
-    try {
-        const response = await authFetch("/api/favorites/ids");
-        if (!response.ok) return [];
-        return await response.json();
-    } 
-    catch (e) {
-        console.error("Failed to load favorites");
-        return [];
-    }
-}
-
 function pintarResultados(resultados) {
     renderizarResultados(resultados, resultsContainer);
 }
@@ -560,17 +530,6 @@ function cerrarModalLogin() {
     if (confirmPasswordGroup) {
         confirmPasswordGroup.style.display = "none";
     }
-}
-
-function authFetch(url, options = {}) {
-    const token = localStorage.getItem("token");
-    return fetch(url, {
-        ...options,
-        headers: {
-            ...(options.headers || {}),
-            "Authorization": `Bearer ${token}`
-        }
-    });
 }
 
 async function loadCurrentUser() {
