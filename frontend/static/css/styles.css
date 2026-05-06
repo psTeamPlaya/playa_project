@@ -95,7 +95,7 @@
     }
 
     body.is-authenticated .app-shell {
-        grid-template-columns: 280px minmax(0, 1fr);
+        grid-template-columns: 25rem minmax(0, 1fr);
     }
 
     .app-main {
@@ -131,7 +131,6 @@
 
     .filter-group {
         display: grid;
-        gap: 0.8rem;
         margin: 0 0 1.5rem;
         padding: 0;
         border: 0;
@@ -161,6 +160,32 @@
     .dynamic-filter-group {
         padding-top: 1rem;
         border-top: 1px solid var(--border);
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: end;
+        gap: 0.7rem;
+    }
+
+    .dynamic-filter-title {
+        margin-bottom: 6px;
+        padding-right: 0.75rem;
+        font-weight: bold;
+        font-size: 1.05rem;
+        white-space: nowrap;
+    }
+
+    .dynamic-filter-slider {
+        display: grid;
+        gap: -1.65rem;
+        min-width: 0;
+    }
+
+    .dynamic-filter-actions-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.9rem;
+        flex-wrap: wrap;
+        grid-column: 1 / -1;
     }
 
     .range-values {
@@ -244,9 +269,40 @@
     }
 
     .filter-compact-option {
-        padding: 0.45rem 0;
-        border-bottom: 0;
-        font-size: 1rem;
+        width: fit-content;
+        padding: 0.45rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: #f3f7fa;
+        border-bottom: 1px solid var(--border);
+        /* font-size: 1rem; */
+        margin-left: 0;
+        cursor: pointer;
+        transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .filter-toggle-button input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .filter-toggle-button:hover,
+    .filter-toggle-button:focus-within {
+        background: #eaf7fd;
+        border-color: var(--secondary);
+        box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.12);
+        outline: none;
+    }
+
+    .filter-toggle-button.is-active {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        color: #ffffff;
+    }
+
+    .filter-toggle-button .filter-toggle-text {
+        white-space: nowrap;
     }
 
     .filter-chip-button {
@@ -260,6 +316,7 @@
         line-height: 1.1;
         box-shadow: none;
         transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        height: stretch;
     }
 
     .filter-action-button {
@@ -832,6 +889,14 @@
     }
 
     @media (max-width: 800px) {
+        .dynamic-filter-group {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .dynamic-filter-title {
+            padding-right: 0;
+        }
+
         body.is-authenticated .app-shell {
             grid-template-columns: minmax(0, 1fr);
         }
