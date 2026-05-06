@@ -1,7 +1,8 @@
 export function obtenerFiltrosTipoPlaya(elements) {
     return {
         tipoArena: Boolean(elements.filterSandBeach?.checked),
-        tipoPiedra: Boolean(elements.filterStoneBeach?.checked)
+        tipoPiedra: Boolean(elements.filterStoneBeach?.checked),
+        tipoRoca: Boolean(elements.filterRockBeach?.checked),
     };
 }
 
@@ -11,6 +12,7 @@ export function obtenerFiltrosSeleccionados(staticElements) {
     return {
         tipo_arena: filtrosTipo.tipoArena,
         tipo_piedra: filtrosTipo.tipoPiedra,
+        tipo_roca: filtrosTipo.tipoRoca,
         restaurantes: Boolean(staticElements.filterRestaurant?.checked),
         comida_para_llevar: Boolean(staticElements.filterTakeAwayFood?.checked),
         balnearios: Boolean(staticElements.filterBalneario?.checked),

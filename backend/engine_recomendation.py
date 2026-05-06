@@ -91,6 +91,14 @@ PESOS_ACTIVIDAD: dict[str, dict[str, float]] = {
     },
 }
 
+BONUS_ACTIVIDAD_IDEAL = 2.5
+
+
+def _activity_slug(name: str | None) -> str | None:
+    if not name:
+        return None
+    return str(name).strip().lower().replace(" ", "_")
+
 def cargar_playas() -> list[dict[str, Any]]:
     session = SessionLocal()
     try:
@@ -118,7 +126,13 @@ def cargar_playas() -> list[dict[str, Any]]:
                 "tipo": p.type,
                 "descripcion": p.description,
                 "imagen": p.image,
-                "servicios": servicios_dict
+                "servicios": servicios_dict,
+                "actividades_ideales": [
+                    actividad_normalizada
+                    for item in metadata.get("actividades_ideales", [])
+                    for actividad_normalizada in [_activity_slug(item.get("actividad"))]
+                    if actividad_normalizada
+                ],
             })
         return resultado
     except Exception as e:
@@ -208,6 +222,8 @@ def filtrar(playa, conditions, filtros: dict):
         return False
     if filtros.get("tipo_piedra") and playa["tipo"] != "piedra":
         return False
+    if filtros.get("tipo_roca") and playa["tipo"] != "roca":
+        return False
     
     if filtros.get("restaurantes") and not playa["servicios"].get("restaurantes"):
         return False
@@ -279,6 +295,8 @@ def recomendar_playas(
             continue
 
         score = calcular_score(cond, actividad)
+        if actividad in set(playa.get("actividades_ideales", [])):
+            score += BONUS_ACTIVIDAD_IDEAL
         resultados.append({
             "beach_id": playa["id"],
             "nombre": playa["nombre"],

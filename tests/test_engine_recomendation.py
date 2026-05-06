@@ -87,6 +87,18 @@ def test_filtrar_resultados_recomendacion_aplica_filtros_estaticos():
     assert filtrados == [resultados[0]]
 
 
+def test_filtrar_resultados_recomendacion_filtra_por_tipo_roca():
+    resultados = [
+        {"tipo": "arena", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 24, "nubosidad": 20, "velocidad_viento": 10, "altura_oleaje": 1.2}},
+        {"tipo": "piedra", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 21, "nubosidad": 15, "velocidad_viento": 12, "altura_oleaje": 0.8}},
+        {"tipo": "roca", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 20, "nubosidad": 10, "velocidad_viento": 8, "altura_oleaje": 0.6}},
+    ]
+
+    filtrados = filtrar_resultados_recomendacion(resultados, tipo_roca=True)
+
+    assert filtrados == [resultados[2]]
+
+
 def test_filtrar_resultados_recomendacion_aplica_filtros_dinamicos():
     resultados = [
         {"tipo": "arena", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 24, "nubosidad": 10, "velocidad_viento": 10, "altura_oleaje": 1.2}},

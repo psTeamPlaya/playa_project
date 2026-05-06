@@ -91,6 +91,7 @@ def obtener_recomendaciones(
     # Filtros
     tipo_arena: bool | None = None,
     tipo_piedra: bool | None = None,
+    tipo_roca: bool | None = None,
 
     restaurantes: bool | None = None,
     comida_para_llevar: bool | None = None,
@@ -133,6 +134,7 @@ def obtener_recomendaciones(
         filtros = {
             "tipo_arena": tipo_arena,
             "tipo_piedra": tipo_piedra,
+            "tipo_roca": tipo_roca,
 
             "restaurantes": restaurantes,
             "comida_para_llevar": comida_para_llevar,
