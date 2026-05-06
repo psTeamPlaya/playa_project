@@ -24,9 +24,15 @@
         color: var(--text);
     }
 
+    body:not(.is-authenticated) .favorite-btn,
+    body:not(.is-authenticated) .btn-favorite {
+        display: none;
+    }
+
     .container {
         padding-inline: clamp(1rem, 3vw, 2.5rem);
         margin: 0 auto;
+        width: 100%;
     }
 
     header {
@@ -46,6 +52,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 0.75rem;
         gap: 0.75rem;
         position: relative;
     }
@@ -72,14 +79,13 @@
 
     .hero p {
         margin: 0;
-        line-height: 1.5;
+        line-height: 1.35;
         opacity: 0.95;
-        font-size: x-large;
+        font-size: 1.25rem;
         text-align: justify;
     }
 
-    main {
-    }
+    main {}
 
     .app-shell {
         display: grid;
@@ -273,7 +279,14 @@
         animation: chipLight 0.5s ease;
     }
 
+    .filter-chip-button.is-active {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        color: #ffffff;
+    }
+
     @keyframes chipLight {
+
         0%,
         100% {
             background: #f3f7fa;
@@ -378,9 +391,12 @@
         border-radius: 12px;
         padding: 0 0.9rem;
         font-size: 1.8rem;
+        font-size: 1.8rem;
         background: white;
         outline: none;
         font-family: 'Atma';
+        width: 100%;
+        text-align: center;
         width: 100%;
         text-align: center;
     }
@@ -648,6 +664,20 @@
         transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
         font-family: sans-serif;
         font-size: 2rem;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #f3f7fa;
+        color: var(--primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        line-height: 1;
+        transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+        font-family: sans-serif;
+        font-size: 2rem;
     }
 
     .beach-detail {
@@ -702,6 +732,9 @@
     }
 
     .desplegable[open] .expand-hint {
+        background: var(--primary);
+        color: #fff;
+        transform: rotate(45deg);
         background: var(--primary);
         color: #fff;
         transform: rotate(45deg);
@@ -799,6 +832,20 @@
     }
 
     @media (max-width: 800px) {
+        body.is-authenticated .app-shell {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .filters-sidebar {
+            position: static;
+            height: auto;
+            min-height: 0;
+            border-right: 0;
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-radius: var(--radius);
+        }
+
         body.is-authenticated .app-shell {
             grid-template-columns: minmax(0, 1fr);
         }
@@ -1062,7 +1109,9 @@
         background: #eef6fb;
         color: var(--primary-dark);
         font-size: 2.4rem;
+        font-size: 2.4rem;
         line-height: 1;
+        font-family: sans-serif;
         font-family: sans-serif;
     }
 
@@ -1310,6 +1359,26 @@
         margin: 2.5rem 0 1rem;
         border-radius: 12px;
         overflow: hidden;
+    }
+
+    #map.location-picker-map,
+    #map.location-picker-map .leaflet-container,
+    #map.location-picker-map .leaflet-pane,
+    #map.location-picker-map .leaflet-top,
+    #map.location-picker-map .leaflet-bottom,
+    #map.location-picker-map .leaflet-control,
+    #map.location-picker-map .leaflet-interactive {
+        cursor: crosshair !important;
+    }
+
+    #map.location-picker-map.is-dragging,
+    #map.location-picker-map.is-dragging .leaflet-container,
+    #map.location-picker-map.is-dragging .leaflet-pane,
+    #map.location-picker-map.is-dragging .leaflet-top,
+    #map.location-picker-map.is-dragging .leaflet-bottom,
+    #map.location-picker-map.is-dragging .leaflet-control,
+    #map.location-picker-map.is-dragging .leaflet-interactive {
+        cursor: grabbing !important;
     }
 
     @media (max-width: 1100px) {
@@ -1682,3 +1751,6 @@
             flex-wrap: wrap;
         }
     }
+
+
+}

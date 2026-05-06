@@ -5,7 +5,7 @@ from backend.config import settings
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
-engine = create_engine(settings.DATABASE_URL, future=True)
+engine = create_engine(settings.DATABASE_URL, future=True, pool_pre_ping=True)
 
 SessionLocal = sessionmaker(
     bind        =   engine,
