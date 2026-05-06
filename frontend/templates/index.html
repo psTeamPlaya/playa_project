@@ -494,6 +494,18 @@
                 <input id="beachLongitude" type="number" step="0.000001" required>
               </div>
               <div class="field auth-field admin-full-width">
+                <div class="admin-map-toolbar">
+                  <label for="beachMap">Ubicación en mapa</label>
+                  <button class="btn-secondary admin-map-button" id="beachPickOnMapBtn" type="button">
+                    Elegir en mapa
+                  </button>
+                </div>
+                <p class="admin-map-help">
+                  Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.
+                </p>
+                <div id="beachMap" class="admin-beach-map" aria-label="Mapa para seleccionar ubicación de la playa"></div>
+              </div>
+              <div class="field auth-field admin-full-width">
                 <label for="beachImage">Imagen</label>
                 <input id="beachImage" type="text" placeholder="nombre_imagen.jpg">
               </div>

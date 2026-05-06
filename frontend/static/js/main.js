@@ -125,6 +125,8 @@ const beachTypeInput = document.getElementById("beachType");
 const beachAccessibilityInput = document.getElementById("beachAccessibility");
 const beachLatitudeInput = document.getElementById("beachLatitude");
 const beachLongitudeInput = document.getElementById("beachLongitude");
+const beachPickOnMapBtn = document.getElementById("beachPickOnMapBtn");
+const beachMapElement = document.getElementById("beachMap");
 const beachImageInput = document.getElementById("beachImage");
 const beachDescriptionInput = document.getElementById("beachDescription");
 const beachServicesOptions = document.getElementById("beachServicesOptions");
@@ -504,6 +506,8 @@ function initControllers() {
         beachAccessibilityInput,
         beachLatitudeInput,
         beachLongitudeInput,
+        beachPickOnMapBtn,
+        beachMapElement,
         beachImageInput,
         beachDescriptionInput,
         beachServicesOptions,
