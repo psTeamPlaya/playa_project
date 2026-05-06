@@ -2,22 +2,62 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+from sqlalchemy import inspect, text
 
 import backend.models  # NO BORRAR
 from backend.config import settings
 from backend.routes import (
     api_router, views_router, auth_router, users_router,
     services_router, activities_router, variables_router,
-    beach_conditions_router, favourites_router
+    beach_conditions_router, favourites_router, admin_router
 )
 
 from backend.engine_recomendation import recomendar_playas, cargar_playas
-from backend.db import engine, Base
+from backend.db import SessionLocal, engine, Base
+from backend.auth.auth import hash_password
+from backend.models.user import User
 from backend.sunlight_provider import obtener_aviso_luz_solar, SunlightError
+
+
+def ensure_user_schema() -> None:
+    inspector = inspect(engine)
+    if "users" not in inspector.get_table_names():
+        return
+
+    user_columns = {column["name"] for column in inspector.get_columns("users")}
+    if "is_admin" in user_columns:
+        return
+
+    with engine.begin() as conn:
+        conn.execute(
+            text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT FALSE")
+        )
+
+
+def ensure_admin_user() -> None:
+    session = SessionLocal()
+    try:
+        admin_user = session.query(User).filter(User.email == "admin").first()
+        if admin_user is None:
+            admin_user = User(
+                email="admin",
+                hashed_password=hash_password("admin"),
+                is_admin=True,
+            )
+            session.add(admin_user)
+        else:
+            admin_user.is_admin = True
+            admin_user.hashed_password = hash_password("admin")
+
+        session.commit()
+    finally:
+        session.close()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    ensure_user_schema()
+    ensure_admin_user()
     yield
 
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
@@ -27,7 +67,8 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 routers = [
     api_router, views_router, auth_router, users_router, services_router,
-    activities_router, variables_router, beach_conditions_router, favourites_router
+    activities_router, variables_router, beach_conditions_router, favourites_router,
+    admin_router
 ]
 
 for router in routers: 

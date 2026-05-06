@@ -14,7 +14,8 @@ router = APIRouter(prefix="/api/users", tags=["Users"])
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(
         email=user.email,
-        hashed_password=hash_password(user.password)
+        hashed_password=hash_password(user.password),
+        is_admin=False,
     )
 
     db.add(new_user)
@@ -23,7 +24,8 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
     return {
         "id": new_user.id,
-        "email": new_user.email
+        "email": new_user.email,
+        "is_admin": new_user.is_admin,
     }
 
 
@@ -37,7 +39,8 @@ def list_users(db: Session = Depends(get_db)):
     return [
         {
             "id": user.id,
-            "email": user.email
+            "email": user.email,
+            "is_admin": user.is_admin,
         }
         for user in users
     ]

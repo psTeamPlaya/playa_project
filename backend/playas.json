@@ -98,8 +98,8 @@
     "descripcion": "Playa muy conocida por sus condiciones favorables para deportes de viento.",
     "actividades_ideales": [
       {
-        "actividad": "windsurf",
-        "condicion": "ideal con viento fuerte"
+        "actividad": "Windsurf",
+        "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {
@@ -109,7 +109,7 @@
       "zona_deportiva": false,
       "escuela_surf": true,
       "escuela_windsurf": true,
-      "pet_friendly": true
+      "pet_friendly": false
     },
     "imagen": "pozo_izquierdo.jpg",
     "accesibilidad": "media"
@@ -124,12 +124,8 @@
     "descripcion": "Playa tranquila, muy orientada al baño y al descanso.",
     "actividades_ideales": [
       {
-        "actividad": "nadar",
-        "condicion": "ideal con mar calmado"
-      },
-      {
-        "actividad": "tomar_sol",
-        "condicion": "ideal en condiciones generales"
+        "actividad": "Tomar sol",
+        "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {
@@ -211,12 +207,12 @@
     "descripcion": "Playa de ambiente tranquilo, adecuada para baño relajado y descanso.",
     "actividades_ideales": [
       {
-        "actividad": "nadar",
-        "condicion": "ideal con mar calmado"
+        "actividad": "Nadar",
+        "condicion": "gestionado desde panel admin"
       },
       {
-        "actividad": "tomar_sol",
-        "condicion": "ideal en condiciones generales"
+        "actividad": "Pasear",
+        "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {
@@ -236,16 +232,16 @@
     "ubicacion": "Gáldar",
     "latitud": 28.1654,
     "longitud": -15.699,
-    "tipo": "roca",
+    "tipo": "arena",
     "descripcion": "Zona costera muy apreciada para actividades acuáticas tranquilas.",
     "actividades_ideales": [
       {
-        "actividad": "bucear",
-        "condicion": "ideal con buena visibilidad"
+        "actividad": "Buceo",
+        "condicion": "gestionado desde panel admin"
       },
       {
-        "actividad": "nadar",
-        "condicion": "adecuada con mar tranquilo"
+        "actividad": "Nadar",
+        "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {
@@ -364,16 +360,12 @@
     "descripcion": "Pequeña playa tranquila del sur de Gran Canaria, muy adecuada para descansar, pasear por su entorno y tomar el sol.",
     "actividades_ideales": [
       {
-        "actividad": "tomar_sol",
-        "condicion": "ideal en condiciones generales"
+        "actividad": "Pasear",
+        "condicion": "gestionado desde panel admin"
       },
       {
-        "actividad": "caminar",
-        "condicion": "adecuada por el paseo marítimo cercano"
-      },
-      {
-        "actividad": "nadar",
-        "condicion": "adecuada con mar favorable"
+        "actividad": "Tomar sol",
+        "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {
@@ -455,16 +447,12 @@
     "descripcion": "Playa urbana tranquila del sur, de arena fina y oleaje moderado, adecuada para baño relajado, paseo y descanso.",
     "actividades_ideales": [
       {
-        "actividad": "nadar",
-        "condicion": "adecuada con mar favorable"
+        "actividad": "Pasear",
+        "condicion": "gestionado desde panel admin"
       },
       {
-        "actividad": "tomar_sol",
-        "condicion": "ideal en condiciones generales"
-      },
-      {
-        "actividad": "caminar",
-        "condicion": "adecuada por su longitud"
+        "actividad": "Tomar sol",
+        "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {
@@ -488,16 +476,8 @@
     "descripcion": "Playa costera con ambiente local y amplio paseo litoral, adecuada para baño en condiciones favorables y para caminar junto al mar.",
     "actividades_ideales": [
       {
-        "actividad": "nadar",
-        "condicion": "adecuada con mar tranquilo"
-      },
-      {
-        "actividad": "tomar_sol",
-        "condicion": "adecuada en condiciones generales"
-      },
-      {
-        "actividad": "caminar",
-        "condicion": "ideal por su paseo costero"
+        "actividad": "Pasear",
+        "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {

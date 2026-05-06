@@ -1,4 +1,5 @@
 import { authFetch } from "./api/auth-fetch.js";
+import { initAdminUI } from "./admin/admin-ui.js";
 import { fetchRecommendations } from "./api/recommendations-api.js";
 import { initAuthModal } from "./auth/auth-modal.js";
 import { initSessionUI } from "./auth/session-ui.js";
@@ -56,6 +57,10 @@ const toggleAuthModeBtn = document.getElementById("toggleAuthModeBtn");
 const preferencesPanel = document.getElementById("preferencesPanel");
 const preferencesUserInfo = document.getElementById("preferencesUserInfo");
 const preferencesLogoutBtn = document.getElementById("preferencesLogoutBtn");
+const adminPreferencesGroup = document.getElementById("adminPreferencesGroup");
+const openUserManagementBtn = document.getElementById("openUserManagementBtn");
+const openBeachManagementBtn = document.getElementById("openBeachManagementBtn");
+const openReviewManagementBtn = document.getElementById("openReviewManagementBtn");
 const rememberActivityPreference = document.getElementById("rememberActivityPreference");
 const rememberSchedulePreference = document.getElementById("rememberSchedulePreference");
 const expandResultsPreference = document.getElementById("expandResultsPreference");
@@ -100,6 +105,28 @@ const filterWaveDisabled = document.getElementById("filterWaveDisabled");
 const waveRangeTrack = document.getElementById("waveRangeTrack");
 const waveMinValue = document.getElementById("waveMinValue");
 const waveMaxValue = document.getElementById("waveMaxValue");
+const userManagementModal = document.getElementById("userManagementModal");
+const closeUserManagementModal = document.getElementById("closeUserManagementModal");
+const userManagementList = document.getElementById("userManagementList");
+const userManagementFeedback = document.getElementById("userManagementFeedback");
+const beachManagementModal = document.getElementById("beachManagementModal");
+const closeBeachManagementModal = document.getElementById("closeBeachManagementModal");
+const beachManagementList = document.getElementById("beachManagementList");
+const beachManagementFeedback = document.getElementById("beachManagementFeedback");
+const beachManagementForm = document.getElementById("beachManagementForm");
+const newBeachBtn = document.getElementById("newBeachBtn");
+const resetBeachFormBtn = document.getElementById("resetBeachFormBtn");
+const beachIdInput = document.getElementById("beachId");
+const beachNameInput = document.getElementById("beachName");
+const beachLocationInput = document.getElementById("beachLocation");
+const beachTypeInput = document.getElementById("beachType");
+const beachAccessibilityInput = document.getElementById("beachAccessibility");
+const beachLatitudeInput = document.getElementById("beachLatitude");
+const beachLongitudeInput = document.getElementById("beachLongitude");
+const beachImageInput = document.getElementById("beachImage");
+const beachDescriptionInput = document.getElementById("beachDescription");
+const beachServicesOptions = document.getElementById("beachServicesOptions");
+const beachActivitiesOptions = document.getElementById("beachActivitiesOptions");
 
 let actividadSeleccionada = "";
 let dateTimeController;
@@ -108,6 +135,7 @@ let dynamicFiltersController;
 let preferencesUIController;
 let authModalController;
 let sessionUIController;
+let adminUIController;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
@@ -309,18 +337,52 @@ function initControllers() {
         onOpenPreferences: () => preferencesUIController?.abrirPanelPreferencias(),
         onClosePreferences: () => preferencesUIController?.cerrarPanelPreferencias(),
         onOpenLogin: () => authModalController?.abrirModalLogin(),
-        onSessionChange: (estaLogueado) => {
+        onSessionChange: (estaLogueado, currentUser) => {
             if (estaLogueado) {
                 quantityController?.configurarSlider();
-                return;
+            } else {
+                quantityController?.restablecerCantidadPorDefecto();
             }
-            quantityController?.restablecerCantidadPorDefecto();
+            adminUIController?.updateAdminVisibility(currentUser);
         },
         onLogout: () => {
             document.querySelectorAll(".favorite-btn").forEach(btn => {
                 btn.innerText = "\u{1F90D}";
             });
+            adminUIController?.updateAdminVisibility(null);
+            adminUIController?.closeModals();
         }
+    });
+
+    adminUIController = initAdminUI({
+        adminPreferencesGroup,
+        openUserManagementBtn,
+        openBeachManagementBtn,
+        openReviewManagementBtn,
+        userManagementModal,
+        closeUserManagementModal,
+        userManagementList,
+        userManagementFeedback,
+        beachManagementModal,
+        closeBeachManagementModal,
+        beachManagementList,
+        beachManagementFeedback,
+        beachManagementForm,
+        newBeachBtn,
+        resetBeachFormBtn,
+        beachIdInput,
+        beachNameInput,
+        beachLocationInput,
+        beachTypeInput,
+        beachAccessibilityInput,
+        beachLatitudeInput,
+        beachLongitudeInput,
+        beachImageInput,
+        beachDescriptionInput,
+        beachServicesOptions,
+        beachActivitiesOptions,
+        getCurrentUser: () => sessionUIController?.getCurrentUser?.(),
+        onClosePreferences: () => preferencesUIController?.cerrarPanelPreferencias(),
     });
 }
 
@@ -534,6 +596,7 @@ function initLayoutEvents() {
         if (preferencesPanel && !preferencesPanel.hidden) {
             preferencesUIController?.cerrarPanelPreferencias();
         }
+        adminUIController?.closeModals();
     });
 
     window.addEventListener("resize", actualizarAlturaHeader);
@@ -555,6 +618,7 @@ async function initInitialState() {
 
     await sessionUIController?.loadCurrentUser();
     sessionUIController?.actualizarBotonesSesion();
+    adminUIController?.updateAdminVisibility(sessionUIController?.getCurrentUser?.());
 }
 
 async function initApp() {
