@@ -133,37 +133,6 @@ const staticFilterInputs = [
     filterPetFriendly
 ];
 
-const dynamicFilters = createDynamicFilters({
-    filterWindMin,
-    filterWindMax,
-    filterWindReset,
-    filterWindDisabled,
-    windRangeTrack,
-    windMinValue,
-    windMaxValue,
-    filterCloudMin,
-    filterCloudMax,
-    filterCloudReset,
-    filterCloudDisabled,
-    cloudRangeTrack,
-    cloudMinValue,
-    cloudMaxValue,
-    filterTemperatureMin,
-    filterTemperatureMax,
-    filterTemperatureReset,
-    filterTemperatureDisabled,
-    temperatureRangeTrack,
-    temperatureMinValue,
-    temperatureMaxValue,
-    filterWaveMin,
-    filterWaveMax,
-    filterWaveReset,
-    filterWaveDisabled,
-    waveRangeTrack,
-    waveMinValue,
-    waveMaxValue
-});
-
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
     statusEl.textContent = "";
@@ -246,90 +215,115 @@ function manejarCambioCantidad({ changed }) {
     }
 }
 
-dateTimeController = initDateTime({
-    fechaInput,
-    fechaShell,
-    fechaDisplay,
-    hourWheel,
-    onScheduleChange: manejarCambioHorario
-});
+function initControllers() {
+    const dynamicFilters = createDynamicFilters({
+        filterWindMin,
+        filterWindMax,
+        filterWindReset,
+        filterWindDisabled,
+        windRangeTrack,
+        windMinValue,
+        windMaxValue,
+        filterCloudMin,
+        filterCloudMax,
+        filterCloudReset,
+        filterCloudDisabled,
+        cloudRangeTrack,
+        cloudMinValue,
+        cloudMaxValue,
+        filterTemperatureMin,
+        filterTemperatureMax,
+        filterTemperatureReset,
+        filterTemperatureDisabled,
+        temperatureRangeTrack,
+        temperatureMinValue,
+        temperatureMaxValue,
+        filterWaveMin,
+        filterWaveMax,
+        filterWaveReset,
+        filterWaveDisabled,
+        waveRangeTrack,
+        waveMinValue,
+        waveMaxValue
+    });
 
-quantityController = initQuantity({
-    cantidadSlider,
-    cantidadSliderValue,
-    cantidadSliderMax,
-    defaultQuantity: DEFAULT_QUANTITY,
-    onChange: manejarCambioCantidad
-});
+    dateTimeController = initDateTime({
+        fechaInput,
+        fechaShell,
+        fechaDisplay,
+        hourWheel,
+        onScheduleChange: manejarCambioHorario
+    });
 
-dynamicFiltersController = initDynamicFilters({
-    dynamicFilters,
-    disableDynamicFilters,
-    onFiltersChange: limpiarResultadosPorCambioDeFiltros
-});
+    quantityController = initQuantity({
+        cantidadSlider,
+        cantidadSliderValue,
+        cantidadSliderMax,
+        defaultQuantity: DEFAULT_QUANTITY,
+        onChange: manejarCambioCantidad
+    });
 
-staticFiltersController = initStaticFilters({
-    staticFilterInputs,
-    disableStaticFilters,
-    onFiltersChange: limpiarResultadosPorCambioDeFiltros,
-    iluminarChipFiltro
-});
+    dynamicFiltersController = initDynamicFilters({
+        dynamicFilters,
+        disableDynamicFilters,
+        onFiltersChange: limpiarResultadosPorCambioDeFiltros
+    });
 
-preferencesUIController = initPreferencesUI({
-    preferencesPanel,
-    authActionBtn,
-    rememberActivityPreference,
-    rememberSchedulePreference,
-    expandResultsPreference,
-    onRememberActivityChange: guardarActividadRecordada,
-    onRememberScheduleChange: guardarHorarioRecordado
-});
+    staticFiltersController = initStaticFilters({
+        staticFilterInputs,
+        disableStaticFilters,
+        onFiltersChange: limpiarResultadosPorCambioDeFiltros,
+        iluminarChipFiltro
+    });
 
-function abrirPanelPreferencias() {
-    preferencesUIController?.abrirPanelPreferencias();
-}
+    preferencesUIController = initPreferencesUI({
+        preferencesPanel,
+        authActionBtn,
+        rememberActivityPreference,
+        rememberSchedulePreference,
+        expandResultsPreference,
+        onRememberActivityChange: guardarActividadRecordada,
+        onRememberScheduleChange: guardarHorarioRecordado
+    });
 
-function cerrarPanelPreferencias() {
-    preferencesUIController?.cerrarPanelPreferencias();
-}
+    authModalController = initAuthModal({
+        loginModalEl,
+        closeLoginModalBtn,
+        loginModalForm,
+        loginEmailInput,
+        loginPasswordInput,
+        confirmPasswordInput,
+        confirmPasswordGroup,
+        loginErrorMessageEl,
+        authSubmitBtn,
+        authModeHint,
+        toggleAuthModeBtn
+    });
 
-authModalController = initAuthModal({
-    loginModalEl,
-    closeLoginModalBtn,
-    loginModalForm,
-    loginEmailInput,
-    loginPasswordInput,
-    confirmPasswordInput,
-    confirmPasswordGroup,
-    loginErrorMessageEl,
-    authSubmitBtn,
-    authModeHint,
-    toggleAuthModeBtn
-});
-
-sessionUIController = initSessionUI({
-    preferencesUserInfo,
-    preferencesPanel,
-    authActionBtn,
-    authActionIcon,
-    filtersSidebar,
-    preferencesLogoutBtn,
-    onOpenPreferences: abrirPanelPreferencias,
-    onClosePreferences: cerrarPanelPreferencias,
-    onOpenLogin: () => authModalController?.abrirModalLogin(),
-    onSessionChange: (estaLogueado) => {
-        if (estaLogueado) {
-            quantityController?.configurarSlider();
-        } else {
+    sessionUIController = initSessionUI({
+        preferencesUserInfo,
+        preferencesPanel,
+        authActionBtn,
+        authActionIcon,
+        filtersSidebar,
+        preferencesLogoutBtn,
+        onOpenPreferences: () => preferencesUIController?.abrirPanelPreferencias(),
+        onClosePreferences: () => preferencesUIController?.cerrarPanelPreferencias(),
+        onOpenLogin: () => authModalController?.abrirModalLogin(),
+        onSessionChange: (estaLogueado) => {
+            if (estaLogueado) {
+                quantityController?.configurarSlider();
+                return;
+            }
             quantityController?.restablecerCantidadPorDefecto();
+        },
+        onLogout: () => {
+            document.querySelectorAll(".favorite-btn").forEach(btn => {
+                btn.innerText = "\u{1F90D}";
+            });
         }
-    },
-    onLogout: () => {
-        document.querySelectorAll(".favorite-btn").forEach(btn => {
-            btn.innerText = "\u{1F90D}";
-        });
-    }
-});
+    });
+}
 
 // ============================================================
 // CONFIGURACION INICIAL POR DEFECTO: actividad, fecha y hora
@@ -359,11 +353,13 @@ function configurarFechaYHoraIniciales() {
 // EVENTOS DE ACTIVIDAD
 // =========================================================
 
-activityCards.forEach(card => {
-    card.addEventListener("click", () => {
-        seleccionarActividad(card.dataset.activity, true);
+function initActivityEvents() {
+    activityCards.forEach(card => {
+        card.addEventListener("click", () => {
+            seleccionarActividad(card.dataset.activity, true);
+        });
     });
-});
+}
 
 // =========================================================
 // BUSQUEDA
@@ -473,19 +469,12 @@ function desplazarAPlayasRecomendadas() {
     });
 }
 
-if (buscarBtn) {
-    buscarBtn.addEventListener("click", buscarRecomendaciones);
-}
-if (floatingBuscarBtn) {
-    floatingBuscarBtn.addEventListener("click", buscarRecomendaciones);
-}
-
-resultsContainer.addEventListener("click", async (e) => {
-    const btn = e.target.closest(".favorite-btn");
+async function handleFavoriteToggle(event) {
+    const btn = event.target.closest(".favorite-btn");
     if (!btn) return;
 
-    e.preventDefault();
-    e.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
     console.log("btn pressed:", btn);
 
     const beachId = Number(btn.dataset.id);
@@ -500,7 +489,19 @@ resultsContainer.addEventListener("click", async (e) => {
         method
     });
     btn.innerText = isFavorite ? "\u{1F90D}" : "\u2764\uFE0F";   // backward order because we changed it
-});
+}
+
+function initSearchEvents() {
+    if (buscarBtn) {
+        buscarBtn.addEventListener("click", buscarRecomendaciones);
+    }
+    if (floatingBuscarBtn) {
+        floatingBuscarBtn.addEventListener("click", buscarRecomendaciones);
+    }
+    if (resultsContainer) {
+        resultsContainer.addEventListener("click", handleFavoriteToggle);
+    }
+}
 
 // =========================================================
 // RESULTADOS
@@ -514,61 +515,61 @@ function pintarResultados(resultados) {
 // Login
 // =========================================================
 
-function abrirModalLogin() {
-    authModalController?.abrirModalLogin();
-}
+function initAuthEvents() {
+    if (!loginModalForm) return;
 
-function cerrarModalLogin() {
-    authModalController?.cerrarModalLogin();
-}
-
-async function loadCurrentUser() {
-    return sessionUIController?.loadCurrentUser();
-}
-
-async function logout() {
-    await sessionUIController?.logout();
-}
-
-function actualizarBotonesSesion() {
-    sessionUIController?.actualizarBotonesSesion();
-}
-
-if (loginModalForm) {
     loginModalForm.addEventListener("submit", async (event) => {
         await authModalController?.handleSubmit(event, async () => {
-            await loadCurrentUser();
-            actualizarBotonesSesion();
+            await sessionUIController?.loadCurrentUser();
+            sessionUIController?.actualizarBotonesSesion();
         });
     });
 }
 
-document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    if (loginModalEl && !loginModalEl.hidden) cerrarModalLogin();
-    if (preferencesPanel && !preferencesPanel.hidden) cerrarPanelPreferencias();
-});
+function initLayoutEvents() {
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        if (loginModalEl && !loginModalEl.hidden) {
+            authModalController?.cerrarModalLogin();
+        }
+        if (preferencesPanel && !preferencesPanel.hidden) {
+            preferencesUIController?.cerrarPanelPreferencias();
+        }
+    });
 
-window.addEventListener("resize", () => {
+    window.addEventListener("resize", actualizarAlturaHeader);
+
+    if (appHeader && "ResizeObserver" in window) {
+        const headerObserver = new ResizeObserver(actualizarAlturaHeader);
+        headerObserver.observe(appHeader);
+    }
+}
+
+async function initInitialState() {
     actualizarAlturaHeader();
-});
+    configurarBotonBusquedaFlotante();
 
-if (appHeader && "ResizeObserver" in window) {
-    const headerObserver = new ResizeObserver(actualizarAlturaHeader);
-    headerObserver.observe(appHeader);
+    if (fechaInput) {
+        seleccionarActividad(obtenerActividadInicial());
+        configurarFechaYHoraIniciales();
+    }
+
+    await sessionUIController?.loadCurrentUser();
+    sessionUIController?.actualizarBotonesSesion();
+}
+
+async function initApp() {
+    initControllers();
+    initActivityEvents();
+    initSearchEvents();
+    initAuthEvents();
+    initLayoutEvents();
+    await initInitialState();
 }
 
 // =========================================================
 // ARRANQUE
 // =========================================================
 
-actualizarAlturaHeader();
-configurarBotonBusquedaFlotante();
-
-if (document.getElementById("fecha")) {
-    seleccionarActividad(obtenerActividadInicial());
-    configurarFechaYHoraIniciales();
-}
-loadCurrentUser();
-actualizarBotonesSesion();
+initApp();
 
