@@ -33,7 +33,7 @@
             <h3>Preferencias</h3>
             <div class="preferences-user" id="preferencesUserInfo"></div>
             <label class="preference-item fav-item" id="favoritesLabel">
-              <button id="showFavoritesBtn" class="invisible-button" onclick="toggleSearchUI()">
+              <button id="showFavoritesBtn" class="invisible-button" type="button">
                 <i class="fas fa-heart fav-icon"></i><span>Mis Playas Favoritas</span>
               </button>
             </label>
@@ -349,6 +349,20 @@
       <div class="auth-register-row">
         <span id="authModeHint">¿Sin cuenta?</span>
         <button class="btn-secondary" id="toggleAuthModeBtn" type="button">Registrarse</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="favorites-modal-backdrop" id="favoritesModal" hidden>
+    <div class="favorites-modal" role="dialog" aria-modal="true" aria-labelledby="favoritesModalTitle">
+      <button class="favorites-modal-close" id="closeFavoritesModal" type="button" aria-label="Cerrar">X</button>
+      <div class="favorites-modal-header">
+        <h2 id="favoritesModalTitle">Mis playas favoritas</h2>
+      </div>
+      <div id="favoritesResultsContainer" class="results-grid favorites-results-grid">
+        <div class="empty-state">
+          Cargando playas favoritas...
+        </div>
       </div>
     </div>
   </div>
