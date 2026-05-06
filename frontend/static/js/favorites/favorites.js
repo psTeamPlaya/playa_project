@@ -1,3 +1,5 @@
+import { pintarResultados } from "../results/render-results.js";
+
 const favoritesLabel = document.getElementById("favoritesLabel");
 const showFavoritesBtn = document.getElementById("showFavoritesBtn");
 const preferencesPanel = document.getElementById("preferencesPanel");
@@ -110,106 +112,13 @@ function renderFavoriteResults(resultados) {
         return;
     }
 
-    favoritesResultsContainer.innerHTML = resultados.map((playa, index) => {
-        const servicios = formatServices(playa.servicios);
-        const condiciones = playa.condiciones || {};
-
-        return `
-            <details class="beach-card desplegable">
-                <summary class="beach-summary">
-                    <div class="beach-summary-left">
-                        <div class="ranking-badge">#${index + 1}</div>
-                        <div>
-                            <h3 class="beach-title">${playa.nombre}</h3>
-                            <div class="beach-location">${playa.ubicacion}</div>
-                            <div class="beach-short-motivo"></div>
-                        </div>
-                    </div>
-
-                    <div class="beach-summary-right">
-                        <button class="favorite-btn" data-id="${playa.beach_id}" aria-label="Quitar de favoritas">
-                            ❤️
-                        </button>
-                        <span class="expand-hint" aria-hidden="true">+</span>
-                    </div>
-                </summary>
-
-                <div class="beach-detail">
-                    <p class="beach-desc">${playa.descripcion}</p>
-
-                    <div class="meta-list">
-                        <span class="chip">🏖️ Tipo: ${playa.tipo}</span>
-                        <span class="chip">🌡️ Temp. aire: ${condiciones.air_temp ?? "N/A"} ºC</span>
-                        <span class="chip">🌊 Oleaje: ${condiciones.wave_height ?? "N/A"} m</span>
-                        <span class="chip">💨 Viento: ${condiciones.wind_speed ?? "N/A"} km/h</span>
-                        <span class="chip">🌡️ Agua: ${condiciones.water_temp ?? "N/A"} ºC</span>
-                        <span class="chip">🌤️ Nubosidad: ${condiciones.cloud_cover ?? "N/A"}%</span>
-                        <span class="chip">🌧️ Lluvia: ${condiciones.rain_probability ?? "N/A"}%</span>
-                        <span class="chip">🌙 Marea: ${formatTide(condiciones)}</span>
-                    </div>
-
-                    <div class="services-list">
-                        ${servicios}
-                    </div>
-                </div>
-            </details>
-        `;
-    }).join("");
-
-    configureDetailsAnimation();
-}
-
-function configureDetailsAnimation() {
-    const beachCards = favoritesResultsContainer?.querySelectorAll(".beach-card") || [];
-
-    beachCards.forEach((card) => {
-        card.addEventListener("toggle", () => {
-            if (!card.open) {
-                card.classList.remove("is-revealing");
-                return;
-            }
-
-            card.classList.remove("is-revealing");
-            void card.offsetWidth;
-            card.classList.add("is-revealing");
-        });
+    pintarResultados(resultados, favoritesResultsContainer, {
+        emptyMessage: "Todavia no has guardado playas favoritas.",
+        showScore: false,
+        showMotivo: false,
+        favoriteButtonLabel: "\u2764\uFE0F",
+        favoriteButtonAriaLabel: "Quitar de favoritas"
     });
-}
-
-function formatServices(servicios = {}) {
-    const icons = {
-        restaurantes: "🍽️ Restaurantes",
-        comida_para_llevar: "🥡 Comida para llevar",
-        balnearios: "🚿 Balneario",
-        balneario: "🚿 Balneario",
-        zona_deportiva: "🏐 Zona deportiva",
-        escuela_surf: "🏄 Escuela de surf",
-        escuela_windsurf: "🌬️ Escuela de windsurf",
-        pet_friendly: "🐾 Pet-friendly"
-    };
-
-    return Object.entries(servicios)
-        .filter(([_, disponible]) => disponible)
-        .map(([clave]) => `<span class="chip">${icons[clave] || clave}</span>`)
-        .join("");
-}
-
-function formatTide(condiciones = {}) {
-    if (typeof condiciones.marea === "string" && condiciones.marea.trim()) {
-        return condiciones.marea;
-    }
-
-    const tideValue = Number(condiciones.tide);
-    if (Number.isNaN(tideValue)) {
-        return "N/A";
-    }
-    if (tideValue <= -0.10) {
-        return "baja";
-    }
-    if (tideValue >= 0.10) {
-        return "alta";
-    }
-    return "media";
 }
 
 async function removeFavorite(beachId) {

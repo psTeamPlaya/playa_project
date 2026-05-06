@@ -1,6 +1,7 @@
 import { login } from "./auth/login.js";
 import { registerUser } from "./auth/register.js";
 import { selectedCoords } from "./localization.js";
+import { pintarResultados as renderizarResultados } from "./results/render-results.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -356,8 +357,8 @@ function actualizarToggleFiltrosDinamicos() {
 
     const desactivados = estanTodosLosFiltrosDinamicosDesactivados();
     disableDynamicFilters.textContent = desactivados
-        ? "Activar filtros dinámicos"
-        : "Desactivar filtros dinámicos";
+        ? "Activar filtros din\u00e1micos"
+        : "Desactivar filtros din\u00e1micos";
     disableDynamicFilters.setAttribute("aria-pressed", desactivados ? "true" : "false");
     disableDynamicFilters.classList.toggle("is-active", desactivados);
 }
@@ -414,7 +415,7 @@ function formatearFechaVisual(fechaTexto) {
 
     const [year, month, day] = fechaTexto.split("-");
     const diaSemana = obtenerAbreviaturaDia(fechaTexto);
-    return `${diaSemana} · ${day}/${month}/${year}`;
+    return `${diaSemana} \u00b7 ${day}/${month}/${year}`;
 }
 
 function actualizarTextoFecha() {
@@ -548,7 +549,7 @@ function esHoraPasadaParaHoy(horaTexto) {
 }
 
 // ============================================================
-// CONFIGURACIÓN INICIAL POR DEFECTO: actividad, fecha y hora
+// CONFIGURACION INICIAL POR DEFECTO: actividad, fecha y hora
 // ============================================================
 
 function seleccionarActividad(actividad, limpiarResultados = false) {
@@ -747,7 +748,7 @@ fechaInput.addEventListener("change", () => {
 });
 
 // =========================================================
-// BÚSQUEDA
+// BUSQUEDA
 // =========================================================
 
 async function buscarRecomendaciones() {
@@ -772,7 +773,7 @@ async function buscarRecomendaciones() {
         return;
     }
     if (esFechaHoy(fecha) && esHoraPasadaParaHoy(hora)) {
-        statusEl.textContent = "No puedes seleccionar una hora pasada para el día de hoy.";
+        statusEl.textContent = "No puedes seleccionar una hora pasada para el d\u00eda de hoy.";
         asegurarHoraValidaSeleccionada();
         return;
     }
@@ -884,12 +885,12 @@ resultsContainer.addEventListener("click", async (e) => {
         alert("Please log in");
         return;
     }
-    const isFavorite = btn.innerText === "❤️";
+    const isFavorite = btn.innerText === "\u2764\uFE0F";
     const method = isFavorite ? "DELETE" : "POST";
     await authFetch(`/api/favorites/${beachId}`, {
         method
     });
-    btn.innerText = isFavorite ? "🤍" : "❤️";   // backward order because we changed it
+    btn.innerText = isFavorite ? "\u{1F90D}" : "\u2764\uFE0F";   // backward order because we changed it
 });
 
 // =========================================================
@@ -913,116 +914,7 @@ async function getFavoriteBeachIds() {
 }
 
 function pintarResultados(resultados) {
-    if (!resultados || resultados.length === 0) {
-        resultsContainer.innerHTML = `
-            <div class="empty-state">
-            No hay resultados para esa búsqueda.
-            </div>
-        `;
-        return;
-    }
-    resultsContainer.innerHTML = resultados.map((playa, index) => {
-        const servicios = formatearServicios(playa.servicios);
-        const condiciones = playa.condiciones;
-
-        return `
-            <details class="beach-card desplegable">
-            <summary class="beach-summary">
-                <div class="beach-summary-left">
-                <div class="ranking-badge">#${index + 1}</div>
-                <div>
-                    <h3 class="beach-title">${playa.nombre}</h3>
-                    <div class="beach-location">${playa.ubicacion}</div>
-                    <div class="beach-short-motivo"></div>
-                </div>
-                </div>
-
-            <div class="beach-summary-right">
-                <div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>
-                <button class="favorite-btn" data-id="${playa.beach_id}">
-                    ${playa.isFavorite ? '❤️' : '🤍'}
-                </button>
-                <span class="expand-hint" aria-hidden="true">+</span>
-            </div>
-            </summary>
-
-            <div class="beach-detail">
-                <p class="beach-desc">${playa.descripcion}</p>
-
-                <div class="meta-list">
-                <span class="chip">🏖️ Tipo: ${playa.tipo}</span>
-                <span class="chip">🌡️ Temp. aire: ${condiciones.air_temp ?? "N/A"} ºC</span>
-                <span class="chip">🌊 Oleaje: ${condiciones.wave_height ?? "N/A"} m</span>
-                <span class="chip">💨 Viento: ${condiciones.wind_speed ?? "N/A"} km/h</span>
-                <span class="chip">🌡️ Agua: ${condiciones.water_temp ?? "N/A"} ºC</span>
-                <span class="chip">🌤️ Nubosidad: ${condiciones.cloud_cover ?? "N/A"}%</span>
-                <span class="chip">🌧️ Lluvia: ${condiciones.rain_probability ?? "N/A"}%</span>
-                <span class="chip">🌙 Marea: ${formatearMarea(condiciones)}</span>
-                </div>
-
-                <div class="motivo detalle-box">
-                <strong>Explicación de la recomendación:</strong> ${playa.motivo}
-                </div>
-
-                <div class="services-list">
-                ${servicios}
-                </div>
-            </div>
-            </details>
-        `;
-    }).join("");
-
-    configurarAnimacionDetalles();
-}
-
-function configurarAnimacionDetalles() {
-    const beachCards = resultsContainer.querySelectorAll(".beach-card");
-
-    beachCards.forEach((card) => {
-        card.addEventListener("toggle", () => {
-            if (!card.open) {
-                card.classList.remove("is-revealing");
-                return;
-            }
-            card.classList.remove("is-revealing");
-            void card.offsetWidth;
-            card.classList.add("is-revealing");
-        });
-    });
-}
-
-function formatearServicios(servicios) {
-    const iconos = {
-        restaurantes: "🍽️ Restaurantes",
-        comida_para_llevar: "🥡 Comida para llevar",
-        balnearios: "🚿 Balneario",
-        zona_deportiva: "🏐 Zona deportiva",
-        escuela_surf: "🏄 Escuela de surf",
-        escuela_windsurf: "🌬️ Escuela de windsurf",
-        pet_friendly: "🐾 Pet-friendly"
-    };
-    return Object.entries(servicios)
-        .filter(([_, disponible]) => disponible)
-        .map(([clave]) => `<span class="chip">${iconos[clave] || clave}</span>`)
-        .join("");
-}
-
-function formatearMarea(condiciones) {
-    if (typeof condiciones.marea === "string" && condiciones.marea.trim()) {
-        return condiciones.marea;
-    }
-
-    const tideValue = Number(condiciones.tide);
-    if (Number.isNaN(tideValue)) {
-        return "N/A";
-    }
-    if (tideValue <= -0.10) {
-        return "baja";
-    }
-    if (tideValue >= 0.10) {
-        return "alta";
-    }
-    return "media";
+    renderizarResultados(resultados, resultsContainer);
 }
 
 // =========================================================
@@ -1036,7 +928,7 @@ function aplicarModoAuth() {
     if (authMode === "register") {
         if (titleEl) titleEl.textContent = "Registrarse";
         authSubmitBtn.textContent = "Crear cuenta";
-        authModeHint.textContent = "¿Ya tienes cuenta?";
+        authModeHint.textContent = "\u00bfYa tienes cuenta?";
         toggleAuthModeBtn.textContent = "Iniciar sesion";
         if (confirmPasswordGroup) {
             confirmPasswordGroup.style.display = "block";
@@ -1048,7 +940,7 @@ function aplicarModoAuth() {
     }
     if (titleEl) titleEl.textContent = "Iniciar sesion";
     authSubmitBtn.textContent = "Entrar a mi cuenta";
-    authModeHint.textContent = "¿Todavía no tienes cuenta?";
+    authModeHint.textContent = "\u00bfTodav\u00eda no tienes cuenta?";
     toggleAuthModeBtn.textContent = "Registrarse";
     if (confirmPasswordGroup) {
         confirmPasswordGroup.style.display = "none";
@@ -1131,7 +1023,7 @@ function logout() {
     localStorage.removeItem("token");
     loadCurrentUser();
     document.querySelectorAll(".favorite-btn").forEach(btn => {
-        btn.innerText = "🤍";
+        btn.innerText = "\u{1F90D}";
     });
     actualizarBotonesSesion();
     cerrarPanelPreferencias();
@@ -1210,13 +1102,13 @@ if (loginModalForm) {
         const password = loginPasswordInput.value;
 
         if (!email || !password) {
-            mostrarMensajeAuth("Debes indicar correo y contraseña.");
+            mostrarMensajeAuth("Debes indicar correo y contrase\u00f1a.");
             return;
         }
         if (authMode === "register") {
             const confirmPassword = confirmPasswordInput?.value ?? "";
             if (password !== confirmPassword) {
-                mostrarMensajeAuth("Las contraseñas no coinciden.");
+                mostrarMensajeAuth("Las contrase\u00f1as no coinciden.");
                 return;
             }
         }
