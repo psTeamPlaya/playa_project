@@ -17,6 +17,13 @@ import {
     aplicarFiltrosAParametros as buildFilterParams,
     initStaticFilters
 } from "./filters/static-filters.js";
+import {
+    guardarActividadRecordada as saveRememberedActivity,
+    guardarHorarioRecordado as saveRememberedSchedule,
+    obtenerActividadInicial as getInitialActivity,
+    obtenerHorarioInicial as getInitialSchedule
+} from "./preferences/storage.js";
+import { initPreferencesUI } from "./preferences/preferences-ui.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -94,11 +101,11 @@ const waveMaxValue = document.getElementById("waveMaxValue");
 
 let actividadSeleccionada = "";
 let authMode = "login";
-let preferencesCloseTimeout;
 let dateTimeController;
 let quantityController;
 let dynamicFiltersController;
 let staticFiltersController;
+let preferencesUIController;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
@@ -154,27 +161,10 @@ const dynamicFilters = createDynamicFilters({
     waveMaxValue
 });
 
-const STORAGE_KEYS = {
-    rememberActivity: "preferences.rememberActivity",
-    rememberSchedule: "preferences.rememberSchedule",
-    expandResults: "preferences.expandResults",
-    savedActivity: "preferences.savedActivity",
-    savedDate: "preferences.savedDate",
-    savedHour: "preferences.savedHour"
-};
-
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
     statusEl.textContent = "";
     ocultarAvisoSolar();
-}
-
-function leerPreferencia(clave) {
-    return localStorage.getItem(clave) === "true";
-}
-
-function guardarPreferencia(clave, valor) {
-    localStorage.setItem(clave, valor ? "true" : "false");
 }
 
 function actualizarAlturaHeader() {
@@ -186,82 +176,36 @@ function actualizarAlturaHeader() {
     );
 }
 
-function cargarPreferenciasUI() {
-    if (rememberActivityPreference) {
-        rememberActivityPreference.checked = leerPreferencia(STORAGE_KEYS.rememberActivity);
-    }
-    if (rememberSchedulePreference) {
-        rememberSchedulePreference.checked = leerPreferencia(STORAGE_KEYS.rememberSchedule);
-    }
-    if (expandResultsPreference) {
-        expandResultsPreference.checked = leerPreferencia(STORAGE_KEYS.expandResults);
-    }
-}
-
-function cerrarPanelPreferencias() {
-    if (preferencesPanel) {
-        preferencesPanel.classList.remove("is-open");
-        clearTimeout(preferencesCloseTimeout);
-        preferencesCloseTimeout = setTimeout(() => {
-            preferencesPanel.hidden = true;
-        }, 220);
-    }
-}
-
-function abrirPanelPreferencias() {
-    if (!preferencesPanel) {return;}
-
-    clearTimeout(preferencesCloseTimeout);
-    preferencesPanel.hidden = false;
-    requestAnimationFrame(() => {
-        preferencesPanel.classList.add("is-open");
-    });
-}
-
 function guardarActividadRecordada() {
-    if (!rememberActivityPreference?.checked || !actividadSeleccionada) {
-        localStorage.removeItem(STORAGE_KEYS.savedActivity);
-        return;
-    }
-    localStorage.setItem(STORAGE_KEYS.savedActivity, actividadSeleccionada);
+    saveRememberedActivity({
+        rememberActivityPreference,
+        actividadSeleccionada
+    });
 }
 
 function guardarHorarioRecordado() {
     const fechaSeleccionada = dateTimeController?.getFecha() || fechaInput.value;
     const horaSeleccionada = dateTimeController?.getHoraSeleccionada() || "";
-
-    if (!rememberSchedulePreference?.checked || !fechaSeleccionada || !horaSeleccionada) {
-        localStorage.removeItem(STORAGE_KEYS.savedDate);
-        localStorage.removeItem(STORAGE_KEYS.savedHour);
-        return;
-    }
-    localStorage.setItem(STORAGE_KEYS.savedDate, fechaSeleccionada);
-    localStorage.setItem(STORAGE_KEYS.savedHour, horaSeleccionada);
+    saveRememberedSchedule({
+        rememberSchedulePreference,
+        fechaSeleccionada,
+        horaSeleccionada
+    });
 }
 
 function obtenerActividadInicial() {
-    const actividadGuardada = localStorage.getItem(STORAGE_KEYS.savedActivity);
-    if (rememberActivityPreference?.checked && actividadGuardada) {
-        return actividadGuardada;
-    }
-    return DEFAULT_ACTIVITY;
+    return getInitialActivity({
+        rememberActivityPreference,
+        defaultActivity: DEFAULT_ACTIVITY
+    });
 }
 
 function obtenerHorarioInicial() {
-    if (!rememberSchedulePreference?.checked) {return null;}
-
-    const fechaGuardada = localStorage.getItem(STORAGE_KEYS.savedDate);
-    const horaGuardada = localStorage.getItem(STORAGE_KEYS.savedHour);
-    const hoy = formatearFechaLocal(new Date());
-
-    if (!fechaGuardada || !horaGuardada || fechaGuardada < hoy) {return null;}
-    if ((dateTimeController?.esHoraPasadaParaFecha || esHoraPasadaParaFecha)(fechaGuardada, horaGuardada)) {
-        return null;
-    }
-    return {
-        fecha: fechaGuardada,
-        hora: horaGuardada
-    };
+    return getInitialSchedule({
+        rememberSchedulePreference,
+        formatearFechaLocal,
+        esHoraPasadaParaFecha: dateTimeController?.esHoraPasadaParaFecha || esHoraPasadaParaFecha
+    });
 }
 
 const cantidadSlider = document.getElementById("cantidadSlider");
@@ -327,6 +271,24 @@ staticFiltersController = initStaticFilters({
     onFiltersChange: limpiarResultadosPorCambioDeFiltros,
     iluminarChipFiltro
 });
+
+preferencesUIController = initPreferencesUI({
+    preferencesPanel,
+    authActionBtn,
+    rememberActivityPreference,
+    rememberSchedulePreference,
+    expandResultsPreference,
+    onRememberActivityChange: guardarActividadRecordada,
+    onRememberScheduleChange: guardarHorarioRecordado
+});
+
+function abrirPanelPreferencias() {
+    preferencesUIController?.abrirPanelPreferencias();
+}
+
+function cerrarPanelPreferencias() {
+    preferencesUIController?.cerrarPanelPreferencias();
+}
 
 // ============================================================
 // CONFIGURACION INICIAL POR DEFECTO: actividad, fecha y hora
@@ -708,15 +670,6 @@ if (loginModalEl) {
     });
 }
 
-document.addEventListener("click", (event) => {
-    if (!preferencesPanel || preferencesPanel.hidden) return;
-    const clickDentroPanel = preferencesPanel.contains(event.target);
-    const clickEnToggle = authActionBtn?.contains(event.target);
-    if (!clickDentroPanel && !clickEnToggle) {
-        cerrarPanelPreferencias();
-    }
-});
-
 if (loginModalForm) {
     loginModalForm.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -772,26 +725,6 @@ if (toggleAuthModeBtn) {
     });
 }
 
-if (rememberActivityPreference) {
-    rememberActivityPreference.addEventListener("change", () => {
-        guardarPreferencia(STORAGE_KEYS.rememberActivity, rememberActivityPreference.checked);
-        guardarActividadRecordada();
-    });
-}
-
-if (rememberSchedulePreference) {
-    rememberSchedulePreference.addEventListener("change", () => {
-        guardarPreferencia(STORAGE_KEYS.rememberSchedule, rememberSchedulePreference.checked);
-        guardarHorarioRecordado();
-    });
-}
-
-if (expandResultsPreference) {
-    expandResultsPreference.addEventListener("change", () => {
-        guardarPreferencia(STORAGE_KEYS.expandResults, expandResultsPreference.checked);
-    });
-}
-
 if (preferencesLogoutBtn) {
     preferencesLogoutBtn.addEventListener("click", () => {
         logout();
@@ -819,7 +752,6 @@ if (appHeader && "ResizeObserver" in window) {
 
 actualizarAlturaHeader();
 configurarBotonBusquedaFlotante();
-cargarPreferenciasUI();
 
 if (document.getElementById("fecha")) {
     seleccionarActividad(obtenerActividadInicial());
