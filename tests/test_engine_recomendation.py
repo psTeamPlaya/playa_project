@@ -1,3 +1,4 @@
+from backend import engine_recomendation
 from backend.engine_recomendation import filtrar_resultados_recomendacion, fusionar_playas
 
 
@@ -189,3 +190,49 @@ def test_filtrar_resultados_recomendacion_escuela_kayak_sin_datos_no_devuelve_co
     filtrados = filtrar_resultados_recomendacion(resultados, escuela_kayak=True)
 
     assert filtrados == []
+
+
+def test_recomendar_playas_con_top_n_cero_devuelve_todos(monkeypatch):
+    playas = [
+        {
+            "id": 1,
+            "nombre": "A",
+            "ubicacion": "Norte",
+            "latitud": 28.0,
+            "longitud": -15.0,
+            "descripcion": "A",
+            "tipo": "arena",
+            "servicios": {},
+        },
+        {
+            "id": 2,
+            "nombre": "B",
+            "ubicacion": "Sur",
+            "latitud": 28.1,
+            "longitud": -15.1,
+            "descripcion": "B",
+            "tipo": "arena",
+            "servicios": {},
+        },
+    ]
+    condiciones = [
+        {"beach_id": 1, "air_temp": 25, "wind_speed": 5, "cloud_cover": 10, "rain_probability": 0, "wave_height": 1, "uv_index": 6},
+        {"beach_id": 2, "air_temp": 23, "wind_speed": 8, "cloud_cover": 20, "rain_probability": 5, "wave_height": 1.5, "uv_index": 5},
+    ]
+
+    monkeypatch.setattr(engine_recomendation, "cargar_playas", lambda: playas)
+    monkeypatch.setattr(engine_recomendation, "cargar_condiciones", lambda playas, fecha, hora: condiciones)
+
+    resultados = engine_recomendation.recomendar_playas(
+        actividad="tomar_sol",
+        fecha="2026-05-07",
+        hora="12:00",
+        lat_usuario=None,
+        lon_usuario=None,
+        radio_km=None,
+        top_n=0,
+        filtros={},
+    )
+
+    assert len(resultados) == 2
+    assert [resultado["beach_id"] for resultado in resultados] == [1, 2]

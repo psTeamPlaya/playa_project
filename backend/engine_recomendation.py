@@ -293,7 +293,10 @@ def recomendar_playas(
             "motivo": generar_motivo(actividad, cond)
         })
 
-    return sorted(resultados, key=lambda x: x["score"], reverse=True)[:top_n]
+    resultados_ordenados = sorted(resultados, key=lambda x: x["score"], reverse=True)
+    if top_n <= 0:
+        return resultados_ordenados
+    return resultados_ordenados[:top_n]
 
 MOTIVOS = {
     "tomar_sol": [

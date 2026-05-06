@@ -6,11 +6,12 @@ import { initSessionUI } from "./auth/session-ui.js";
 import {
     createDynamicFilters,
     iluminarChipFiltro,
-    initDynamicFilters
+    initDynamicFilters,
+    obtenerFiltrosDinamicosSeleccionados
 } from "./filters/dynamic-filters.js";
 import {
-    aplicarFiltrosAParametros as buildFilterParams,
-    initStaticFilters
+    initStaticFilters,
+    obtenerFiltrosSeleccionados
 } from "./filters/static-filters.js";
 import { selectedCoords } from "./localization.js";
 import { initPreferencesUI } from "./preferences/preferences-ui.js";
@@ -138,6 +139,7 @@ let authModalController;
 let sessionUIController;
 let adminUIController;
 let resultsMapController;
+let lastRecommendationContext = null;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
@@ -166,6 +168,43 @@ function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
     statusEl.textContent = "";
     ocultarAvisoSolar();
+}
+
+function resetRecommendationContext() {
+    lastRecommendationContext = null;
+}
+
+function getCurrentSearchSignature() {
+    const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
+
+    return {
+        actividad: actividadSeleccionada,
+        fecha: fechaInput?.value || "",
+        hora: dateTimeController?.getHoraSeleccionada() || "",
+        rango: radioSeleccionado ? radioSeleccionado.value : "5",
+        coords: selectedCoords ? [...selectedCoords] : null
+    };
+}
+
+function hasSameCoords(coordsA, coordsB) {
+    if (!coordsA && !coordsB) return true;
+    if (!coordsA || !coordsB) return false;
+    return coordsA.length === coordsB.length && coordsA.every((value, index) => value === coordsB[index]);
+}
+
+function canReuseRecommendationContext() {
+    if (!lastRecommendationContext?.baseData) {
+        return false;
+    }
+
+    const currentSignature = getCurrentSearchSignature();
+    return (
+        lastRecommendationContext.actividad === currentSignature.actividad
+        && lastRecommendationContext.fecha === currentSignature.fecha
+        && lastRecommendationContext.hora === currentSignature.hora
+        && lastRecommendationContext.rango === currentSignature.rango
+        && hasSameCoords(lastRecommendationContext.coords, currentSignature.coords)
+    );
 }
 
 function actualizarAlturaHeader() {
@@ -232,6 +271,7 @@ function ocultarAvisoSolar() {
 function manejarCambioHorario({ changed }) {
     guardarHorarioRecordado();
     if (changed) {
+        resetRecommendationContext();
         limpiarResultadosPorCambioDeFiltros();
     } else {
         statusEl.textContent = "";
@@ -240,8 +280,85 @@ function manejarCambioHorario({ changed }) {
 
 function manejarCambioCantidad({ changed }) {
     if (changed) {
+        if (reaplicarResultadosCacheados()) {
+            return;
+        }
         limpiarResultadosPorCambioDeFiltros();
     }
+}
+
+function obtenerFiltrosActivos() {
+    if (!filtersSidebar || filtersSidebar.hidden) {
+        return {};
+    }
+
+    return {
+        ...obtenerFiltrosSeleccionados(staticFilterElements),
+        ...obtenerFiltrosDinamicosSeleccionados(
+            dynamicFiltersController?.dynamicFilters || [],
+            () => Boolean(filtersSidebar && !filtersSidebar.hidden)
+        )
+    };
+}
+
+function cumpleFiltros(playa, filtros) {
+    const condiciones = playa?.condiciones || {};
+    const servicios = playa?.servicios || {};
+
+    if (filtros.tipo_arena && playa.tipo !== "arena") return false;
+    if (filtros.tipo_piedra && playa.tipo !== "piedra") return false;
+    if (filtros.restaurantes && !servicios.restaurantes) return false;
+    if (filtros.comida_para_llevar && !servicios.comida_para_llevar) return false;
+    if (filtros.balnearios && !servicios.balnearios) return false;
+    if (filtros.zona_deportiva && !servicios.zona_deportiva) return false;
+    if (filtros.pet_friendly && !servicios.pet_friendly) return false;
+
+    if ("min_velocidad_viento" in filtros && Number(condiciones.wind_speed ?? 0) < filtros.min_velocidad_viento) return false;
+    if ("max_velocidad_viento" in filtros && Number(condiciones.wind_speed ?? 0) > filtros.max_velocidad_viento) return false;
+    if ("min_temperatura_ambiente" in filtros && Number(condiciones.air_temp ?? 0) < filtros.min_temperatura_ambiente) return false;
+    if ("max_temperatura_ambiente" in filtros && Number(condiciones.air_temp ?? 0) > filtros.max_temperatura_ambiente) return false;
+    if ("min_nubosidad" in filtros && Number(condiciones.cloud_cover ?? 0) < filtros.min_nubosidad) return false;
+    if ("max_nubosidad" in filtros && Number(condiciones.cloud_cover ?? 0) > filtros.max_nubosidad) return false;
+    if ("min_altura_oleaje" in filtros && Number(condiciones.wave_height ?? 0) < filtros.min_altura_oleaje) return false;
+    if ("max_altura_oleaje" in filtros && Number(condiciones.wave_height ?? 0) > filtros.max_altura_oleaje) return false;
+
+    return true;
+}
+
+function renderRecommendationResults(data, { shouldScroll = false } = {}) {
+    pintarResultados(data.resultados);
+    resultsMapController?.setResults(data.resultados);
+    if (shouldScroll) {
+        desplazarAPlayasRecomendadas();
+    }
+
+    if (data.aviso_sol?.mensaje) {
+        mostrarAvisoSolar(data.aviso_sol.mensaje);
+        statusEl.textContent = "";
+        return;
+    }
+
+    ocultarAvisoSolar();
+    statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
+}
+
+function reaplicarResultadosCacheados() {
+    if (!canReuseRecommendationContext()) {
+        return false;
+    }
+
+    const cantidad = Math.max(0, Number(quantityController?.getCantidadSeleccionada() || 0));
+    const filtros = obtenerFiltrosActivos();
+    const resultados = lastRecommendationContext.baseData.resultados
+        .filter((playa) => cumpleFiltros(playa, filtros))
+        .slice(0, cantidad);
+
+    renderRecommendationResults({
+        ...lastRecommendationContext.baseData,
+        resultados
+    });
+
+    return true;
 }
 
 function initControllers() {
@@ -295,13 +412,21 @@ function initControllers() {
     dynamicFiltersController = initDynamicFilters({
         dynamicFilters,
         disableDynamicFilters,
-        onFiltersChange: limpiarResultadosPorCambioDeFiltros
+        onFiltersChange: () => {
+            if (!reaplicarResultadosCacheados()) {
+                limpiarResultadosPorCambioDeFiltros();
+            }
+        }
     });
 
     initStaticFilters({
         staticFilterInputs,
         disableStaticFilters,
-        onFiltersChange: limpiarResultadosPorCambioDeFiltros,
+        onFiltersChange: () => {
+            if (!reaplicarResultadosCacheados()) {
+                limpiarResultadosPorCambioDeFiltros();
+            }
+        },
         iluminarChipFiltro
     });
 
@@ -405,6 +530,7 @@ function seleccionarActividad(actividad, limpiarResultados = false) {
     guardarActividadRecordada();
 
     if (limpiarResultados && actividadSeleccionada !== actividadAnterior) {
+        resetRecommendationContext();
         limpiarResultadosPorCambioDeFiltros();
     }
 }
@@ -467,15 +593,9 @@ async function buscarRecomendaciones() {
             fecha,
             hora,
             rango,
-            cantidad,
+            cantidad: 0,
             selectedCoords,
-            applyFilters: (params) => buildFilterParams({
-                params,
-                filtersSidebar,
-                staticElements: staticFilterElements,
-                staticFilterInputs,
-                dynamicController: dynamicFiltersController
-            })
+            applyFilters: null
         });
 
         if (!recommendationResult.ok && recommendationResult.reason === "missing-location") {
@@ -486,18 +606,25 @@ async function buscarRecomendaciones() {
         const { data } = recommendationResult;
         console.log("DATA COMPLETA DEL BACKEND:", data);
 
-        pintarResultados(data.resultados);
-        resultsMapController?.setResults(data.resultados);
+        lastRecommendationContext = {
+            actividad: actividadSeleccionada,
+            fecha,
+            hora,
+            rango,
+            cantidad,
+            coords: selectedCoords ? [...selectedCoords] : null,
+            baseData: {
+                ...data,
+                resultados: Array.isArray(data.resultados) ? [...data.resultados] : []
+            }
+        };
+
+        reaplicarResultadosCacheados();
         desplazarAPlayasRecomendadas();
-        if (data.aviso_sol?.mensaje) {
-            mostrarAvisoSolar(data.aviso_sol.mensaje);
-            statusEl.textContent = "";
-            return;
-        }
-        statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
     }
     catch (error) {
         console.error(error);
+        resetRecommendationContext();
         statusEl.textContent = "Ha ocurrido un error al consultar la API.";
         resultsMapController?.setResults([]);
         resultsContainer.innerHTML = `
@@ -568,6 +695,13 @@ function initSearchEvents() {
     if (resultsContainer) {
         resultsContainer.addEventListener("click", handleFavoriteToggle);
     }
+
+    document.querySelectorAll('input[name="rango"]').forEach((input) => {
+        input.addEventListener("change", () => {
+            resetRecommendationContext();
+            limpiarResultadosPorCambioDeFiltros();
+        });
+    });
 }
 
 // =========================================================
