@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mi día de Playa</title>
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
-  <link rel="stylesheet" href="/static/css/styles.css?v=admin-management-20260507">
+  <link rel="stylesheet" href="/static/css/styles.css?v=results-map-20260507">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -326,7 +326,12 @@
 
     <section class="panel" id="recommendedBeachesSection">
       <div class="results-header">
-        <h2 id="beachesLabel">Playas recomendadas</h2>
+        <div class="results-title-row">
+          <h2 id="beachesLabel">Playas recomendadas</h2>
+          <button class="btn-secondary hidden" id="btnShowResultsMap" type="button">
+            Ver Mapa
+          </button>
+        </div>
         <div id="quantitySlider" class="cantidad-wheel-container loggedIn hidden">
           <div class="cantidad-slider-header">
             <label for="cantidadSlider">Cantidad</label>
@@ -366,6 +371,17 @@
       <button id="closeMap" type="button" aria-label="Cerrar mapa">x</button>
       <div id="map" style="height: 400px;"></div>
       <button id="confirmLocation" class="btn-primary" type="button">Seleccionar ubicacion</button>
+    </div>
+  </div>
+
+  <div id="resultsMapModal" class="map-modal hidden">
+    <div class="map-container results-map-container">
+      <button id="closeResultsMap" type="button" aria-label="Cerrar mapa de recomendaciones">x</button>
+      <div class="results-map-header">
+        <h3>Mapa de playas recomendadas</h3>
+        <p>Consulta el ranking y score de cada playa directamente en el mapa.</p>
+      </div>
+      <div id="resultsMap" style="height: 420px;"></div>
     </div>
   </div>
 
@@ -508,7 +524,7 @@
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script type="module" src="/static/js/main.js?v=admin-management-20260507"></script>
+  <script type="module" src="/static/js/main.js?v=results-map-20260507"></script>
   <script type="module" src="/static/js/favorites/favorites.js?v=admin-management-20260507"></script>
 </body>
 </html>
