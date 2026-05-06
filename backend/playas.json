@@ -27,7 +27,8 @@
       "balneario": true,
       "zona_deportiva": true,
       "escuela_surf": true,
-      "escuela_windsurf": false
+      "escuela_windsurf": false,
+      "pet_friendly": true
     },
     "imagen": "las_canteras.jpg",
     "accesibilidad": "alta"
@@ -56,7 +57,8 @@
       "balneario": false,
       "zona_deportiva": false,
       "escuela_surf": true,
-      "escuela_windsurf": false
+      "escuela_windsurf": false,
+      "pet_friendly": true
     },
     "imagen": "maspalomas.jpg",
     "accesibilidad": "alta"
@@ -106,7 +108,8 @@
       "balneario": false,
       "zona_deportiva": false,
       "escuela_surf": true,
-      "escuela_windsurf": true
+      "escuela_windsurf": true,
+      "pet_friendly": true
     },
     "imagen": "pozo_izquierdo.jpg",
     "accesibilidad": "media"

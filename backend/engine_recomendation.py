@@ -1,4 +1,5 @@
 import math, logging, requests
+import json
 from pathlib import Path
 from typing import Any
 import os
@@ -8,6 +9,7 @@ from backend.models.beach import Beach
 
 logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent
+PLAYAS_JSON = BASE_DIR / "playas.json"
 
 PESOS_ACTIVIDAD: dict[str, dict[str, float]] = {
     "tomar_sol": {
@@ -55,15 +57,58 @@ PESOS_ACTIVIDAD: dict[str, dict[str, float]] = {
         "rain_probability": 0.20,
         "uv_index": 0.10,
     },
+    "pescar": {
+        "wave_height": 0.30,
+        "wind_speed": 0.25,
+        "cloud_cover": 0.10,
+        "rain_probability": 0.15,
+        "air_temp": 0.10,
+        "water_temp": 0.10,
+    },
+    "kayak": {
+        "wave_height": 0.35,
+        "wind_speed": 0.25,
+        "rain_probability": 0.10,
+        "air_temp": 0.10,
+        "water_temp": 0.10,
+        "cloud_cover": 0.10,
+    },
+    "kitesurf": {
+        "wind_speed": 0.50,
+        "wave_height": 0.20,
+        "air_temp": 0.10,
+        "water_temp": 0.05,
+        "cloud_cover": 0.05,
+        "rain_probability": 0.10,
+    },
+    "piscina_natural": {
+        "wave_height": 0.35,
+        "wind_speed": 0.20,
+        "water_temp": 0.20,
+        "air_temp": 0.10,
+        "rain_probability": 0.10,
+        "cloud_cover": 0.05,
+    },
 }
 
 def cargar_playas() -> list[dict[str, Any]]:
     session = SessionLocal()
     try:
+        metadata_por_id = {}
+        if PLAYAS_JSON.exists():
+            with PLAYAS_JSON.open("r", encoding="utf-8") as f:
+                metadata_por_id = {playa["id"]: playa for playa in json.load(f)}
+
         playas = session.query(Beach).all()
         resultado = []
         for p in playas:
-            servicios_dict = {s.name: True for s in (p.services or [])}
+            metadata = metadata_por_id.get(p.id, {})
+            servicios_dict = {
+                ("balnearios" if clave == "balneario" else clave): valor
+                for clave, valor in metadata.get("servicios", {}).items()
+                if valor
+            }
+            servicios_dict.update({s.name: True for s in (p.services or [])})
             resultado.append({
                 "id": p.id,
                 "nombre": p.name,
@@ -172,6 +217,8 @@ def filtrar(playa, conditions, filtros: dict):
         return False
     if filtros.get("zona_deportiva") and not playa["servicios"].get("zona_deportiva"):
         return False
+    if filtros.get("pet_friendly") and not playa["servicios"].get("pet_friendly"):
+        return False
 
     # Filtros de datos dinámicos
     if "min_velocidad_viento" in filtros:
@@ -276,6 +323,26 @@ MOTIVOS = {
         "Clima agradable para caminar.",
         "Baja probabilidad de lluvia.",
         "Temperaturas suaves y cómodas."
+    ],
+    "pescar": [
+        "Oleaje moderado y condiciones apropiadas para pescar.",
+        "Viento manejable para una jornada de pesca.",
+        "Entorno estable para permanecer tiempo junto al agua."
+    ],
+    "kayak": [
+        "Mar razonablemente calmado para salir en kayak.",
+        "Viento contenido para remar con comodidad.",
+        "Condiciones acuaticas aptas para una travesia suave."
+    ],
+    "kitesurf": [
+        "Viento consistente favorable para kitesurf.",
+        "Oleaje compatible con maniobras y navegacion.",
+        "Condiciones dinamicas para disfrutar del kitesurf."
+    ],
+    "piscina_natural": [
+        "Oleaje bajo para disfrutar mejor de la piscina natural.",
+        "Condiciones tranquilas y agradables para el bano.",
+        "Entorno estable para una experiencia relajada."
     ]
 }
 
@@ -326,6 +393,34 @@ def generar_motivo(actividad, cond):
         if 18 <= cond.get("air_temp", 0) <= 28:
             candidatos.append(motivos[0])
         if cond.get("rain_probability", 100) < 5:
+            candidatos.append(motivos[1])
+        candidatos.append(motivos[2])
+
+    elif actividad == "pescar":
+        if 0.4 <= cond.get("wave_height", 0) <= 1.5:
+            candidatos.append(motivos[0])
+        if cond.get("wind_speed", 99) < 18:
+            candidatos.append(motivos[1])
+        candidatos.append(motivos[2])
+
+    elif actividad == "kayak":
+        if cond.get("wave_height", 99) < 1.0:
+            candidatos.append(motivos[0])
+        if cond.get("wind_speed", 99) < 16:
+            candidatos.append(motivos[1])
+        candidatos.append(motivos[2])
+
+    elif actividad == "kitesurf":
+        if cond.get("wind_speed", 0) >= 18:
+            candidatos.append(motivos[0])
+        if cond.get("wave_height", 0) >= 0.8:
+            candidatos.append(motivos[1])
+        candidatos.append(motivos[2])
+
+    elif actividad == "piscina_natural":
+        if cond.get("wave_height", 99) < 0.8:
+            candidatos.append(motivos[0])
+        if cond.get("wind_speed", 99) < 14:
             candidatos.append(motivos[1])
         candidatos.append(motivos[2])
 

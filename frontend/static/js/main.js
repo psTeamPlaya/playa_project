@@ -45,6 +45,7 @@ const filterRestaurant = document.getElementById("filterRestaurant");
 const filterTakeAwayFood = document.getElementById("filterTakeAwayFood");
 const filterBalneario = document.getElementById("filterBalneario");
 const filterSportZone = document.getElementById("filterSportZone");
+const filterPetFriendly = document.getElementById("filterPetFriendly");
 
 const filterWindMin = document.getElementById("filterWindMin");
 const filterWindMax = document.getElementById("filterWindMax");
@@ -267,6 +268,7 @@ function aplicarFiltrosAParametros(params) {
     if (filterTakeAwayFood?.checked) params.set("comida_para_llevar", true);
     if (filterBalneario?.checked)    params.set("balnearios", true);
     if (filterSportZone?.checked)    params.set("zona_deportiva", true);
+    if (filterPetFriendly?.checked)  params.set("pet_friendly", true);
 
     console.log("PARAMS FINALES:", params.toString());
     
@@ -333,7 +335,7 @@ function restablecerFiltroDinamico(filtro) {
 
 function desactivarFiltrosEstaticos() {
     [filterSandBeach, filterStoneBeach, filterRestaurant, 
-        filterTakeAwayFood, filterBalneario, filterSportZone].forEach(filterInput => {
+        filterTakeAwayFood, filterBalneario, filterSportZone, filterPetFriendly].forEach(filterInput => {
         if (filterInput) filterInput.checked = false;
     });
 }
@@ -994,7 +996,10 @@ function formatearServicios(servicios) {
         restaurantes: "🍽️ Restaurantes",
         comida_para_llevar: "🥡 Comida para llevar",
         balnearios: "🚿 Balneario",
-        zona_deportiva: "🏐 Zona deportiva"
+        zona_deportiva: "🏐 Zona deportiva",
+        escuela_surf: "🏄 Escuela de surf",
+        escuela_windsurf: "🌬️ Escuela de windsurf",
+        pet_friendly: "🐾 Pet-friendly"
     };
     return Object.entries(servicios)
         .filter(([_, disponible]) => disponible)
@@ -1274,7 +1279,7 @@ if (expandResultsPreference) {
 }
 
 [filterSandBeach, filterStoneBeach, filterRestaurant, filterTakeAwayFood, 
-    filterBalneario, filterSportZone].forEach(filterInput => {
+    filterBalneario, filterSportZone, filterPetFriendly].forEach(filterInput => {
     if (!filterInput) return;
     filterInput.addEventListener("change", limpiarResultadosPorCambioDeFiltros);
 });
@@ -1364,3 +1369,4 @@ if (document.getElementById("fecha")) {
 }
 loadCurrentUser();
 actualizarBotonesSesion();
+

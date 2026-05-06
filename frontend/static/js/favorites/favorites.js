@@ -184,7 +184,8 @@ function formatServices(servicios = {}) {
         balneario: "🚿 Balneario",
         zona_deportiva: "🏐 Zona deportiva",
         escuela_surf: "🏄 Escuela de surf",
-        escuela_windsurf: "🌬️ Escuela de windsurf"
+        escuela_windsurf: "🌬️ Escuela de windsurf",
+        pet_friendly: "🐾 Pet-friendly"
     };
 
     return Object.entries(servicios)
@@ -275,3 +276,4 @@ document.addEventListener("keydown", (event) => {
 });
 
 window.toggleSearchUI = openFavoritesModal;
+
