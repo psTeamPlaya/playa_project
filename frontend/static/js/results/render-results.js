@@ -30,7 +30,9 @@ function renderScore(playa, options) {
     if (!options.showScore) {
         return "";
     }
-    return `<div class="score-badge">Score: ${Number(playa.score).toFixed(1)}</div>`;
+    const score = Number(playa.score);
+    const scoreText = Number.isFinite(score) ? score.toFixed(1) : "N/A";
+    return `<div class="score-badge">Score: ${scoreText}</div>`;
 }
 
 function renderMotivo(playa, options) {

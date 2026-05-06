@@ -177,6 +177,12 @@ export function initDynamicFilters({
 }) {
     let dynamicFiltersLightTimeout;
 
+    dynamicFilters.forEach(filtro => {
+        if (filtro.disabledCheck) {
+            filtro.disabledCheck.checked = true;
+        }
+    });
+
     if (disableDynamicFilters) {
         disableDynamicFilters.addEventListener("click", () => {
             alternarFiltrosDinamicos(dynamicFilters, disableDynamicFilters);

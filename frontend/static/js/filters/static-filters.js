@@ -54,6 +54,8 @@ export function initStaticFilters({
 }) {
     let staticFiltersLightTimeout;
 
+    desactivarFiltrosEstaticos(staticFilterInputs);
+
     staticFilterInputs.forEach(filterInput => {
         if (!filterInput) return;
         filterInput.addEventListener("change", onFiltersChange);

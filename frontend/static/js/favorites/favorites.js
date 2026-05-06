@@ -1,5 +1,7 @@
 import { pintarResultados } from "../results/render-results.js";
 import { authFetch } from "../api/auth-fetch.js";
+import { cerrarPanelPreferencias } from "../preferences/preferences-ui.js";
+import { formatearFechaLocal, obtenerHoraTexto } from "../search/date-time.js";
 
 const favoritesLabel = document.getElementById("favoritesLabel");
 const showFavoritesBtn = document.getElementById("showFavoritesBtn");
@@ -8,16 +10,10 @@ const favoritesModal = document.getElementById("favoritesModal");
 const closeFavoritesModalBtn = document.getElementById("closeFavoritesModal");
 const favoritesResultsContainer = document.getElementById("favoritesResultsContainer");
 
-let preferencesCloseTimeout;
+const preferencesCloseTimeoutRef = { current: null };
 
 function closePreferencePanel() {
-    if (preferencesPanel) {
-        preferencesPanel.classList.remove("is-open");
-        clearTimeout(preferencesCloseTimeout);
-        preferencesCloseTimeout = setTimeout(() => {
-            preferencesPanel.hidden = true;
-        }, 220);
-    }
+    cerrarPanelPreferencias(preferencesPanel, preferencesCloseTimeoutRef);
 }
 
 function renderEmptyState(message) {
@@ -61,13 +57,10 @@ function getNextHourFormatted() {
     nextHourDate.setMinutes(0);
     nextHourDate.setSeconds(0);
 
-    const year = nextHourDate.getFullYear();
-    const month = String(nextHourDate.getMonth() + 1).padStart(2, "0");
-    const day = String(nextHourDate.getDate()).padStart(2, "0");
-    const fecha = `${year}-${month}-${day}`;
-    const hora = `${String(nextHourDate.getHours()).padStart(2, "0")}:00`;
-
-    return { fecha, hora };
+    return {
+        fecha: formatearFechaLocal(nextHourDate),
+        hora: obtenerHoraTexto(nextHourDate.getHours())
+    };
 }
 
 async function loadFavoriteBeaches() {
