@@ -74,7 +74,7 @@ export function initSessionUI({
         onClosePreferences?.();
     }
 
-    async function toggleAuthAction(preferencesPanel) {
+    async function toggleAuthAction() {
         if (localStorage.getItem("token")) {
             if (!preferencesPanel) return;
             if (preferencesPanel.hidden) {
@@ -89,7 +89,7 @@ export function initSessionUI({
 
     if (authActionBtn) {
         authActionBtn.addEventListener("click", () => {
-            toggleAuthAction(preferencesPanel);
+            toggleAuthAction();
         });
     }
 

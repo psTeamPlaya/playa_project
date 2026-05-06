@@ -1,11 +1,7 @@
-import { selectedCoords } from "./localization.js";
-import { pintarResultados as renderizarResultados } from "./results/render-results.js";
-import {
-    esHoraPasadaParaFecha,
-    formatearFechaLocal,
-    initDateTime
-} from "./search/date-time.js";
-import { initQuantity } from "./search/quantity.js";
+import { authFetch } from "./api/auth-fetch.js";
+import { fetchRecommendations } from "./api/recommendations-api.js";
+import { initAuthModal } from "./auth/auth-modal.js";
+import { initSessionUI } from "./auth/session-ui.js";
 import {
     createDynamicFilters,
     iluminarChipFiltro,
@@ -15,17 +11,21 @@ import {
     aplicarFiltrosAParametros as buildFilterParams,
     initStaticFilters
 } from "./filters/static-filters.js";
-import {
-    guardarActividadRecordada as saveRememberedActivity,
-    guardarHorarioRecordado as saveRememberedSchedule,
-    obtenerActividadInicial as getInitialActivity,
-    obtenerHorarioInicial as getInitialSchedule
-} from "./preferences/storage.js";
+import { selectedCoords } from "./localization.js";
 import { initPreferencesUI } from "./preferences/preferences-ui.js";
-import { authFetch } from "./api/auth-fetch.js";
-import { fetchRecommendations } from "./api/recommendations-api.js";
-import { initAuthModal } from "./auth/auth-modal.js";
-import { initSessionUI } from "./auth/session-ui.js";
+import {
+    obtenerActividadInicial as getInitialActivity,
+    obtenerHorarioInicial as getInitialSchedule,
+    guardarActividadRecordada as saveRememberedActivity,
+    guardarHorarioRecordado as saveRememberedSchedule
+} from "./preferences/storage.js";
+import { pintarResultados as renderizarResultados } from "./results/render-results.js";
+import {
+    esHoraPasadaParaFecha,
+    formatearFechaLocal,
+    initDateTime
+} from "./search/date-time.js";
+import { initQuantity } from "./search/quantity.js";
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -105,7 +105,6 @@ let actividadSeleccionada = "";
 let dateTimeController;
 let quantityController;
 let dynamicFiltersController;
-let staticFiltersController;
 let preferencesUIController;
 let authModalController;
 let sessionUIController;
@@ -269,7 +268,7 @@ function initControllers() {
         onFiltersChange: limpiarResultadosPorCambioDeFiltros
     });
 
-    staticFiltersController = initStaticFilters({
+    initStaticFilters({
         staticFilterInputs,
         disableStaticFilters,
         onFiltersChange: limpiarResultadosPorCambioDeFiltros,
@@ -332,7 +331,7 @@ function initControllers() {
 function seleccionarActividad(actividad, limpiarResultados = false) {
     const card = document.querySelector(`.activity-card[data-activity="${actividad}"]`);
     if (!card) return;
-    
+
     const actividadAnterior = actividadSeleccionada;
     activityCards.forEach(c => c.classList.remove("selected"));
     card.classList.add("selected");
@@ -420,7 +419,7 @@ async function buscarRecomendaciones() {
 
         const { data } = recommendationResult;
         console.log("DATA COMPLETA DEL BACKEND:", data);
-        
+
         pintarResultados(data.resultados);
         desplazarAPlayasRecomendadas();
         if (data.aviso_sol?.mensaje) {
@@ -429,7 +428,7 @@ async function buscarRecomendaciones() {
             return;
         }
         statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
-    } 
+    }
     catch (error) {
         console.error(error);
         statusEl.textContent = "Ha ocurrido un error al consultar la API.";
@@ -480,7 +479,7 @@ async function handleFavoriteToggle(event) {
     const beachId = Number(btn.dataset.id);
     const token = localStorage.getItem("token");
     if (!token) {
-        alert("Please log in");
+        alert("Inicia sesion para gestionar favoritas.");
         return;
     }
     const isFavorite = btn.innerText === "\u2764\uFE0F";
@@ -572,4 +571,3 @@ async function initApp() {
 // =========================================================
 
 initApp();
-
