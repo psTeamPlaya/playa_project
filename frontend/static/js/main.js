@@ -335,6 +335,30 @@ function desactivarFiltrosDinamicos() {
     });
 }
 
+function estanTodosLosFiltrosDinamicosDesactivados() {
+    return DYNAMIC_FILTERS.every(filtro => Boolean(filtro.disabledCheck?.checked));
+}
+
+function actualizarToggleFiltrosDinamicos() {
+    if (!disableDynamicFilters) return;
+
+    const desactivados = estanTodosLosFiltrosDinamicosDesactivados();
+    disableDynamicFilters.textContent = desactivados
+        ? "Activar filtros dinámicos"
+        : "Desactivar filtros dinámicos";
+    disableDynamicFilters.setAttribute("aria-pressed", desactivados ? "true" : "false");
+    disableDynamicFilters.classList.toggle("is-active", desactivados);
+}
+
+function alternarFiltrosDinamicos() {
+    const desactivar = !estanTodosLosFiltrosDinamicosDesactivados();
+    DYNAMIC_FILTERS.forEach(filtro => {
+        if (filtro.disabledCheck) filtro.disabledCheck.checked = desactivar;
+        actualizarFiltroDinamicoUI(filtro);
+    });
+    actualizarToggleFiltrosDinamicos();
+}
+
 function iluminarChipFiltro(chip, timeoutId, onTimeoutChange) {
     chip.classList.remove("is-lit");
     void chip.offsetWidth;
@@ -463,6 +487,15 @@ function actualizarCantidadSliderUI() {
     cantidadSeleccionada = Number(cantidadSlider.value) || 0;
     cantidadSliderValue.value = String(cantidadSeleccionada);
     cantidadSliderValue.textContent = String(cantidadSeleccionada);
+}
+
+function restablecerCantidadPorDefecto() {
+    cantidadSeleccionada = Number(DEFAULT_QUANTITY);
+    if (!cantidadSlider || !cantidadSliderValue) return;
+
+    cantidadSlider.value = DEFAULT_QUANTITY;
+    cantidadSliderValue.value = DEFAULT_QUANTITY;
+    cantidadSliderValue.textContent = DEFAULT_QUANTITY;
 }
 
 async function configurarSliderCantidad() {
@@ -1097,7 +1130,15 @@ function actualizarBotonesSesion() {
     document.querySelectorAll(".loggedIn").forEach(element => {
         element.classList.toggle("hidden", !estaLogueado);
     });
-    if (filtersSidebar) filtersSidebar.hidden = !estaLogueado;
+    if (filtersSidebar) {
+        filtersSidebar.hidden = !estaLogueado;
+        filtersSidebar.classList.toggle("hidden", !estaLogueado);
+    }
+    if (estaLogueado) {
+        configurarSliderCantidad();
+    } else {
+        restablecerCantidadPorDefecto();
+    }
     if (!authActionBtn || !authActionIcon) return;
     if (estaLogueado) {
         authActionBtn.hidden = false;
@@ -1240,7 +1281,7 @@ if (disableStaticFilters) {
 
 if (disableDynamicFilters) {
     disableDynamicFilters.addEventListener("click", () => {
-        desactivarFiltrosDinamicos();
+        alternarFiltrosDinamicos();
         limpiarResultadosPorCambioDeFiltros();
         iluminarChipFiltro(disableDynamicFilters, dynamicFiltersLightTimeout, (timeoutId) => {
             dynamicFiltersLightTimeout = timeoutId;
@@ -1270,6 +1311,7 @@ DYNAMIC_FILTERS.forEach(filtro => {
     if (filtro.disabledCheck) {
         filtro.disabledCheck.addEventListener("change", () => {
             actualizarFiltroDinamicoUI(filtro);
+            actualizarToggleFiltrosDinamicos();
             limpiarResultadosPorCambioDeFiltros();
         });
     }
@@ -1302,6 +1344,7 @@ if (appHeader && "ResizeObserver" in window) {
 
 actualizarAlturaHeader();
 DYNAMIC_FILTERS.forEach(f => actualizarFiltroDinamicoUI(f));
+actualizarToggleFiltrosDinamicos();
 configurarBotonBusquedaFlotante();
 cargarPreferenciasUI();
 
@@ -1310,5 +1353,4 @@ if (document.getElementById("fecha")) {
     configurarFechaYHoraIniciales();
 }
 loadCurrentUser();
-configurarSliderCantidad();
 actualizarBotonesSesion();
