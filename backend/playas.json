@@ -66,15 +66,19 @@
   {
     "id": 3,
     "nombre": "El Confital",
-    "ubicacion": "Las Palmas de Gran Canaria",
-    "latitud": 28.1537,
-    "longitud": -15.4505,
-    "tipo": "roca",
+    "ubicacion": "Las Palmas, Canarias, España",
+    "latitud": 28.159319,
+    "longitud": -15.437338,
+    "tipo": "arena",
     "descripcion": "Zona costera especialmente conocida por el surf.",
     "actividades_ideales": [
       {
-        "actividad": "surf",
-        "condicion": "ideal con oleaje adecuado"
+        "actividad": "Surf",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "Tomar sol",
+        "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {
@@ -229,9 +233,9 @@
   {
     "id": 9,
     "nombre": "Sardina del Norte",
-    "ubicacion": "Gáldar",
-    "latitud": 28.1654,
-    "longitud": -15.699,
+    "ubicacion": "Gáldar, Canarias, España",
+    "latitud": 28.151935,
+    "longitud": -15.696421,
     "tipo": "arena",
     "descripcion": "Zona costera muy apreciada para actividades acuáticas tranquilas.",
     "actividades_ideales": [
@@ -241,6 +245,10 @@
       },
       {
         "actividad": "Nadar",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "Tomar sol",
         "condicion": "gestionado desde panel admin"
       }
     ],
@@ -287,23 +295,19 @@
   {
     "id": 11,
     "nombre": "Melenara",
-    "ubicacion": "Telde",
-    "latitud": 27.9893,
-    "longitud": -15.3751,
+    "ubicacion": "Telde, Canarias, España",
+    "latitud": 27.987247,
+    "longitud": -15.374939,
     "tipo": "arena",
     "descripcion": "Playa urbana y tranquila, con paseo marítimo y buena oferta de restauración, adecuada para descansar y disfrutar del baño.",
     "actividades_ideales": [
       {
-        "actividad": "nadar",
-        "condicion": "ideal con mar calmado"
+        "actividad": "Pasear",
+        "condicion": "gestionado desde panel admin"
       },
       {
-        "actividad": "tomar_sol",
-        "condicion": "ideal en condiciones generales"
-      },
-      {
-        "actividad": "caminar",
-        "condicion": "adecuada por su paseo y entorno costero"
+        "actividad": "Tomar sol",
+        "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {

@@ -65,6 +65,8 @@ export function initAdminUI({
     beachAccessibilityInput,
     beachLatitudeInput,
     beachLongitudeInput,
+    beachPickOnMapBtn,
+    beachMapElement,
     beachImageInput,
     beachDescriptionInput,
     beachServicesOptions,
@@ -78,10 +80,126 @@ export function initAdminUI({
         services: [],
         beaches: [],
         selectedBeachId: null,
+        map: null,
+        mapMarker: null,
     };
+
+    const DEFAULT_MAP_COORDS = [28.1235, -15.4363];
+    const DEFAULT_MAP_ZOOM = 10;
+    const DETAIL_MAP_ZOOM = 15;
 
     function updateAdminVisibility(user) {
         adminPreferencesGroup?.classList.toggle("hidden", !user?.is_admin);
+    }
+
+    function parseCoordinate(value) {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function getBeachCoordinates() {
+        const latitude = parseCoordinate(beachLatitudeInput?.value);
+        const longitude = parseCoordinate(beachLongitudeInput?.value);
+
+        if (latitude === null || longitude === null) {
+            return null;
+        }
+
+        return [latitude, longitude];
+    }
+
+    function syncMapWithInputs({ focus = false } = {}) {
+        if (!state.map) return;
+
+        const coords = getBeachCoordinates();
+        const targetCoords = coords || DEFAULT_MAP_COORDS;
+        const targetZoom = coords ? DETAIL_MAP_ZOOM : DEFAULT_MAP_ZOOM;
+
+        if (coords) {
+            if (state.mapMarker) {
+                state.mapMarker.setLatLng(coords);
+            } else {
+                state.mapMarker = L.marker(coords).addTo(state.map);
+            }
+        } else if (state.mapMarker) {
+            state.map.removeLayer(state.mapMarker);
+            state.mapMarker = null;
+        }
+
+        if (focus) {
+            state.map.setView(targetCoords, targetZoom);
+        }
+
+        window.setTimeout(() => {
+            state.map?.invalidateSize();
+        }, 0);
+    }
+
+    async function reverseGeocodeBeachLocation(latitude, longitude) {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            {
+                headers: {
+                    Accept: "application/json",
+                },
+            },
+        );
+
+        if (!response.ok) {
+            throw new Error("No se pudo traducir la ubicación seleccionada.");
+        }
+
+        const data = await response.json();
+        const address = data.address || {};
+        const placeName = [
+            address.city || address.town || address.village || address.municipality,
+            address.state,
+            address.country,
+        ].filter(Boolean);
+
+        return placeName[0] ? placeName.join(", ") : data.display_name || "";
+    }
+
+    async function updateCoordinatesFromMapSelection(latlng) {
+        if (!latlng) return;
+
+        const latitude = Number(latlng.lat.toFixed(6));
+        const longitude = Number(latlng.lng.toFixed(6));
+
+        if (beachLatitudeInput) beachLatitudeInput.value = String(latitude);
+        if (beachLongitudeInput) beachLongitudeInput.value = String(longitude);
+
+        syncMapWithInputs();
+
+        setFeedback(beachManagementFeedback, "Actualizando ubicación desde el mapa...");
+        try {
+            const resolvedLocation = await reverseGeocodeBeachLocation(latitude, longitude);
+            if (beachLocationInput && resolvedLocation) {
+                beachLocationInput.value = resolvedLocation;
+            }
+            setFeedback(beachManagementFeedback, "Ubicación seleccionada en el mapa.", "success");
+        } catch (error) {
+            console.error("Reverse geocoding failed", error);
+            setFeedback(
+                beachManagementFeedback,
+                "Coordenadas actualizadas. No se pudo resolver el nombre de la ubicación.",
+                "success",
+            );
+        }
+    }
+
+    function ensureBeachMap() {
+        if (!beachMapElement || state.map) return;
+
+        state.map = L.map(beachMapElement).setView(DEFAULT_MAP_COORDS, DEFAULT_MAP_ZOOM);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(state.map);
+
+        state.map.on("click", (event) => {
+            updateCoordinatesFromMapSelection(event.latlng);
+        });
     }
 
     async function fetchJson(url, options = {}) {
@@ -171,6 +289,7 @@ export function initAdminUI({
         setSelectedOptions(beachServicesOptions, beach?.services ?? []);
         setSelectedOptions(beachActivitiesOptions, beach?.activities ?? []);
         renderBeachList();
+        syncMapWithInputs({ focus: true });
     }
 
     async function ensureCatalogLoaded() {
@@ -205,8 +324,10 @@ export function initAdminUI({
         onClosePreferences?.();
         openModal(beachManagementModal);
         try {
+            ensureBeachMap();
             await ensureCatalogLoaded();
             await loadBeaches();
+            syncMapWithInputs({ focus: true });
         } catch (error) {
             setFeedback(beachManagementFeedback, error.message, "error");
         }
@@ -312,6 +433,12 @@ export function initAdminUI({
     beachManagementForm?.addEventListener("submit", submitBeachForm);
     newBeachBtn?.addEventListener("click", resetBeachForm);
     resetBeachFormBtn?.addEventListener("click", resetBeachForm);
+    beachPickOnMapBtn?.addEventListener("click", () => {
+        ensureBeachMap();
+        syncMapWithInputs({ focus: true });
+    });
+    beachLatitudeInput?.addEventListener("input", () => syncMapWithInputs());
+    beachLongitudeInput?.addEventListener("input", () => syncMapWithInputs());
 
     return {
         updateAdminVisibility,
