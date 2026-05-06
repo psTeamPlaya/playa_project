@@ -9,6 +9,7 @@ assert ADMIN_ROUTE_SPEC.loader is not None
 ADMIN_ROUTE_SPEC.loader.exec_module(ADMIN_ROUTE_MODULE)
 
 collect_available_activities = ADMIN_ROUTE_MODULE.collect_available_activities
+ensure_beach_id_sequence = ADMIN_ROUTE_MODULE.ensure_beach_id_sequence
 normalize_activity_name = ADMIN_ROUTE_MODULE.normalize_activity_name
 serialize_beach = ADMIN_ROUTE_MODULE.serialize_beach
 
@@ -91,3 +92,17 @@ def test_serialize_beach_normalizes_metadata_activities():
     serialized = serialize_beach(beach, metadata)
 
     assert serialized["activities"] == ["tomar_sol", "caminar", "surf"]
+
+
+def test_ensure_beach_id_sequence_executes_setval():
+    calls = []
+
+    class DummySequenceDb:
+        def execute(self, statement):
+            calls.append(str(statement))
+
+    ensure_beach_id_sequence(DummySequenceDb())
+
+    assert calls
+    assert "setval" in calls[0].lower()
+    assert "pg_get_serial_sequence('beaches', 'id')" in calls[0]

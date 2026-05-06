@@ -523,5 +523,31 @@
     },
     "imagen": "tufia.jpg",
     "accesibilidad": "media"
+  },
+  {
+    "id": 19,
+    "nombre": "Punta de Galdar",
+    "ubicacion": "Gáldar, Canarias, España",
+    "latitud": 28.169251,
+    "longitud": -15.68204,
+    "tipo": "roca",
+    "descripcion": "",
+    "actividades_ideales": [
+      {
+        "actividad": "pescar",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "piscina_natural",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "gestionado desde panel admin"
+      }
+    ],
+    "servicios": {},
+    "imagen": "",
+    "accesibilidad": "baja"
   }
 ]

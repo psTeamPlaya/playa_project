@@ -4,6 +4,7 @@ import unicodedata
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import text
 from sqlalchemy.orm import Session, selectinload
 
 from backend.auth.auth import require_admin
@@ -91,6 +92,20 @@ def save_beach_metadata(beaches: list[dict]) -> None:
     beaches.sort(key=lambda item: item["id"])
     with PLAYAS_FILE.open("w", encoding="utf-8") as fh:
         json.dump(beaches, fh, ensure_ascii=False, indent=2)
+
+
+def ensure_beach_id_sequence(db: Session) -> None:
+    db.execute(
+        text(
+            """
+            SELECT setval(
+                pg_get_serial_sequence('beaches', 'id'),
+                COALESCE((SELECT MAX(id) FROM beaches), 1),
+                true
+            )
+            """
+        )
+    )
 
 
 def serialize_beach(beach: Beach, metadata: dict | None = None) -> dict:
@@ -231,6 +246,7 @@ def persist_beach(
     metadata_by_id = {item["id"]: item for item in metadata}
 
     if beach is None:
+        ensure_beach_id_sequence(db)
         beach = Beach()
         db.add(beach)
 
