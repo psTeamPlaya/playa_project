@@ -55,6 +55,7 @@ def obtener_recomendaciones(
     comida_para_llevar: bool | None = None,
     balnearios: bool | None = None,
     zona_deportiva: bool | None = None,
+    pet_friendly: bool | None = None,
 
     min_temperatura_ambiente: float | None = None,
     max_temperatura_ambiente: float | None = None,
@@ -96,6 +97,7 @@ def obtener_recomendaciones(
             "comida_para_llevar": comida_para_llevar,
             "balnearios": balnearios,
             "zona_deportiva": zona_deportiva,
+            "pet_friendly": pet_friendly,
 
             "min_temperatura_ambiente": min_temperatura_ambiente,
             "max_temperatura_ambiente": max_temperatura_ambiente,
