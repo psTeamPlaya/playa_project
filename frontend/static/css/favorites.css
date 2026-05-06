@@ -85,13 +85,13 @@
     position: absolute;
     top: 16px;
     right: 16px;
-    width: 40px;
-    height: 40px;
+    width: 64px;
+    height: 64px;
     border: none;
     border-radius: 999px;
     background: rgba(126, 84, 63, 0.12);
     color: var(--primary-brown);
-    font-size: 1.7rem;
+    font-size: 2.5rem;
     line-height: 1;
     cursor: pointer;
     transition: background 0.2s ease, transform 0.2s ease;
