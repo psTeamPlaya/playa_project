@@ -132,6 +132,14 @@ const beachImageInput = document.getElementById("beachImage");
 const beachDescriptionInput = document.getElementById("beachDescription");
 const beachServicesOptions = document.getElementById("beachServicesOptions");
 const beachActivitiesOptions = document.getElementById("beachActivitiesOptions");
+const activityCatalogForm = document.getElementById("activityCatalogForm");
+const activityCatalogNameInput = document.getElementById("activityCatalogName");
+const activityCatalogFeedback = document.getElementById("activityCatalogFeedback");
+const activityCatalogList = document.getElementById("activityCatalogList");
+const serviceCatalogForm = document.getElementById("serviceCatalogForm");
+const serviceCatalogNameInput = document.getElementById("serviceCatalogName");
+const serviceCatalogFeedback = document.getElementById("serviceCatalogFeedback");
+const serviceCatalogList = document.getElementById("serviceCatalogList");
 
 let actividadSeleccionada = "";
 let dateTimeController;
@@ -516,6 +524,14 @@ function initControllers() {
         beachDescriptionInput,
         beachServicesOptions,
         beachActivitiesOptions,
+        activityCatalogForm,
+        activityCatalogNameInput,
+        activityCatalogFeedback,
+        activityCatalogList,
+        serviceCatalogForm,
+        serviceCatalogNameInput,
+        serviceCatalogFeedback,
+        serviceCatalogList,
         getCurrentUser: () => sessionUIController?.getCurrentUser?.(),
         onClosePreferences: () => preferencesUIController?.cerrarPanelPreferencias(),
     });

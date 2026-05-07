@@ -545,5 +545,52 @@
     "servicios": {},
     "imagen": "",
     "accesibilidad": "baja"
+  },
+  {
+    "id": 20,
+    "nombre": "Salinas de Agaete",
+    "ubicacion": "Agaete, Canarias, España",
+    "latitud": 28.106671,
+    "longitud": -15.711034,
+    "tipo": "piscina_natural",
+    "descripcion": "",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "gestionado desde panel admin"
+      }
+    ],
+    "servicios": {},
+    "imagen": "",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 21,
+    "nombre": "Playa de las Nieves",
+    "ubicacion": "Agaete, Canarias, España",
+    "latitud": 28.100491,
+    "longitud": -15.709827,
+    "tipo": "arena",
+    "descripcion": "",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "pescar",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "gestionado desde panel admin"
+      }
+    ],
+    "servicios": {
+      "comida_para_llevar": true,
+      "restaurantes": true
+    },
+    "imagen": "",
+    "accesibilidad": "alta"
   }
 ]

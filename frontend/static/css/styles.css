@@ -1346,6 +1346,61 @@
         line-height: 1.35;
     }
 
+    .admin-catalog-section {
+        padding-top: 0.4rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .admin-catalog-layout {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .admin-catalog-card {
+        display: grid;
+        gap: 0.85rem;
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: #fafdff;
+    }
+
+    .admin-catalog-header h3 {
+        margin: 0 0 0.35rem;
+        font-size: 1.05rem;
+    }
+
+    .admin-catalog-header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.35;
+    }
+
+    .admin-inline-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .admin-inline-form input {
+        height: 3rem;
+        padding: 0 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #ffffff;
+        font-family: 'Atma';
+        font-size: 1rem;
+    }
+
+    .admin-inline-form input:focus {
+        border-color: var(--secondary);
+        box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.12);
+        outline: none;
+    }
+
     .admin-beach-map {
         width: 100%;
         height: 18rem;
@@ -1361,6 +1416,11 @@
         }
 
         .admin-form-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .admin-catalog-layout,
+        .admin-inline-form {
             grid-template-columns: minmax(0, 1fr);
         }
     }

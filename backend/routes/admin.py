@@ -54,6 +54,10 @@ class AdminBeachPayload(BaseModel):
     activity_names: list[str] = Field(default_factory=list)
 
 
+class AdminCatalogItemPayload(BaseModel):
+    name: str = Field(min_length=1)
+
+
 def normalize_activity_name(name: str | None) -> str | None:
     if not name:
         return None
@@ -65,6 +69,22 @@ def normalize_activity_name(name: str | None) -> str | None:
     return ACTIVITY_ALIASES.get(normalized, normalized.replace(" ", "_"))
 
 
+def normalize_service_name(name: str | None) -> str | None:
+    if not name:
+        return None
+
+    normalized = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
+    normalized = normalized.strip().lower().replace("-", " ").replace("_", " ")
+    normalized = " ".join(normalized.split())
+
+    aliases = {
+        "balneario": "balnearios",
+        "balnearios": "balnearios",
+        "pet friendly": "pet_friendly",
+    }
+    return aliases.get(normalized, normalized.replace(" ", "_"))
+
+
 def normalize_beach_type(beach_type: str | None) -> str | None:
     if not beach_type:
         return beach_type
@@ -73,6 +93,10 @@ def normalize_beach_type(beach_type: str | None) -> str | None:
     if normalized == "roca":
         return "piscina_natural"
     return normalized
+
+
+def prettify_catalog_name(name: str) -> str:
+    return name.replace("_", " ").strip().capitalize()
 
 
 def collect_available_activities(db: Session) -> list[str]:
@@ -90,6 +114,23 @@ def collect_available_activities(db: Session) -> list[str]:
                 activities.add(normalized)
 
     return sorted(activity for activity in activities if activity not in EXCLUDED_ADMIN_ACTIVITIES)
+
+
+def collect_available_services(db: Session) -> list[str]:
+    services = set(
+        normalized
+        for service in db.query(Service).order_by(Service.name.asc()).all()
+        for normalized in [normalize_service_name(service.name)]
+        if normalized
+    )
+
+    for metadata in load_beach_metadata():
+        for service_name, enabled in metadata.get("servicios", {}).items():
+            normalized = normalize_service_name(service_name)
+            if normalized and enabled is not None:
+                services.add(normalized)
+
+    return sorted(services)
 
 
 def load_beach_metadata() -> list[dict]:
@@ -123,10 +164,17 @@ def ensure_beach_id_sequence(db: Session) -> None:
 def serialize_beach(beach: Beach, metadata: dict | None = None) -> dict:
     metadata = metadata or {}
     activities = metadata.get("actividades_ideales", [])
-    services_map = metadata.get("servicios", {}).copy()
+    services_map = {
+        normalized: bool(enabled)
+        for service_name, enabled in metadata.get("servicios", {}).items()
+        for normalized in [normalize_service_name(service_name)]
+        if normalized
+    }
 
     for service in beach.services or []:
-        services_map[service.name] = True
+        normalized = normalize_service_name(service.name)
+        if normalized:
+            services_map[normalized] = True
 
     return {
         "id": beach.id,
@@ -150,7 +198,12 @@ def serialize_beach(beach: Beach, metadata: dict | None = None) -> dict:
 
 def update_metadata_entry(existing: dict | None, beach: Beach, payload: AdminBeachPayload) -> dict:
     existing = existing or {"id": beach.id}
-    previous_services = existing.get("servicios", {}).copy()
+    previous_services = {
+        normalized: bool(enabled)
+        for service_name, enabled in existing.get("servicios", {}).items()
+        for normalized in [normalize_service_name(service_name)]
+        if normalized
+    }
     previous_activities = {
         normalized: item.get("condicion", "gestionado desde panel admin")
         for item in existing.get("actividades_ideales", [])
@@ -163,14 +216,20 @@ def update_metadata_entry(existing: dict | None, beach: Beach, payload: AdminBea
         for normalized in [normalize_activity_name(activity_name)]
         if normalized and normalized not in EXCLUDED_ADMIN_ACTIVITIES
     ]
+    normalized_service_names = [
+        normalized
+        for service_name in payload.service_names
+        for normalized in [normalize_service_name(service_name)]
+        if normalized
+    ]
 
-    for service_name in payload.service_names:
+    for service_name in normalized_service_names:
         previous_services[service_name] = True
 
     for service_name in list(previous_services.keys()):
-        if service_name in payload.service_names:
+        if service_name in normalized_service_names:
             previous_services[service_name] = True
-        elif service_name in {"restaurantes", "comida_para_llevar", "balneario", "zona_deportiva", "pet_friendly"}:
+        elif service_name in {"restaurantes", "comida_para_llevar", "balnearios", "zona_deportiva", "pet_friendly"}:
             previous_services[service_name] = False
 
     return {
@@ -192,6 +251,49 @@ def update_metadata_entry(existing: dict | None, beach: Beach, payload: AdminBea
         "imagen": payload.image,
         "accesibilidad": payload.accessibility,
     }
+
+
+def serialize_catalog_option(name: str) -> dict:
+    return {
+        "name": name,
+        "label": prettify_catalog_name(name),
+    }
+
+
+def serialize_catalog_item(item: Activity | Service, normalizer) -> dict:
+    normalized = normalizer(item.name)
+    return {
+        "id": item.id,
+        "name": normalized,
+        "label": prettify_catalog_name(normalized or item.name),
+    }
+
+
+def remove_activity_from_metadata(metadata: list[dict], activity_name: str) -> list[dict]:
+    updated = []
+    for entry in metadata:
+        new_entry = dict(entry)
+        new_entry["actividades_ideales"] = [
+            item
+            for item in entry.get("actividades_ideales", [])
+            if normalize_activity_name(item.get("actividad")) != activity_name
+        ]
+        updated.append(new_entry)
+    return updated
+
+
+def remove_service_from_metadata(metadata: list[dict], service_name: str) -> list[dict]:
+    updated = []
+    for entry in metadata:
+        new_entry = dict(entry)
+        filtered_services = {
+            key: value
+            for key, value in entry.get("servicios", {}).items()
+            if normalize_service_name(key) != service_name
+        }
+        new_entry["servicios"] = filtered_services
+        updated.append(new_entry)
+    return updated
 
 
 @router.get("/users", response_model=list[UserResponse])
@@ -226,12 +328,111 @@ def get_catalog(
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
 ):
-    activities = collect_available_activities(db)
-    services = [service.name for service in db.query(Service).order_by(Service.name.asc()).all()]
+    activities = [serialize_catalog_option(name) for name in collect_available_activities(db)]
+    services = [serialize_catalog_option(name) for name in collect_available_services(db)]
     return {
         "activities": activities,
         "services": services,
     }
+
+
+@router.get("/activities")
+def list_admin_activities(
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    activities = db.query(Activity).order_by(Activity.name.asc()).all()
+    return [serialize_catalog_item(activity, normalize_activity_name) for activity in activities]
+
+
+@router.post("/activities")
+def create_admin_activity(
+    payload: AdminCatalogItemPayload,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    normalized_name = normalize_activity_name(payload.name)
+    if not normalized_name or normalized_name in EXCLUDED_ADMIN_ACTIVITIES:
+        raise HTTPException(status_code=400, detail="Nombre de actividad no válido")
+
+    existing = db.query(Activity).filter(Activity.name == normalized_name).first()
+    if existing is not None:
+        raise HTTPException(status_code=400, detail="La actividad ya existe")
+
+    activity = Activity(name=normalized_name)
+    db.add(activity)
+    db.commit()
+    db.refresh(activity)
+    return serialize_catalog_item(activity, normalize_activity_name)
+
+
+@router.delete("/activities/{activity_id}")
+def delete_admin_activity(
+    activity_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    activity = db.get(Activity, activity_id)
+    if activity is None:
+        raise HTTPException(status_code=404, detail="Actividad no encontrada")
+
+    normalized_name = normalize_activity_name(activity.name)
+    metadata = remove_activity_from_metadata(load_beach_metadata(), normalized_name or activity.name)
+    save_beach_metadata(metadata)
+
+    db.delete(activity)
+    db.commit()
+    return {"ok": True}
+
+
+@router.get("/services")
+def list_admin_services(
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    services = db.query(Service).order_by(Service.name.asc()).all()
+    return [serialize_catalog_item(service, normalize_service_name) for service in services]
+
+
+@router.post("/services")
+def create_admin_service(
+    payload: AdminCatalogItemPayload,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    normalized_name = normalize_service_name(payload.name)
+    if not normalized_name:
+        raise HTTPException(status_code=400, detail="Nombre de servicio no válido")
+
+    existing = db.query(Service).filter(Service.name == normalized_name).first()
+    if existing is not None:
+        raise HTTPException(status_code=400, detail="El servicio ya existe")
+
+    service = Service(name=normalized_name)
+    db.add(service)
+    db.commit()
+    db.refresh(service)
+    return serialize_catalog_item(service, normalize_service_name)
+
+
+@router.delete("/services/{service_id}")
+def delete_admin_service(
+    service_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    service = db.query(Service).options(selectinload(Service.beaches)).filter(Service.id == service_id).first()
+    if service is None:
+        raise HTTPException(status_code=404, detail="Servicio no encontrado")
+
+    normalized_name = normalize_service_name(service.name)
+    service.beaches.clear()
+    metadata = remove_service_from_metadata(load_beach_metadata(), normalized_name or service.name)
+    save_beach_metadata(metadata)
+
+    db.delete(service)
+    db.commit()
+    return {"ok": True}
 
 
 @router.get("/beaches")
