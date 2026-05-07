@@ -4,12 +4,15 @@ from pathlib import Path
 from typing import Any
 import os
 import requests
+from backend.config import settings
 from backend.db import SessionLocal
 from backend.models.beach import Beach
+from backend.weather_provider import OpenMeteoError, obtener_condiciones_open_meteo
 
 logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent
 PLAYAS_JSON = BASE_DIR / "playas.json"
+CONDICIONES_JSON = BASE_DIR / "condiciones_playas.json"
 
 PESOS_ACTIVIDAD: dict[str, dict[str, float]] = {
     "tomar_sol": {
@@ -153,18 +156,58 @@ def cargar_playas() -> list[dict[str, Any]]:
 
 
 def cargar_condiciones(playas, fecha, hora):
-    base_url = os.getenv("BEACH_API_URL", "http://127.0.0.1:8000")
-    url = f"{base_url}/beach-conditions"
-    # url = "http://127.0.0.1:8000/beach-conditions"
-    datetime = f"{fecha} {hora}"
-    r = requests.post(
-        url,
-        params={"datetime": datetime},
-        json={"playas": playas},
-        timeout=10
-    )
-    r.raise_for_status()
-    return r.json() or []
+    if settings.WEATHER_PROVIDER == "local":
+        return _cargar_condiciones_locales(playas, fecha, hora)
+
+    try:
+        condiciones = obtener_condiciones_open_meteo(
+            playas=playas,
+            fecha=fecha,
+            hora=hora,
+            timezone=settings.OPEN_METEO_TIMEZONE,
+            timeout_seconds=settings.OPEN_METEO_TIMEOUT_SECONDS,
+        )
+        return [_normalizar_condicion(condicion) for condicion in condiciones]
+    except OpenMeteoError as exc:
+        logger.warning("Fallo consultando Open-Meteo, usando fallback local: %s", exc)
+        return _cargar_condiciones_locales(playas, fecha, hora)
+
+
+def _normalizar_condicion(condicion: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "beach_id": condicion["beach_id"],
+        "nombre_playa": condicion.get("nombre_playa"),
+        "fecha": condicion.get("fecha"),
+        "hora": condicion.get("hora"),
+        "air_temp": condicion.get("air_temp", condicion.get("temperatura_ambiente")),
+        "wind_speed": condicion.get("wind_speed", condicion.get("velocidad_viento")),
+        "wave_height": condicion.get("wave_height", condicion.get("altura_oleaje")),
+        "water_temp": condicion.get("water_temp", condicion.get("temperatura_agua")),
+        "cloud_cover": condicion.get("cloud_cover", condicion.get("nubosidad")),
+        "rain_probability": condicion.get("rain_probability", condicion.get("probabilidad_lluvia")),
+        "sea_level_height_msl": condicion.get("sea_level_height_msl"),
+        "tide": condicion.get("tide", condicion.get("marea")),
+        "uv_index": condicion.get("uv_index"),
+        "fuente": condicion.get("fuente"),
+        "timezone": condicion.get("timezone"),
+    }
+
+
+def _cargar_condiciones_locales(playas, fecha, hora):
+    if not CONDICIONES_JSON.exists():
+        return []
+
+    beach_ids = {playa["id"] for playa in playas}
+    with CONDICIONES_JSON.open("r", encoding="utf-8") as fh:
+        condiciones = json.load(fh)
+
+    return [
+        _normalizar_condicion(condicion)
+        for condicion in condiciones
+        if condicion.get("beach_id") in beach_ids
+        and condicion.get("fecha") == fecha
+        and condicion.get("hora") == hora
+    ]
 
 
 def distancia_km(lat1, lon1, lat2, lon2):
@@ -304,8 +347,9 @@ def recomendar_playas(
         if not cond or not filtrar(playa, cond, filtros):
             continue
 
+        actividad_ideal = actividad in set(playa.get("actividades_ideales", []))
         score = calcular_score(cond, actividad)
-        if actividad in set(playa.get("actividades_ideales", [])):
+        if actividad_ideal:
             score += BONUS_ACTIVIDAD_IDEAL
         resultados.append({
             "beach_id": playa["id"],
@@ -316,12 +360,17 @@ def recomendar_playas(
             "descripcion": playa["descripcion"],
             "tipo": playa["tipo"],
             "score": round(score, 2),
+            "actividad_ideal": actividad_ideal,
             "condiciones": cond,
             "servicios": playa["servicios"],
             "motivo": generar_motivo(actividad, cond)
         })
 
-    resultados_ordenados = sorted(resultados, key=lambda x: x["score"], reverse=True)
+    resultados_ordenados = sorted(
+        resultados,
+        key=lambda x: (x["actividad_ideal"], x["score"]),
+        reverse=True,
+    )
     if top_n <= 0:
         return resultados_ordenados
     return resultados_ordenados[:top_n]
