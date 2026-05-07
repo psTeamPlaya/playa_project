@@ -86,8 +86,8 @@
             <span>Piedra</span>
           </label>
           <label class="filter-option">
-            <input type="checkbox" id="filterRockBeach" value="roca">
-            <span>Roca</span>
+            <input type="checkbox" id="filterNaturalPoolBeach" value="piscina_natural">
+            <span>Piscina natural</span>
           </label>
         </fieldset>
 
@@ -261,10 +261,6 @@
           <span class="activity-name">KiteSurf</span>
         </div>
 
-        <div class="activity-card" data-activity="piscina_natural">
-          <span class="activity-icon">&#127966;</span>
-          <span class="activity-name">Piscina Natural</span>
-        </div>
       </div>
     </section>
 
@@ -461,7 +457,6 @@
           <div class="admin-list admin-beach-list" id="beachManagementList"></div>
         </aside>
         <section class="admin-form-panel">
-          <div class="admin-feedback" id="beachManagementFeedback"></div>
           <form id="beachManagementForm" class="admin-form">
             <input id="beachId" type="hidden">
             <div class="admin-form-grid">
@@ -478,7 +473,7 @@
                 <select id="beachType">
                   <option value="arena">Arena</option>
                   <option value="piedra">Piedra</option>
-                  <option value="roca">Roca</option>
+                  <option value="piscina_natural">Piscina natural</option>
                 </select>
               </div>
               <div class="field auth-field">
@@ -533,6 +528,7 @@
               <button class="btn-secondary" id="resetBeachFormBtn" type="button">Limpiar</button>
               <button class="btn-primary" type="submit">Guardar playa</button>
             </div>
+            <div class="admin-feedback" id="beachManagementFeedback"></div>
           </form>
         </section>
       </div>

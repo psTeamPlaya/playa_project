@@ -42,6 +42,13 @@ function getSelectedOptions(container) {
     return Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map((input) => input.value);
 }
 
+function normalizeBeachType(beachType) {
+    if (beachType === "roca") {
+        return "piscina_natural";
+    }
+    return beachType;
+}
+
 export function initAdminUI({
     adminPreferencesGroup,
     openUserManagementBtn,
@@ -280,7 +287,7 @@ export function initAdminUI({
         if (beachIdInput) beachIdInput.value = beach?.id ?? "";
         if (beachNameInput) beachNameInput.value = beach?.name ?? "";
         if (beachLocationInput) beachLocationInput.value = beach?.location ?? "";
-        if (beachTypeInput) beachTypeInput.value = beach?.type ?? "arena";
+        if (beachTypeInput) beachTypeInput.value = normalizeBeachType(beach?.type) ?? "arena";
         if (beachAccessibilityInput) beachAccessibilityInput.value = beach?.accessibility ?? "alta";
         if (beachLatitudeInput) beachLatitudeInput.value = beach?.latitude ?? "";
         if (beachLongitudeInput) beachLongitudeInput.value = beach?.longitude ?? "";
@@ -344,7 +351,7 @@ export function initAdminUI({
             name: beachNameInput?.value?.trim() || "",
             location: beachLocationInput?.value?.trim() || "",
             description: beachDescriptionInput?.value?.trim() || "",
-            type: beachTypeInput?.value || "arena",
+            type: normalizeBeachType(beachTypeInput?.value) || "arena",
             latitude: Number(beachLatitudeInput?.value || 0),
             longitude: Number(beachLongitudeInput?.value || 0),
             accessibility: beachAccessibilityInput?.value || "alta",

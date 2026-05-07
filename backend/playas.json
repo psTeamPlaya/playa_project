@@ -530,15 +530,11 @@
     "ubicacion": "Gáldar, Canarias, España",
     "latitud": 28.169251,
     "longitud": -15.68204,
-    "tipo": "roca",
+    "tipo": "piscina_natural",
     "descripcion": "",
     "actividades_ideales": [
       {
         "actividad": "pescar",
-        "condicion": "gestionado desde panel admin"
-      },
-      {
-        "actividad": "piscina_natural",
         "condicion": "gestionado desde panel admin"
       },
       {
