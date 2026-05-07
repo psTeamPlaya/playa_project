@@ -99,6 +99,16 @@ def _activity_slug(name: str | None) -> str | None:
         return None
     return str(name).strip().lower().replace(" ", "_")
 
+
+def _normalize_beach_type(beach_type: str | None) -> str | None:
+    if not beach_type:
+        return beach_type
+
+    normalized = str(beach_type).strip().lower().replace(" ", "_")
+    if normalized == "roca":
+        return "piscina_natural"
+    return normalized
+
 def cargar_playas() -> list[dict[str, Any]]:
     session = SessionLocal()
     try:
@@ -123,7 +133,7 @@ def cargar_playas() -> list[dict[str, Any]]:
                 "ubicacion": p.location,
                 "latitud": float(p.latitude),
                 "longitud": float(p.longitude),
-                "tipo": p.type,
+                "tipo": _normalize_beach_type(p.type),
                 "descripcion": p.description,
                 "imagen": p.image,
                 "servicios": servicios_dict,
@@ -222,7 +232,7 @@ def filtrar(playa, conditions, filtros: dict):
         return False
     if filtros.get("tipo_piedra") and playa["tipo"] != "piedra":
         return False
-    if filtros.get("tipo_roca") and playa["tipo"] != "roca":
+    if filtros.get("tipo_piscina_natural") and playa["tipo"] != "piscina_natural":
         return False
     
     if filtros.get("restaurantes") and not playa["servicios"].get("restaurantes"):

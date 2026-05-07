@@ -21,7 +21,7 @@ def test_recomendar_playas_prioriza_actividad_ideal(monkeypatch):
             "latitud": 28.1,
             "longitud": -15.1,
             "descripcion": "B",
-            "tipo": "roca",
+            "tipo": "piscina_natural",
             "servicios": {},
             "actividades_ideales": ["piscina_natural"],
         },

@@ -38,6 +38,8 @@ ACTIVITY_ALIASES = {
     "piscina natural": "piscina_natural",
 }
 
+EXCLUDED_ADMIN_ACTIVITIES = {"piscina_natural"}
+
 
 class AdminBeachPayload(BaseModel):
     name: str
@@ -63,6 +65,16 @@ def normalize_activity_name(name: str | None) -> str | None:
     return ACTIVITY_ALIASES.get(normalized, normalized.replace(" ", "_"))
 
 
+def normalize_beach_type(beach_type: str | None) -> str | None:
+    if not beach_type:
+        return beach_type
+
+    normalized = str(beach_type).strip().lower().replace(" ", "_")
+    if normalized == "roca":
+        return "piscina_natural"
+    return normalized
+
+
 def collect_available_activities(db: Session) -> list[str]:
     activities = set(PESOS_ACTIVIDAD.keys())
     activities.update(
@@ -77,7 +89,7 @@ def collect_available_activities(db: Session) -> list[str]:
             if normalized:
                 activities.add(normalized)
 
-    return sorted(activities)
+    return sorted(activity for activity in activities if activity not in EXCLUDED_ADMIN_ACTIVITIES)
 
 
 def load_beach_metadata() -> list[dict]:
@@ -121,7 +133,7 @@ def serialize_beach(beach: Beach, metadata: dict | None = None) -> dict:
         "name": beach.name,
         "location": beach.location,
         "description": beach.description,
-        "type": beach.type,
+        "type": normalize_beach_type(beach.type),
         "latitude": float(beach.latitude),
         "longitude": float(beach.longitude),
         "accessibility": beach.accessibility,
@@ -130,7 +142,7 @@ def serialize_beach(beach: Beach, metadata: dict | None = None) -> dict:
             normalized
             for item in activities
             for normalized in [normalize_activity_name(item.get("actividad"))]
-            if normalized
+            if normalized and normalized not in EXCLUDED_ADMIN_ACTIVITIES
         ],
         "services": sorted([name for name, enabled in services_map.items() if enabled]),
     }
@@ -149,7 +161,7 @@ def update_metadata_entry(existing: dict | None, beach: Beach, payload: AdminBea
         normalized
         for activity_name in payload.activity_names
         for normalized in [normalize_activity_name(activity_name)]
-        if normalized
+        if normalized and normalized not in EXCLUDED_ADMIN_ACTIVITIES
     ]
 
     for service_name in payload.service_names:
@@ -167,7 +179,7 @@ def update_metadata_entry(existing: dict | None, beach: Beach, payload: AdminBea
         "ubicacion": payload.location,
         "latitud": payload.latitude,
         "longitud": payload.longitude,
-        "tipo": payload.type,
+        "tipo": normalize_beach_type(payload.type),
         "descripcion": payload.description,
         "actividades_ideales": [
             {
@@ -253,7 +265,7 @@ def persist_beach(
     beach.name = payload.name
     beach.location = payload.location
     beach.description = payload.description
-    beach.type = payload.type
+    beach.type = normalize_beach_type(payload.type)
     beach.latitude = payload.latitude
     beach.longitude = payload.longitude
     beach.accessibility = payload.accessibility

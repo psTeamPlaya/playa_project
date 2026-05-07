@@ -72,7 +72,7 @@ const disableStaticFilters = document.getElementById("disableStaticFilters");
 const disableDynamicFilters = document.getElementById("disableDynamicFilters");
 const filterSandBeach = document.getElementById("filterSandBeach");
 const filterStoneBeach = document.getElementById("filterStoneBeach");
-const filterRockBeach = document.getElementById("filterRockBeach");
+const filterNaturalPoolBeach = document.getElementById("filterNaturalPoolBeach");
 
 const filterRestaurant = document.getElementById("filterRestaurant");
 const filterTakeAwayFood = document.getElementById("filterTakeAwayFood");
@@ -150,7 +150,7 @@ const DEFAULT_QUANTITY = "3";
 const staticFilterElements = {
     filterSandBeach,
     filterStoneBeach,
-    filterRockBeach,
+    filterNaturalPoolBeach,
     filterRestaurant,
     filterTakeAwayFood,
     filterBalneario,
@@ -161,7 +161,7 @@ const staticFilterElements = {
 const staticFilterInputs = [
     filterSandBeach,
     filterStoneBeach,
-    filterRockBeach,
+    filterNaturalPoolBeach,
     filterRestaurant,
     filterTakeAwayFood,
     filterBalneario,
@@ -312,7 +312,7 @@ function cumpleFiltros(playa, filtros) {
 
     if (filtros.tipo_arena && playa.tipo !== "arena") return false;
     if (filtros.tipo_piedra && playa.tipo !== "piedra") return false;
-    if (filtros.tipo_roca && playa.tipo !== "roca") return false;
+    if (filtros.tipo_piscina_natural && playa.tipo !== "piscina_natural") return false;
     if (filtros.restaurantes && !servicios.restaurantes) return false;
     if (filtros.comida_para_llevar && !servicios.comida_para_llevar) return false;
     if (filtros.balnearios && !servicios.balnearios) return false;

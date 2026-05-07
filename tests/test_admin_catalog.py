@@ -75,7 +75,7 @@ def test_collect_available_activities_unifies_db_and_defaults(monkeypatch):
     assert "tomar_sol" in activities
     assert "caminar" in activities
     assert "bucear" in activities
-    assert "piscina_natural" in activities
+    assert "piscina_natural" not in activities
 
 
 def test_serialize_beach_normalizes_metadata_activities():
@@ -92,6 +92,15 @@ def test_serialize_beach_normalizes_metadata_activities():
     serialized = serialize_beach(beach, metadata)
 
     assert serialized["activities"] == ["tomar_sol", "caminar", "surf"]
+
+
+def test_serialize_beach_normalizes_legacy_rock_type():
+    beach = DummyBeach()
+    beach.type = "roca"
+
+    serialized = serialize_beach(beach, {"actividades_ideales": [], "servicios": {}})
+
+    assert serialized["type"] == "piscina_natural"
 
 
 def test_ensure_beach_id_sequence_executes_setval():

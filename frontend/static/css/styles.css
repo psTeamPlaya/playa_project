@@ -1317,6 +1317,10 @@
         justify-content: flex-end;
     }
 
+    .admin-form .admin-feedback {
+        margin-top: -0.25rem;
+    }
+
     .admin-map-toolbar {
         display: flex;
         align-items: center;
