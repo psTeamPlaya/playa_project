@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mi día de Playa</title>
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
-  <link rel="stylesheet" href="/static/css/styles.css?v=results-map-20260507">
+  <link rel="stylesheet" href="/static/css/styles.css?v=admin-catalog-20260507">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -530,14 +530,44 @@
             </div>
             <div class="admin-feedback" id="beachManagementFeedback"></div>
           </form>
+
+          <section class="admin-section admin-catalog-section">
+            <div class="admin-catalog-layout">
+              <article class="admin-catalog-card">
+                <div class="admin-catalog-header">
+                  <h3>Catálogo de actividades</h3>
+                  <p>Crea o elimina actividades disponibles para asignarlas a las playas.</p>
+                </div>
+                <form class="admin-inline-form" id="activityCatalogForm">
+                  <input id="activityCatalogName" type="text" placeholder="Ej: paddle surf" required>
+                  <button class="btn-secondary" type="submit">Añadir</button>
+                </form>
+                <div class="admin-feedback" id="activityCatalogFeedback"></div>
+                <div class="admin-list" id="activityCatalogList"></div>
+              </article>
+
+              <article class="admin-catalog-card">
+                <div class="admin-catalog-header">
+                  <h3>Catálogo de servicios</h3>
+                  <p>Gestiona los servicios globales que luego podrás marcar en cada playa.</p>
+                </div>
+                <form class="admin-inline-form" id="serviceCatalogForm">
+                  <input id="serviceCatalogName" type="text" placeholder="Ej: hamacas" required>
+                  <button class="btn-secondary" type="submit">Añadir</button>
+                </form>
+                <div class="admin-feedback" id="serviceCatalogFeedback"></div>
+                <div class="admin-list" id="serviceCatalogList"></div>
+              </article>
+            </div>
+          </section>
         </section>
       </div>
     </div>
   </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script type="module" src="/static/js/main.js?v=results-map-20260507"></script>
-  <script type="module" src="/static/js/favorites/favorites.js?v=admin-management-20260507"></script>
+  <script type="module" src="/static/js/main.js?v=admin-catalog-20260507"></script>
+  <script type="module" src="/static/js/favorites/favorites.js?v=admin-catalog-20260507"></script>
 </body>
 </html>
 

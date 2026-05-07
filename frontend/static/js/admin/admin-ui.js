@@ -1,5 +1,14 @@
 import { authFetch } from "../api/auth-fetch.js";
 
+function escapeHtml(value = "") {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
+
 function setFeedback(element, message = "", type = "") {
     if (!element) return;
     element.textContent = message;
@@ -21,12 +30,16 @@ function closeModal(modal) {
 
 function buildAdminCheckboxes(container, options) {
     if (!container) return;
-    container.innerHTML = options.map((option) => `
+    container.innerHTML = options.map((option) => {
+        const value = typeof option === "string" ? option : option.name;
+        const label = typeof option === "string" ? option : option.label;
+        return `
         <label class="admin-chip-option">
-            <input type="checkbox" value="${option}">
-            <span>${option}</span>
+            <input type="checkbox" value="${escapeHtml(value)}">
+            <span>${escapeHtml(label)}</span>
         </label>
-    `).join("");
+    `;
+    }).join("");
 }
 
 function setSelectedOptions(container, selectedValues) {
@@ -78,13 +91,22 @@ export function initAdminUI({
     beachDescriptionInput,
     beachServicesOptions,
     beachActivitiesOptions,
+    activityCatalogForm,
+    activityCatalogNameInput,
+    activityCatalogFeedback,
+    activityCatalogList,
+    serviceCatalogForm,
+    serviceCatalogNameInput,
+    serviceCatalogFeedback,
+    serviceCatalogList,
     getCurrentUser,
     onClosePreferences,
 }) {
     const state = {
-        catalogLoaded: false,
         activities: [],
         services: [],
+        activityItems: [],
+        serviceItems: [],
         beaches: [],
         selectedBeachId: null,
         map: null,
@@ -256,6 +278,31 @@ export function initAdminUI({
         `).join("");
     }
 
+    function renderCatalogList(container, items, type) {
+        if (!container) return;
+        if (!items.length) {
+            container.innerHTML = '<div class="empty-state">No hay elementos creados.</div>';
+            return;
+        }
+
+        container.innerHTML = items.map((item) => `
+            <article class="admin-list-card">
+                <div>
+                    <strong>${escapeHtml(item.label)}</strong>
+                    <div class="admin-list-meta">${escapeHtml(item.name)}</div>
+                </div>
+                <button
+                    class="btn-secondary admin-inline-button"
+                    data-catalog-type="${type}"
+                    data-catalog-id="${item.id}"
+                    type="button"
+                >
+                    Eliminar
+                </button>
+            </article>
+        `).join("");
+    }
+
     async function loadUsers() {
         setFeedback(userManagementFeedback, "Cargando usuarios...");
         const users = await fetchJson("/admin/users");
@@ -299,21 +346,48 @@ export function initAdminUI({
         syncMapWithInputs({ focus: true });
     }
 
-    async function ensureCatalogLoaded() {
-        if (state.catalogLoaded) return;
+    async function loadCatalog() {
         const catalog = await fetchJson("/admin/catalog");
         state.activities = catalog.activities || [];
         state.services = catalog.services || [];
+
+        const selectedServices = getSelectedOptions(beachServicesOptions);
+        const selectedActivities = getSelectedOptions(beachActivitiesOptions);
         buildAdminCheckboxes(beachActivitiesOptions, state.activities);
         buildAdminCheckboxes(beachServicesOptions, state.services);
-        state.catalogLoaded = true;
+        setSelectedOptions(beachServicesOptions, selectedServices);
+        setSelectedOptions(beachActivitiesOptions, selectedActivities);
+    }
+
+    async function loadCatalogItems() {
+        const [activityItems, serviceItems] = await Promise.all([
+            fetchJson("/admin/activities"),
+            fetchJson("/admin/services"),
+        ]);
+
+        state.activityItems = activityItems || [];
+        state.serviceItems = serviceItems || [];
+
+        renderCatalogList(activityCatalogList, state.activityItems, "activity");
+        renderCatalogList(serviceCatalogList, state.serviceItems, "service");
+    }
+
+    async function reloadAdminCatalogData({ refreshBeaches = false } = {}) {
+        await loadCatalog();
+        await loadCatalogItems();
+
+        if (refreshBeaches) {
+            await loadBeaches();
+        }
     }
 
     async function loadBeaches() {
         setFeedback(beachManagementFeedback, "Cargando playas...");
+        const selectedBeachId = state.selectedBeachId;
         state.beaches = await fetchJson("/admin/beaches");
         renderBeachList();
-        fillBeachForm(state.beaches[0] ?? null);
+        const selectedBeach = state.beaches.find((beach) => beach.id === selectedBeachId);
+        fillBeachForm(selectedBeach || state.beaches[0] || null);
         setFeedback(beachManagementFeedback, "");
     }
 
@@ -332,7 +406,7 @@ export function initAdminUI({
         openModal(beachManagementModal);
         try {
             ensureBeachMap();
-            await ensureCatalogLoaded();
+            await reloadAdminCatalogData();
             await loadBeaches();
             syncMapWithInputs({ focus: true });
         } catch (error) {
@@ -401,6 +475,49 @@ export function initAdminUI({
         setFeedback(beachManagementFeedback, "");
     }
 
+    async function createCatalogItem(type, rawName) {
+        const url = type === "activity" ? "/admin/activities" : "/admin/services";
+        return fetchJson(url, {
+            method: "POST",
+            body: JSON.stringify({ name: rawName }),
+        });
+    }
+
+    async function submitCatalogForm(event, type) {
+        event.preventDefault();
+
+        const input = type === "activity" ? activityCatalogNameInput : serviceCatalogNameInput;
+        const feedback = type === "activity" ? activityCatalogFeedback : serviceCatalogFeedback;
+        const rawName = input?.value?.trim() || "";
+
+        if (!rawName) {
+            setFeedback(feedback, "Debes indicar un nombre.", "error");
+            return;
+        }
+
+        try {
+            setFeedback(feedback, "Guardando...");
+            await createCatalogItem(type, rawName);
+            if (input) {
+                input.value = "";
+            }
+            await reloadAdminCatalogData({ refreshBeaches: true });
+            setFeedback(
+                feedback,
+                type === "activity" ? "Actividad añadida." : "Servicio añadido.",
+                "success",
+            );
+        } catch (error) {
+            setFeedback(feedback, error.message, "error");
+        }
+    }
+
+    async function deleteCatalogItem(type, id) {
+        const url = type === "activity" ? `/admin/activities/${id}` : `/admin/services/${id}`;
+        await fetchJson(url, { method: "DELETE" });
+        await reloadAdminCatalogData({ refreshBeaches: true });
+    }
+
     openUserManagementBtn?.addEventListener("click", openUsersModal);
     openBeachManagementBtn?.addEventListener("click", openBeachesModal);
     openReviewManagementBtn?.addEventListener("click", () => {});
@@ -446,6 +563,30 @@ export function initAdminUI({
     });
     beachLatitudeInput?.addEventListener("input", () => syncMapWithInputs());
     beachLongitudeInput?.addEventListener("input", () => syncMapWithInputs());
+    activityCatalogForm?.addEventListener("submit", (event) => submitCatalogForm(event, "activity"));
+    serviceCatalogForm?.addEventListener("submit", (event) => submitCatalogForm(event, "service"));
+    activityCatalogList?.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-catalog-id]");
+        if (!button) return;
+        try {
+            setFeedback(activityCatalogFeedback, "Eliminando...");
+            await deleteCatalogItem(button.dataset.catalogType, button.dataset.catalogId);
+            setFeedback(activityCatalogFeedback, "Actividad eliminada.", "success");
+        } catch (error) {
+            setFeedback(activityCatalogFeedback, error.message, "error");
+        }
+    });
+    serviceCatalogList?.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-catalog-id]");
+        if (!button) return;
+        try {
+            setFeedback(serviceCatalogFeedback, "Eliminando...");
+            await deleteCatalogItem(button.dataset.catalogType, button.dataset.catalogId);
+            setFeedback(serviceCatalogFeedback, "Servicio eliminado.", "success");
+        } catch (error) {
+            setFeedback(serviceCatalogFeedback, error.message, "error");
+        }
+    });
 
     return {
         updateAdminVisibility,
