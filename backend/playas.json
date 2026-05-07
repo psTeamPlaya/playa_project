@@ -273,12 +273,12 @@
     "descripcion": "Playa urbana con carácter más abierto, útil para ampliar catálogo en la demo.",
     "actividades_ideales": [
       {
-        "actividad": "tomar_sol",
-        "condicion": "adecuada en condiciones generales"
-      },
-      {
         "actividad": "nadar",
         "condicion": "adecuada en zonas seguras y con mar favorable"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
       }
     ],
     "servicios": {
