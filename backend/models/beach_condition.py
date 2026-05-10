@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, ForeignKey, DateTime, UniqueConstraint
+from sqlalchemy import Column, Integer, Float, ForeignKey, DateTime, UniqueConstraint, Index
 from backend.db import Base
 
 class BeachCondition(Base):
@@ -19,5 +19,6 @@ class BeachCondition(Base):
 
     # Para no poner duplicados
     __table_args__ = (
-        UniqueConstraint("beach_id", "datetime"),
+        UniqueConstraint("beach_id", "datetime", name="uq_beach_datetime"),
+        Index("ix_beach_condition_datetime", "datetime"),
     )
