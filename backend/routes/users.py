@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from sqlalchemy.orm import Session
+from backend.auth.auth import get_current_user
+from backend.db import get_db
 import os
+
 
 from backend.db import get_db
 from backend.models.user import User
@@ -45,3 +48,15 @@ def list_users(db: Session = Depends(get_db)):
         for user in users
     ]
 
+@router.post("/me/filters")
+async def save_filters(filters: dict = Body(...), # <--- Cambia esto
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    current_user.filter_preferences = filters
+    db.commit()
+    return {"status": "success"}
+
+@router.get("/me/filters")
+async def get_filters(current_user: User = Depends(get_current_user)):
+    return current_user.filter_preferences or {}
