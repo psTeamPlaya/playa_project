@@ -3,6 +3,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from sqlalchemy import inspect, text
+from datetime import date, timedelta
+from sqlalchemy import func
 
 import backend.models  # NO BORRAR
 from backend.config import settings
@@ -17,6 +19,7 @@ from backend.db import SessionLocal, engine, Base
 from backend.auth.auth import hash_password
 from backend.models.user import User
 from backend.sunlight_provider import obtener_aviso_luz_solar, SunlightError
+from backend.models.beach_condition import BeachCondition
 
 
 def ensure_user_schema() -> None:
@@ -53,11 +56,32 @@ def ensure_admin_user() -> None:
     finally:
         session.close()
 
+from backend.routes.beach_conditions import upsert_beach_conditions
+
+def needs_weather_update(db) -> bool:
+    expected_last_day = date.today() + timedelta(days=14)
+    latest = db.query(func.max(BeachCondition.datetime)).scalar()
+    if latest is None:
+        return True
+
+    return latest.date() < expected_last_day        
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     ensure_user_schema()
     ensure_admin_user()
+
+    db = SessionLocal()
+    try:
+        if needs_weather_update(db):
+            print("Updating beach conditions...")
+            upsert_beach_conditions(db)
+            print("Beach conditions updated")
+        else:
+            print("Beach conditions already up to date.")
+    finally:
+        db.close()
     yield
 
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)

@@ -60,11 +60,10 @@ def fetch_marine(latitude, longitude, day):
     ).json()
 
 
-@router.post("/upsert-sql")
-def upsert_nativo(db: Session = Depends(get_db)):
+def upsert_beach_conditions(db: Session = Depends(get_db)):
     beaches = db.query(Beach).all()
     today = date.today()
-    days = [today + timedelta(days=i) for i in range(17)]
+    days = [today + timedelta(days=i) for i in range(16)]
     total = 0
 
     for beach in beaches:
