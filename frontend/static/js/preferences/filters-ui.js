@@ -1,3 +1,4 @@
+import { authFetch } from "../api/auth-fetch.js";
 import { aplicarVisibilidadFiltros } from "./preferences-ui.js";
 import { guardarPreferencia, STORAGE_KEYS } from "./storage.js";
 
@@ -33,20 +34,30 @@ export function abrirConfiguradorInicial() {
 
     modal.hidden = false;
 
-    document.getElementById('saveFilterConfigBtn').onclick = () => {
+    document.getElementById('saveFilterConfigBtn').onclick = async () => {
         const nuevaConfig = {};
         lista.querySelectorAll('input').forEach(input => {
             nuevaConfig[input.dataset.id] = input.checked;
         });
 
-        localStorage.setItem("preferences.userFiltersConfig", JSON.stringify(nuevaConfig));
-        modal.hidden = true;
+        try {
+            const response = await authFetch("/api/users/me/filters", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json" // Esto es VITAL para evitar el 422
+                },
+                body: JSON.stringify(nuevaConfig)
+            });
 
-        const checkPreferencias = document.getElementById('rememberSchedulePreference');
-        if (checkPreferencias  && !checkPreferencias.checked) {
-            checkPreferencias.checked = true;
-            guardarPreferencia(STORAGE_KEYS.rememberSchedule, true);
+            if (response.ok) {
+                localStorage.setItem("preferences.userFiltersConfig", JSON.stringify(nuevaConfig));
+                modal.hidden = true;
+
+                const checkPreferencias = document.getElementById('rememberSchedulePreference');
+                aplicarVisibilidadFiltros(checkPreferencias?.checked || false);
+            }
+        } catch (error) {
+            console.error("Error al guardar filtros:", error);
         }
-        aplicarVisibilidadFiltros(true);
     };
 }

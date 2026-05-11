@@ -39,7 +39,25 @@ export function initSessionUI({
             if (preferencesUserInfo) {
                 preferencesUserInfo.textContent = data.email;
             }
+
+            try {
+                const prefResponse = await authFetch("/api/users/me/filters");
+                if (prefResponse.ok) {
+                    const filtrosNube = await prefResponse.json();
+
+                    localStorage.setItem("preferences.userFiltersConfig", JSON.stringify(filtrosNube));
+
+                    const checkPersonalizados = document.getElementById('rememberSchedulePreference');
+                    if (typeof aplicarVisibilidadFiltros === 'function') {
+                        aplicarVisibilidadFiltros(checkPersonalizados?.checked);
+                    }
+                }
+            } catch (prefError) {
+                console.error("Error al sincronizar filtros desde el servidor:", prefError);
+            }
+
             return data;
+
         } catch (error) {
             console.error("Failed to load user");
             currentUser = null;
@@ -90,6 +108,8 @@ export function initSessionUI({
 
     async function logout() {
         localStorage.removeItem("token");
+        localStorage.removeItem("preferences.userFiltersConfig");
+        if (preferencesUserInfo) preferencesUserInfo.textContent = "";
 
         const appShell = document.querySelector('.app-shell');
         if (appShell) appShell.style.gridTemplateColumns = '';
