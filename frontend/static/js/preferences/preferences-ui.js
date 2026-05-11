@@ -91,6 +91,8 @@ export function initPreferencesUI({
 
 export function aplicarVisibilidadFiltros(soloPersonalizados) {
     const configRaw = localStorage.getItem("preferences.userFiltersConfig");
+    const filtersSidebar = document.getElementById('filtersSidebar');
+    const appShell = document.querySelector('.app-shell');
     if (!configRaw) return;
 
     const config = JSON.parse(configRaw);
@@ -106,4 +108,19 @@ export function aplicarVisibilidadFiltros(soloPersonalizados) {
             grupo.classList.remove('user-hidden');
         }
     });
+
+    if (filtersSidebar) {
+        if (soloPersonalizados) {
+            const hayAlgunoVisible = [...gruposFiltros].some(
+                g => !g.classList.contains('user-hidden')
+            );
+            filtersSidebar.classList.toggle('user-hidden', !hayAlgunoVisible);
+            appShell.style.gridTemplateColumns = hayAlgunoVisible
+                ? '25rem minmax(0, 1fr)'
+                : 'minmax(0, 1fr)';
+        } else {
+            filtersSidebar.classList.remove('user-hidden');
+            appShell.style.gridTemplateColumns = '25rem minmax(0, 1fr)';
+        }
+    }
 }
