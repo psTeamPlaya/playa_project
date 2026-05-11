@@ -1,4 +1,5 @@
 import { authFetch } from "../api/auth-fetch.js";
+import { abrirConfiguradorInicial } from "../preferences/preferences-ui.js";
 
 export function initSessionUI({
     preferencesUserInfo,
@@ -50,6 +51,12 @@ export function initSessionUI({
         const token = localStorage.getItem("token");
         const estaLogueado = Boolean(token);
 
+        if (estaLogueado) {
+            const configExistente = localStorage.getItem("preferences.userFiltersConfig");
+            if (!configExistente) {
+                abrirConfiguradorInicial();
+            }
+        }
         document.body.classList.toggle("is-authenticated", estaLogueado);
         document.querySelectorAll(".loggedIn").forEach(element => {
             element.classList.toggle("hidden", !estaLogueado);
