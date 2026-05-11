@@ -1,4 +1,6 @@
 import { authFetch } from "../api/auth-fetch.js";
+import { abrirConfiguradorInicial, aplicarVisibilidadFiltros } from "../preferences/preferences-ui.js";
+import { iniciarAsistente } from "../preferences/onboarding-ui.js";
 
 export function initSessionUI({
     preferencesUserInfo,
@@ -35,10 +37,48 @@ export function initSessionUI({
             }
             const data = await response.json();
             currentUser = data;
+
             if (preferencesUserInfo) {
                 preferencesUserInfo.textContent = data.email;
             }
+
+            try {
+                const prefResponse = await authFetch("/api/users/me/filters");
+                if (prefResponse.ok) {
+                    const filtrosNube = await prefResponse.json();
+                    console.log("🔍 Filtros recibidos del servidor:", filtrosNube);
+                    localStorage.setItem("preferences.userFiltersConfig", JSON.stringify(filtrosNube));
+
+                    /*const esUsuarioNuevo = Object.keys(filtrosNube).length === 0;*/
+                    const tieneFiltros = filtrosNube && Object.keys(filtrosNube).length > 0;
+                    console.log("❓ ¿Tiene filtros guardados?:", tieneFiltros);
+
+                    if (!tieneFiltros) {
+                        iniciarAsistente(async (configFinal) => {
+                            const response = await authFetch("/api/users/me/filters", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(configFinal)
+                            });
+
+                            if (response.ok) {
+                                localStorage.setItem("preferences.userFiltersConfig", JSON.stringify(configFinal));
+                                aplicarVisibilidadFiltros(true);
+                            }
+                        });
+                    } else {
+                        const checkPersonalizados = document.getElementById('rememberSchedulePreference');
+                        if (typeof aplicarVisibilidadFiltros === 'function') {
+                            aplicarVisibilidadFiltros(checkPersonalizados?.checked);
+                        }
+                    }
+                }
+            } catch (prefError) {
+                console.error("Error al sincronizar filtros desde el servidor:", prefError);
+            }
+
             return data;
+
         } catch (error) {
             console.error("Failed to load user");
             currentUser = null;
@@ -59,6 +99,15 @@ export function initSessionUI({
             filtersSidebar.classList.toggle("hidden", !estaLogueado);
         }
         onSessionChange?.(estaLogueado, currentUser);
+
+        if (estaLogueado) {
+            const checkPreferencias = document.getElementById('rememberSchedulePreference');
+            aplicarVisibilidadFiltros(checkPreferencias?.checked ?? false);
+        } else {
+            const appShell = document.querySelector('.app-shell');
+            if (appShell) appShell.style.gridTemplateColumns = '';
+        }
+
         if (!authActionBtn || !authActionIcon) return;
         if (estaLogueado) {
             authActionBtn.hidden = false;
@@ -74,6 +123,12 @@ export function initSessionUI({
 
     async function logout() {
         localStorage.removeItem("token");
+        localStorage.removeItem("preferences.userFiltersConfig");
+        if (preferencesUserInfo) preferencesUserInfo.textContent = "";
+
+        const appShell = document.querySelector('.app-shell');
+        if (appShell) appShell.style.gridTemplateColumns = '';
+
         await loadCurrentUser();
         onLogout?.();
         actualizarBotonesSesion();

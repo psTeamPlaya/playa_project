@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/favorites.css">
+  <link rel="stylesheet" href="/static/css/questions-modal.css">
 </head>
 <body>
   <header class="container" id="appHeader">
@@ -50,7 +51,7 @@
             </div>
             <label class="preference-item">
               <input type="checkbox" id="rememberSchedulePreference">
-              <span>Filtros personalizados</span>
+              <span id="openConfigLink" style="cursor:pointer; text-decoration: underline;">Filtros personalizados</span>
             </label>
             <label class="preference-item">
               <input type="checkbox" id="expandResultsPreference">
@@ -75,7 +76,7 @@
             Reset filtros estáticos
           </button>
         </div>
-        <fieldset class="filter-group">
+        <fieldset class="filter-group" data-user-filter="tipo_playa">
           <legend>Tipo de playa</legend>
           <label class="filter-option">
             <input type="checkbox" id="filterSandBeach" value="arena">
@@ -91,7 +92,7 @@
           </label>
         </fieldset>
 
-        <fieldset class="filter-group">
+        <fieldset class="filter-group" data-user-filter="servicios">
           <legend>Servicios</legend>
           <label class="filter-option">
             <input type="checkbox" id="filterRestaurant" value="restaurant">
@@ -119,7 +120,7 @@
             Desactivar filtros dinámicos
           </button>
         </div>
-        <fieldset class="filter-group dynamic-filter-group">
+        <fieldset class="filter-group dynamic-filter-group" data-user-filter="nubosidad">
           <div class="dynamic-filter-title">Nubosidad</div>
           <div class="dynamic-filter-slider">
             <div class="range-values">
@@ -142,7 +143,7 @@
           </div>
         </fieldset>
         
-        <fieldset class="filter-group dynamic-filter-group">
+        <fieldset class="filter-group dynamic-filter-group" data-user-filter="viento">
           <div class="dynamic-filter-title">Viento(km/h)</div>
           <div class="dynamic-filter-slider">
             <div class="range-values">
@@ -165,7 +166,7 @@
           </div>
         </fieldset>
         
-        <fieldset class="filter-group dynamic-filter-group">
+        <fieldset class="filter-group dynamic-filter-group" data-user-filter="temperatura">
           <div class="dynamic-filter-title">Temp.(&ordm;C)</div>
           <div class="dynamic-filter-slider">
             <div class="range-values">
@@ -188,7 +189,7 @@
           </div>
         </fieldset>
 
-        <fieldset class="filter-group dynamic-filter-group">
+        <fieldset class="filter-group dynamic-filter-group" data-user-filter="oleaje">
           <div class="dynamic-filter-title">Olas(m)</div>
           <div class="dynamic-filter-slider">
             <div class="range-values">
@@ -564,7 +565,26 @@
       </div>
     </div>
   </div>
+  <div class="modal-backdrop" id="filterConfigModal" hidden>
+    <div class="auth-modal config-modal">
+      <h2>Personaliza tu experiencia</h2>
+      <p>Selecciona los filtros que deseas tener siempre a mano. Podrás cambiarlos luego en preferencias.</p>
 
+      <div class="config-list" id="configFilterList">
+        </div>
+
+      <button class="btn-primary auth-submit" id="saveFilterConfigBtn">Guardar mi configuración</button>
+    </div>
+  </div>
+  <div id="onboarding-modal" class="modal" hidden>
+    <div class="modal-content onboarding-card">
+        <div id="onboarding-step-container">
+            </div>
+        <div class="onboarding-footer">
+            <span id="onboarding-progress">Paso 1 de 3</span>
+        </div>
+    </div>
+  </div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script type="module" src="/static/js/main.js?v=admin-catalog-20260507"></script>
   <script type="module" src="/static/js/favorites/favorites.js?v=admin-catalog-20260507"></script>

@@ -1,0 +1,105 @@
+/* questions-modal.css - Diseño Premium y Visible */
+
+/* Contenedor principal (El fondo suave) */
+#onboarding-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 999999 !important; /* Aún más alto por si acaso */
+
+    /* CAMBIO: Fondo azul clarito translúcido en lugar de negro */
+    background-color: rgba(235, 245, 255, 0.9) !important;
+    backdrop-filter: blur(5px) !important; /* Ligero desenfoque para dar enfoque */
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: opacity 0.3s ease;
+}
+
+/* Ocultar modal */
+#onboarding-modal[hidden] {
+    display: none !important;
+}
+
+/* La Tarjeta Blanca (más grande y llamativa) */
+.questions-card {
+    background: white !important;
+    padding: 3rem !important; /* Más padding interno */
+    border-radius: 30px !important;
+    max-width: 600px !important; /* Más ancha */
+    width: 90% !important;
+    box-shadow: 0 25px 60px rgba(0, 100, 200, 0.15) !important; /* Sombra azulada suave */
+    text-align: center !important;
+    animation: zoomIn 0.4s ease-out;
+    border: 1px solid #e1f0ff !important;
+}
+
+/* Título de la pregunta (Más grande) */
+.onboarding-question-title {
+    font-size: 2.2rem !important; /* Grande y claro */
+    font-weight: 800 !important;
+    color: #004080 !important; /* Azul oscuro */
+    margin-bottom: 1rem !important;
+    line-height: 1.1 !important;
+}
+
+/* Descripción de la pregunta (Más grande) */
+.onboarding-question-desc {
+    font-size: 1.2rem !important; /* Más legible */
+    color: #507090 !important;
+    margin-bottom: 3rem !important;
+    font-weight: 400 !important;
+}
+
+/* Contenedor de los botones de opciones */
+.onboarding-options {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+}
+
+/* Estilo de los botones de opción (Más premium) */
+.onboarding-btn {
+    padding: 18px 30px !important; /* Botones más altos */
+    border: 2px solid #007bff !important;
+    border-radius: 16px !important;
+    background: white !important;
+    color: #007bff !important;
+    font-size: 1.1rem !important; /* Letra de botón más grande */
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Efecto hover azul intenso */
+.onboarding-btn:hover {
+    background-color: #007bff !important;
+    color: white !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3) !important;
+}
+
+/* Pie del modal */
+.questions-footer {
+    margin-top: 3rem !important;
+    font-size: 1rem !important; /* Letra de progreso más grande */
+    color: #a0b0c0 !important;
+    font-weight: 600 !important;
+    border-top: 2px solid #f0f8ff !important;
+    padding-top: 1.5rem !important;
+}
+
+/* Animación de entrada */
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
