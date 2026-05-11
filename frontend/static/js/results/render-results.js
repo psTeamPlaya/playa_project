@@ -1,3 +1,5 @@
+//TODO: el filtro Marea está dando N/A en vez de alta, media,baja.
+
 import { formatearMarea, formatearServicios } from "../shared/formatters.js";
 
 const DEFAULT_OPTIONS = {
