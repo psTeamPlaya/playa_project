@@ -11,7 +11,8 @@ from backend.config import settings
 from backend.routes import (
     api_router, views_router, auth_router, users_router,
     services_router, activities_router, variables_router,
-    beach_conditions_router, favourites_router, admin_router
+    beach_conditions_router, favourites_router, admin_router,
+    reviews_router
 )
 
 from backend.engine_recomendation import recomendar_playas, cargar_playas
@@ -92,7 +93,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 routers = [
     api_router, views_router, auth_router, users_router, services_router,
     activities_router, variables_router, beach_conditions_router, favourites_router,
-    admin_router
+    admin_router, reviews_router
 ]
 
 for router in routers: 
