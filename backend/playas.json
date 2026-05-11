@@ -592,5 +592,25 @@
     },
     "imagen": "",
     "accesibilidad": "alta"
+  },
+  {
+    "id": 22,
+    "nombre": "Bahía Feliz",
+    "ubicacion": "San Bartolomé de Tirajana, Canarias, España",
+    "latitud": 27.78176,
+    "longitud": -15.516966,
+    "tipo": "arena",
+    "descripcion": "",
+    "actividades_ideales": [
+      {
+        "actividad": "windsurf",
+        "condicion": "gestionado desde panel admin"
+      }
+    ],
+    "servicios": {
+      "escuela_windsurf": true
+    },
+    "imagen": "",
+    "accesibilidad": "alta"
   }
 ]

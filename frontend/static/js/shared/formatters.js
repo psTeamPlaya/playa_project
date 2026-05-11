@@ -21,6 +21,10 @@ export function formatearMarea(condiciones = {}) {
         return condiciones.marea;
     }
 
+    if (typeof condiciones.tide === "string" && condiciones.tide.trim()) {
+        return condiciones.tide;
+    }
+
     const tideValue = Number(condiciones.tide);
     if (Number.isNaN(tideValue)) {
         return "N/A";
