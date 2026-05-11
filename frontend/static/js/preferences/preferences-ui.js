@@ -1,4 +1,5 @@
 import { STORAGE_KEYS, cargarPreferenciasUI, guardarPreferencia } from "./storage.js";
+export { abrirConfiguradorInicial } from "./filters-ui.js";
 
 export function cerrarPanelPreferencias(preferencesPanel, preferencesCloseTimeoutRef) {
     if (preferencesPanel) {
@@ -37,6 +38,11 @@ export function initPreferencesUI({
         expandResultsPreference
     });
 
+    const checkPreferencias = document.getElementById('rememberSchedulePreference');
+    if (checkPreferencias && checkPreferencias.checked) {
+        aplicarVisibilidadFiltros(true);
+    }
+
     if (rememberActivityPreference) {
         rememberActivityPreference.addEventListener("change", () => {
             guardarPreferencia(STORAGE_KEYS.rememberActivity, rememberActivityPreference.checked);
@@ -46,8 +52,19 @@ export function initPreferencesUI({
 
     if (rememberSchedulePreference) {
         rememberSchedulePreference.addEventListener("change", () => {
+            const estaActivo = rememberSchedulePreference.checked;
             guardarPreferencia(STORAGE_KEYS.rememberSchedule, rememberSchedulePreference.checked);
-            onRememberScheduleChange?.();
+            aplicarVisibilidadFiltros(estaActivo);
+        });
+    }
+
+    const openConfigLink = document.getElementById('openConfigLink');
+    if (openConfigLink) {
+        openConfigLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            import("./filters-ui.js").then(module => {
+                module.abrirConfiguradorInicial();
+            });
         });
     }
 
@@ -70,4 +87,40 @@ export function initPreferencesUI({
         abrirPanelPreferencias: () => abrirPanelPreferencias(preferencesPanel, preferencesCloseTimeoutRef),
         cerrarPanelPreferencias: () => cerrarPanelPreferencias(preferencesPanel, preferencesCloseTimeoutRef)
     };
+}
+
+export function aplicarVisibilidadFiltros(soloPersonalizados) {
+    const configRaw = localStorage.getItem("preferences.userFiltersConfig");
+    const filtersSidebar = document.getElementById('filtersSidebar');
+    const appShell = document.querySelector('.app-shell');
+    if (!configRaw) return;
+
+    const config = JSON.parse(configRaw);
+    const gruposFiltros = document.querySelectorAll('[data-user-filter]');
+
+    gruposFiltros.forEach(grupo => {
+        const idFiltro = grupo.getAttribute('data-user-filter');
+        const debeMostrarse = config[idFiltro];
+
+        if (soloPersonalizados) {
+            grupo.classList.toggle('user-hidden', debeMostrarse === false);
+        } else {
+            grupo.classList.remove('user-hidden');
+        }
+    });
+
+    if (filtersSidebar) {
+        if (soloPersonalizados) {
+            const hayAlgunoVisible = [...gruposFiltros].some(
+                g => !g.classList.contains('user-hidden')
+            );
+            filtersSidebar.classList.toggle('user-hidden', !hayAlgunoVisible);
+            appShell.style.gridTemplateColumns = hayAlgunoVisible
+                ? '25rem minmax(0, 1fr)'
+                : 'minmax(0, 1fr)';
+        } else {
+            filtersSidebar.classList.remove('user-hidden');
+            appShell.style.gridTemplateColumns = '25rem minmax(0, 1fr)';
+        }
+    }
 }

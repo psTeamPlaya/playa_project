@@ -4,7 +4,8 @@ export const STORAGE_KEYS = {
     expandResults: "preferences.expandResults",
     savedActivity: "preferences.savedActivity",
     savedDate: "preferences.savedDate",
-    savedHour: "preferences.savedHour"
+    savedHour: "preferences.savedHour",
+    userFiltersConfig: "preferences.userFiltersConfig"
 };
 
 export function leerPreferencia(clave) {
@@ -86,4 +87,13 @@ export function obtenerHorarioInicial({
         fecha: fechaGuardada,
         hora: horaGuardada
     };
+}
+
+export function guardarConfiguracionFiltrosUsuario(config) {
+    localStorage.setItem(STORAGE_KEYS.userFiltersConfig, JSON.stringify(config));
+}
+
+export function leerConfiguracionFiltrosUsuario() {
+    const config = localStorage.getItem(STORAGE_KEYS.userFiltersConfig);
+    return config ? JSON.parse(config) : null;
 }

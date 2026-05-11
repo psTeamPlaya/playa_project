@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from datetime import date, timedelta, datetime
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 import requests
 
@@ -7,6 +8,7 @@ from backend.db import get_db
 from backend.models.beach import Beach
 from backend.models.beach_condition import BeachCondition
 from backend.schemas.beach_condition import BeachConditionResponse
+
 
 router = APIRouter(prefix="/beach-conditions", tags=["Beach Conditions"])
 
@@ -57,74 +59,88 @@ def fetch_marine(latitude, longitude, day):
         }
     ).json()
 
-@router.post("/full-seed")
-def seed_all(db: Session = Depends(get_db)):
+
+def upsert_beach_conditions(db: Session = Depends(get_db)):
     beaches = db.query(Beach).all()
-
     today = date.today()
-    days = [today + timedelta(days=i) for i in range(17)]
-
-    total_saved = 0
+    days = [today + timedelta(days=i) for i in range(16)]
+    total = 0
 
     for beach in beaches:
         for day in days:
-            weather = fetch_weather(
-                beach.latitude,
-                beach.longitude,
-                day.isoformat()
-            )
-            marine = fetch_marine(
-                beach.latitude,
-                beach.longitude,
-                day.isoformat()
-            )
-            # Protección contra APIs vacías
-            if "hourly" not in weather or "hourly" not in marine:
-                continue
-
-            weather_hours = weather["hourly"]["time"]
-            marine_hours = marine["hourly"]["time"]
-            marine_index = {t: i for i, t in enumerate(marine_hours)}
-            uv_index = weather.get("daily", {}).get("uv_index_max", [None])[0]
-
-            for i, t in enumerate(weather_hours):
-                if t not in marine_index:
-                    continue
-                j = marine_index[t]
-                dt = datetime.fromisoformat(t)
-
-                exists = db.query(BeachCondition).filter_by(
-                    beach_id=beach.id,
-                    datetime=dt
-                ).first()
-                if exists:
-                    continue
-
-                record = BeachCondition(
-                    beach_id=beach.id,
-                    datetime=dt,
-
-                    air_temp=weather["hourly"]["temperature_2m"][i],
-                    wind_speed=weather["hourly"]["wind_speed_10m"][i],
-                    cloud_cover=weather["hourly"]["cloud_cover"][i],
-                    rain_probability=weather["hourly"]["precipitation_probability"][i],
-
-                    wave_height=marine["hourly"]["wave_height"][j],
-                    water_temp=marine["hourly"]["sea_surface_temperature"][j],
-                    tide=marine["hourly"]["sea_level_height_msl"][j],
-
-                    uv_index=uv_index
+            try:
+                weather = fetch_weather(
+                    beach.latitude,
+                    beach.longitude,
+                    day.isoformat()
                 )
-                db.add(record)
-                total_saved += 1
-        # Commit por playa 
+                marine = fetch_marine(
+                    beach.latitude,
+                    beach.longitude,
+                    day.isoformat()
+                )
+                if not weather.get("hourly") or not marine.get("hourly"):
+                    continue
+
+                w_time = weather["hourly"].get("time", [])
+                m_time = marine["hourly"].get("time", [])
+                if not w_time or not m_time:
+                    continue
+
+                marine_map = {t: i for i, t in enumerate(m_time)}
+                uv_index = (
+                    weather.get("daily", {})
+                    .get("uv_index_max", [None])[0]
+                )
+
+                for i, t in enumerate(w_time):
+                    if t not in marine_map:
+                        continue
+                    try:
+                        j = marine_map[t]
+                        dt = datetime.fromisoformat(t.replace("Z", ""))
+                        stmt = insert(BeachCondition).values(
+                            beach_id=beach.id,
+                            datetime=dt,
+
+                            air_temp=weather["hourly"]["temperature_2m"][i],
+                            wind_speed=weather["hourly"]["wind_speed_10m"][i],
+                            cloud_cover=weather["hourly"]["cloud_cover"][i],
+                            rain_probability=weather["hourly"]["precipitation_probability"][i],
+                            wave_height=marine["hourly"]["wave_height"][j],
+                            water_temp=marine["hourly"]["sea_surface_temperature"][j],
+                            tide=marine["hourly"]["sea_level_height_msl"][j],
+                            uv_index=uv_index
+                        )
+                        stmt = stmt.on_conflict_do_update(
+                            index_elements=["beach_id", "datetime"],
+                            set_={
+                                "air_temp": stmt.excluded.air_temp,
+                                "wind_speed": stmt.excluded.wind_speed,
+                                "cloud_cover": stmt.excluded.cloud_cover,
+                                "rain_probability": stmt.excluded.rain_probability,
+                                "wave_height": stmt.excluded.wave_height,
+                                "water_temp": stmt.excluded.water_temp,
+                                "tide": stmt.excluded.tide,
+                                "uv_index": stmt.excluded.uv_index,
+                            }
+                        )
+                        db.execute(stmt)
+                        total += 1
+                    except Exception as e:
+                        # evita que un punto roto mate todo el batch
+                        print(f"[SKIP DATUM] beach={beach.id} time={t} err={e}")
+                        continue
+            except Exception as e:
+                # evita que una playa entera rompa
+                print(f"[SKIP BEACH/DAY] beach={beach.id} day={day} err={e}")
+                continue
         db.commit()
     return {
         "status": "ok",
-        "saved": total_saved,
+        "records": total,
         "beaches": len(beaches),
-        "days": len(days),
-        "note": "1 record per beach per hour per day (17 days)"
+        "days": len(days)
     }
 
 

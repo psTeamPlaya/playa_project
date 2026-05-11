@@ -2198,5 +2198,7 @@
         }
     }
 
-
+    .user-hidden {
+        display: none !important;
+    }
 }
