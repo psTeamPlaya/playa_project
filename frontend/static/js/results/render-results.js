@@ -57,9 +57,21 @@ function renderFavoriteButton(playa, options) {
     `;
 }
 
+function renderReviewButton(playa) {
+    return `
+        <button class="review-btn" data-id="${playa.beach_id}">
+            <i class="fa-solid fa-comment"></i>
+        </button>
+    `;
+}
+
+async function getBeachRating(beachId) {
+    const res = await fetch(`/reviews/beach/${beachId}/rating`);
+    return await res.json();
+}
+
 export function configurarAnimacionDetalles(container) {
     const beachCards = container?.querySelectorAll(".beach-card") || [];
-
     beachCards.forEach((card) => {
         card.addEventListener("toggle", () => {
             if (!card.open) {
@@ -108,7 +120,9 @@ export function pintarResultados(resultados, container, options = {}) {
 
                     <div class="beach-summary-right">
                         ${renderScore(playa, resolvedOptions)}
+                        <div class="rating-badge" data-rating-id="${playa.beach_id}">⭐ ...</div>
                         ${renderFavoriteButton(playa, resolvedOptions)}
+                        ${renderReviewButton(playa)}
                         <span class="expand-hint" aria-hidden="true">+</span>
                     </div>
                 </summary>
@@ -136,6 +150,21 @@ export function pintarResultados(resultados, container, options = {}) {
             </details>
         `;
     }).join("");
+
+    resultados.forEach(async (playa) => {
+        const rating = await getBeachRating(playa.beach_id);
+
+        const el = container.querySelector(
+            `[data-rating-id="${playa.beach_id}"]`
+        );
+
+        if (!el) return;
+
+        el.innerHTML = `
+            ⭐ ${rating.avg_rating ? rating.avg_rating.toFixed(1) : "N/A"}
+            <span>(${rating.reviews_count || 0})</span>
+        `;
+    });
 
     configurarAnimacionDetalles(container);
 }

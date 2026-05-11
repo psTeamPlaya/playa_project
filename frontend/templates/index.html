@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/favorites.css">
+  <link rel="stylesheet" href="/static/css/reviews.css">
   <link rel="stylesheet" href="/static/css/questions-modal.css">
 </head>
 <body>
@@ -585,6 +586,29 @@
         </div>
     </div>
   </div>
+  <div class="modal-backdrop" id="reviewsModal" hidden>
+    <div class="auth-modal reviews-modal">
+      <button class="modal-close" id="closeReviewsModal" type="button">×</button>
+      <h2>Reseñas de la playa</h2>
+
+      <div id="reviewsList" class="reviews-list">
+        <div class="empty-state">Cargando reseñas...</div>
+      </div>
+
+      <form id="reviewForm" class="review-form">
+        <div class="stars-input" id="starsInput">
+          <span data-value="1">★</span>
+          <span data-value="2">★</span>
+          <span data-value="3">★</span>
+          <span data-value="4">★</span>
+          <span data-value="5">★</span>
+        </div>
+
+        <textarea id="reviewText" placeholder="Escribe tu reseña..." required></textarea>
+        <button class="btn-primary" type="submit">Añadir reseña</button>
+      </form>
+    </div>
+  </div>  
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script type="module" src="/static/js/main.js?v=admin-catalog-20260507"></script>
   <script type="module" src="/static/js/favorites/favorites.js?v=admin-catalog-20260507"></script>
