@@ -1,4 +1,4 @@
-//TODO: el filtro Marea está dando N/A en vez de alta, media,baja.
+
 
 import { formatearMarea, formatearServicios } from "../shared/formatters.js";
 
@@ -57,14 +57,6 @@ function renderFavoriteButton(playa, options) {
     `;
 }
 
-function renderReviewButton(playa) {
-    return `
-        <button class="review-btn" data-id="${playa.beach_id}">
-            <i class="bi bi-chat-dots"></i>
-        </button>
-    `;
-}
-
 async function getBeachRating(beachId) {
     const res = await fetch(`/reviews/beach/${beachId}/rating`);
     return await res.json();
@@ -115,9 +107,11 @@ export function pintarResultados(resultados, container, options = {}) {
                             <h3 class="beach-title">${playa.nombre}</h3>
                             <div class="beach-location">${playa.ubicacion}</div>
                             <div class="beach-actions-row">
-                                <div class="rating-badge" data-rating-id="${playa.beach_id}">&#9733; ...</div>
-                                ${renderFavoriteButton(playa, resolvedOptions)}
-                                ${renderReviewButton(playa)}
+                                <button type="button" class="rating-badge" data-id="${playa.beach_id}" data-rating-id="${playa.beach_id}">&#9733; ...</button>
+                                <div class="beach-actions-trailing">
+                                    ${renderFavoriteButton(playa, resolvedOptions)}
+                                    <span class="expand-hint expand-hint-inline" aria-hidden="true">+</span>
+                                </div>
                             </div>
                             <div class="beach-short-motivo"></div>
                         </div>
@@ -125,7 +119,6 @@ export function pintarResultados(resultados, container, options = {}) {
 
                     <div class="beach-summary-right">
                         ${renderScore(playa, resolvedOptions)}
-                        <span class="expand-hint" aria-hidden="true">+</span>
                     </div>
                 </summary>
 
@@ -163,7 +156,7 @@ export function pintarResultados(resultados, container, options = {}) {
         if (!el) return;
 
         el.innerHTML = `
-            &#9733; ${rating.avg_rating ? rating.avg_rating.toFixed(1) : "N/A"}
+            &#9733; ${rating.avg_rating ? rating.avg_rating.toFixed(1) : "---"}
             <span>(${rating.reviews_count || 0})</span>
         `;
     });

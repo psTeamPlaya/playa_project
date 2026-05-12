@@ -52,7 +52,7 @@
             </div>
             <label class="preference-item">
               <input type="checkbox" id="rememberSchedulePreference">
-              <span id="openConfigLink" style="cursor:pointer; text-decoration: underline;">Filtros personalizados</span>
+              <span id="openConfigLink" style="cursor:pointer; text-decoration: underline;">Mis Filtros</span>
             </label>
             <label class="preference-item">
               <input type="checkbox" id="expandResultsPreference">
@@ -439,10 +439,19 @@
       <button class="modal-close" id="closeUserManagementModal" type="button" aria-label="Cerrar">×</button>
       <div class="admin-modal-header">
         <h2 id="userManagementModalTitle">Gestión de usuarios</h2>
-        <p>Panel básico para revisar usuarios y eliminar cuentas no administradoras.</p>
+        <p>Panel básico para revisar usuarios, banearlos o eliminar cuentas no administradoras.</p>
       </div>
       <div class="admin-feedback" id="userManagementFeedback"></div>
-      <div class="admin-list" id="userManagementList"></div>
+      <div class="admin-user-layout">
+        <section class="admin-user-panel">
+          <h3>Usuarios</h3>
+          <div class="admin-list admin-scroll-panel" id="userManagementList"></div>
+        </section>
+        <section class="admin-user-panel admin-history-panel">
+          <h3>Histórico reciente</h3>
+          <div class="admin-history-list admin-scroll-panel" id="userManagementHistory"></div>
+        </section>
+      </div>
     </div>
   </div>
 

@@ -8,8 +8,10 @@ from sqlalchemy.orm import sessionmaker
 import backend.models  # noqa: F401
 import backend.routes.auth as auth_routes
 from backend.db import Base
+from backend.models.user_audit_log import UserAuditLog
 from backend.models.user import User
 from backend.schemas.user import UserCreate
+from backend.auth.auth import hash_password
 
 
 def make_test_session():
@@ -51,9 +53,12 @@ def test_register_sends_welcome_email(monkeypatch):
     response = asyncio.run(run_test())
 
     created_user = db.query(User).filter(User.email == "nuevo@ejemplo.com").first()
+    audit_log = db.query(UserAuditLog).filter(UserAuditLog.target_email == "nuevo@ejemplo.com").first()
 
     assert response["msg"] == "registered"
     assert created_user is not None
+    assert audit_log is not None
+    assert audit_log.action == "register"
     assert sent_emails == ["nuevo@ejemplo.com"]
 
 
@@ -83,3 +88,20 @@ def test_register_existing_user_does_not_send_welcome_email(monkeypatch):
 
     assert exc.status_code == 400
     assert email_triggered is False
+
+
+def test_login_rejects_banned_user():
+    db = make_test_session()
+    banned_user = User(
+        email="baneado@ejemplo.com",
+        hashed_password=hash_password("secret123"),
+        is_banned=True,
+    )
+    db.add(banned_user)
+    db.commit()
+
+    with pytest.raises(HTTPException) as excinfo:
+        auth_routes.login(auth_routes.UserLogin(email="baneado@ejemplo.com", password="secret123"), db=db)
+
+    assert excinfo.value.status_code == 403
+    assert excinfo.value.detail == "User is banned"
