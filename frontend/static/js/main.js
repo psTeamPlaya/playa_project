@@ -738,21 +738,61 @@ async function handleReviewClick(event) {
     }
 }
 
+document.getElementById("reviewsList").addEventListener("click", async (event) => {
+    const btn = event.target.closest(".delete-review-btn");
+    if (!btn) return;
+
+    const reviewId = btn.dataset.id;
+
+    const user = sessionUIController?.getCurrentUser?.();
+    if (!user) return;
+
+    const confirmDelete = confirm("¿Seguro que quieres borrar esta reseña?");
+    if (!confirmDelete) return;
+
+    try {
+        await authFetch(`/reviews/${reviewId}`, {
+            method: "DELETE"
+        });
+
+        // recargar reviews
+        const res = await authFetch(`/reviews/beach/${currentBeachForReviews}`);
+        const reviews = await res.json();
+        renderReviews(reviews);
+    } 
+    catch (err) {
+        alert("Error al eliminar la reseña");
+    }
+});
+
 function renderReviews(reviews) {
     const list = document.getElementById("reviewsList");
+    const user = sessionUIController?.getCurrentUser?.();
 
     if (!reviews.length) {
         list.innerHTML = "<div class='empty-state'>Sin reseñas todavía</div>";
         return;
     }
 
-    list.innerHTML = reviews.map(r => `
-        <div class="review-item">
-            <strong>${r.email}</strong>
-            <p>${r.content}</p>
-            <small>⭐ ${r.rating}</small>
-        </div>
-    `).join("");
+    list.innerHTML = reviews.map(r => {
+
+        const isOwner = user && user.email === r.email;
+        const isAdmin = user && user.role === "admin";
+
+        return `
+            <div class="review-item" data-id="${r.id}">
+                <strong>${r.email}</strong>
+                <p>${r.content}</p>
+                <small>⭐ ${r.rating}</small>
+
+                ${(isOwner || isAdmin) ? `
+                    <button class="delete-review-btn" data-id="${r.id}">
+                        🗑️ Eliminar
+                    </button>
+                ` : ""}
+            </div>
+        `;
+    }).join("");
 }
 
 const reviewForm = document.getElementById("reviewForm");
