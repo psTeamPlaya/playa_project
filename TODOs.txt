@@ -1,0 +1,4 @@
+TODO: en el panel de playas, los servicios no se están guardando en la BBDD.
+TODO: en el panel de playas, las actividades no se están guardando en la BBDD.
+TODO: cuando se añade una nueva actividad, debe haber un panel para asignarle pesos atmosféricos.
+TODO: cuando el ratón pasa por encima del botón de estrellas, debe ser tipo flecha. En botón favoritos y en botón comentario o botón expandir detalles cambiará a dedo para click En el resto del botón será como flecha-cursor.
