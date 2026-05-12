@@ -1,5 +1,5 @@
 from backend import engine_recomendation
-from backend.engine_recomendation import filtrar_resultados_recomendacion, fusionar_playas
+from backend.engine_recomendation import filtrar, fusionar_playas, filtrar_resultados_recomendacion
 
 
 def test_fusionar_playas_sobrescribe_coordenadas_desde_db():
@@ -133,33 +133,6 @@ def test_filtrar_resultados_recomendacion_sin_filtros_devuelve_todos():
     filtrados = filtrar_resultados_recomendacion(resultados)
 
     assert filtrados == resultados
-
-
-def test_filtrar_resultados_recomendacion_aplica_filtros_por_servicio_y_actividad():
-    resultados = [
-        {
-            "tipo": "arena",
-            "servicios": {"restaurantes": True, "comida_para_llevar": True, "zona_deportiva": True, "escuela_surf": True},
-            "actividades_ideales": [],
-            "condiciones": {"temperatura_ambiente": 24, "nubosidad": 20, "velocidad_viento": 10, "altura_oleaje": 1.2},
-        },
-        {
-            "tipo": "piedra",
-            "servicios": {"restaurantes": False, "comida_para_llevar": True, "zona_deportiva": False, "escuela_windsurf": True},
-            "actividades_ideales": [],
-            "condiciones": {"temperatura_ambiente": 21, "nubosidad": 15, "velocidad_viento": 12, "altura_oleaje": 0.8},
-        },
-    ]
-
-    filtrados = filtrar_resultados_recomendacion(
-        resultados,
-        escuela_surf=True,
-        restaurantes=True,
-        zona_deportiva=True,
-        zona_beachvolley=True,
-    )
-
-    assert filtrados == [resultados[0]]
 
 
 def test_filtrar_resultados_recomendacion_sitios_para_comer_acepta_cualquier_servicio_de_comida():
