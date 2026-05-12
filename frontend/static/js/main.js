@@ -40,6 +40,7 @@ const buscarBtn = document.getElementById("buscarBtn");
 const floatingBuscarBtn = document.getElementById("floatingBuscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
+const favoritesResultsContainer = document.getElementById("favoritesResultsContainer");
 const recommendedBeachesSection = document.getElementById("recommendedBeachesSection");
 const hourWheel = document.getElementById("hourWheel");
 const sunAlertEl = document.getElementById("sunAlert");
@@ -710,6 +711,8 @@ async function handleFavoriteToggle(event) {
 }
 
 resultsContainer.addEventListener("click", handleReviewClick);
+favoritesResultsContainer.addEventListener("click", handleReviewClick);
+
 let currentBeachForReviews = null;
 
 async function handleReviewClick(event) {
