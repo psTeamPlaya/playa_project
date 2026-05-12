@@ -113,6 +113,7 @@ const userManagementModal = document.getElementById("userManagementModal");
 const closeUserManagementModal = document.getElementById("closeUserManagementModal");
 const userManagementList = document.getElementById("userManagementList");
 const userManagementFeedback = document.getElementById("userManagementFeedback");
+const userManagementHistory = document.getElementById("userManagementHistory");
 const beachManagementModal = document.getElementById("beachManagementModal");
 const closeBeachManagementModal = document.getElementById("closeBeachManagementModal");
 const beachManagementList = document.getElementById("beachManagementList");
@@ -505,6 +506,7 @@ function initControllers() {
         closeUserManagementModal,
         userManagementList,
         userManagementFeedback,
+        userManagementHistory,
         beachManagementModal,
         closeBeachManagementModal,
         beachManagementList,
@@ -716,10 +718,13 @@ favoritesResultsContainer.addEventListener("click", handleReviewClick);
 let currentBeachForReviews = null;
 
 async function handleReviewClick(event) {
-    const btn = event.target.closest(".review-btn");
+    const btn = event.target.closest(".rating-badge");
     if (!btn) return;
 
-    const beachId = btn.dataset.id;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const beachId = btn.dataset.id || btn.dataset.ratingId;
     currentBeachForReviews = beachId;
 
     const modal = document.getElementById("reviewsModal");

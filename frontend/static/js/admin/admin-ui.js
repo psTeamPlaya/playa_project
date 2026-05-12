@@ -71,6 +71,7 @@ export function initAdminUI({
     closeUserManagementModal,
     userManagementList,
     userManagementFeedback,
+    userManagementHistory,
     beachManagementModal,
     closeBeachManagementModal,
     beachManagementList,
@@ -271,9 +272,77 @@ export function initAdminUI({
             <article class="admin-list-card">
                 <div>
                     <strong>${user.email}</strong>
-                    <div class="admin-list-meta">${user.is_admin ? "Administrador" : "Usuario"}</div>
+                    <div class="admin-list-meta">${user.is_admin ? "Administrador" : user.is_banned ? "Usuario baneado" : "Usuario"}</div>
                 </div>
-                ${user.is_admin || user.id === currentUser?.id ? "" : `<button class="btn-secondary admin-inline-button" data-user-id="${user.id}" type="button">Eliminar</button>`}
+                ${user.is_admin || user.id === currentUser?.id ? "" : `
+                    <div class="admin-inline-actions">
+                        <button
+                            class="btn-secondary admin-inline-button ${user.is_banned ? "admin-inline-button-danger" : ""}"
+                            data-user-id="${user.id}"
+                            data-user-action="toggle-ban"
+                            data-user-banned="${user.is_banned ? "true" : "false"}"
+                            type="button"
+                        >
+                            ${user.is_banned ? "Baneado" : "Banear"}
+                        </button>
+                        <button
+                            class="btn-secondary admin-inline-button"
+                            data-user-id="${user.id}"
+                            data-user-action="delete"
+                            type="button"
+                        >
+                            Eliminar
+                        </button>
+                    </div>
+                `}
+            </article>
+        `).join("");
+    }
+
+    function formatAuditAction(log) {
+        if (log.action === "register") {
+            return `Registro de ${escapeHtml(log.target_email)}`;
+        }
+        if (log.action === "ban") {
+            return `Baneo de ${escapeHtml(log.target_email)}`;
+        }
+        if (log.action === "unban") {
+            return `Desbaneo de ${escapeHtml(log.target_email)}`;
+        }
+        if (log.action === "delete") {
+            return `Eliminación de ${escapeHtml(log.target_email)}`;
+        }
+        return `${escapeHtml(log.action)} · ${escapeHtml(log.target_email)}`;
+    }
+
+    function formatAuditMeta(log) {
+        const timestamp = new Date(log.created_at);
+        const dateText = Number.isNaN(timestamp.getTime())
+            ? "Fecha no disponible"
+            : new Intl.DateTimeFormat("es-ES", {
+                dateStyle: "short",
+                timeStyle: "short",
+            }).format(timestamp);
+
+        if (!log.actor_email) {
+            return dateText;
+        }
+
+        return `${dateText} · por ${escapeHtml(log.actor_email)}`;
+    }
+
+    function renderUserHistory(logs) {
+        if (!userManagementHistory) return;
+
+        if (!logs.length) {
+            userManagementHistory.innerHTML = '<div class="empty-state">Todavía no hay eventos de usuarios.</div>';
+            return;
+        }
+
+        userManagementHistory.innerHTML = logs.map((log) => `
+            <article class="admin-history-entry">
+                <div class="admin-history-chip admin-history-chip-${escapeHtml(log.action)}">${formatAuditAction(log)}</div>
+                <div class="admin-history-meta">${formatAuditMeta(log)}</div>
             </article>
         `).join("");
     }
@@ -305,8 +374,12 @@ export function initAdminUI({
 
     async function loadUsers() {
         setFeedback(userManagementFeedback, "Cargando usuarios...");
-        const users = await fetchJson("/admin/users");
+        const [users, history] = await Promise.all([
+            fetchJson("/admin/users"),
+            fetchJson("/admin/users/history"),
+        ]);
         renderUsers(users);
+        renderUserHistory(history || []);
         setFeedback(userManagementFeedback, "");
     }
 
@@ -418,6 +491,19 @@ export function initAdminUI({
         await fetchJson(`/admin/users/${userId}`, { method: "DELETE" });
         await loadUsers();
         setFeedback(userManagementFeedback, "Usuario eliminado.", "success");
+    }
+
+    async function setUserBanStatus(userId, isBanned) {
+        await fetchJson(`/admin/users/${userId}/ban`, {
+            method: "PATCH",
+            body: JSON.stringify({ is_banned: isBanned }),
+        });
+        await loadUsers();
+        setFeedback(
+            userManagementFeedback,
+            isBanned ? "Usuario baneado." : "Usuario desbaneado.",
+            "success",
+        );
     }
 
     function getBeachPayload() {
@@ -541,6 +627,14 @@ export function initAdminUI({
         const button = event.target.closest("[data-user-id]");
         if (!button) return;
         try {
+            if (button.dataset.userAction === "toggle-ban") {
+                await setUserBanStatus(
+                    button.dataset.userId,
+                    button.dataset.userBanned !== "true",
+                );
+                return;
+            }
+
             await deleteUser(button.dataset.userId);
         } catch (error) {
             setFeedback(userManagementFeedback, error.message, "error");
