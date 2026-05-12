@@ -60,7 +60,7 @@ function renderFavoriteButton(playa, options) {
 function renderReviewButton(playa) {
     return `
         <button class="review-btn" data-id="${playa.beach_id}">
-            <i class="fa-solid fa-comment"></i>
+            <i class="bi bi-chat-dots"></i>
         </button>
     `;
 }
@@ -111,18 +111,20 @@ export function pintarResultados(resultados, container, options = {}) {
                 <summary class="beach-summary">
                     <div class="beach-summary-left">
                         <div class="ranking-badge">#${index + 1}</div>
-                        <div>
+                        <div class="beach-summary-content">
                             <h3 class="beach-title">${playa.nombre}</h3>
                             <div class="beach-location">${playa.ubicacion}</div>
+                            <div class="beach-actions-row">
+                                <div class="rating-badge" data-rating-id="${playa.beach_id}">&#9733; ...</div>
+                                ${renderFavoriteButton(playa, resolvedOptions)}
+                                ${renderReviewButton(playa)}
+                            </div>
                             <div class="beach-short-motivo"></div>
                         </div>
                     </div>
 
                     <div class="beach-summary-right">
                         ${renderScore(playa, resolvedOptions)}
-                        <div class="rating-badge" data-rating-id="${playa.beach_id}">⭐ ...</div>
-                        ${renderFavoriteButton(playa, resolvedOptions)}
-                        ${renderReviewButton(playa)}
                         <span class="expand-hint" aria-hidden="true">+</span>
                     </div>
                 </summary>
@@ -161,7 +163,7 @@ export function pintarResultados(resultados, container, options = {}) {
         if (!el) return;
 
         el.innerHTML = `
-            ⭐ ${rating.avg_rating ? rating.avg_rating.toFixed(1) : "N/A"}
+            &#9733; ${rating.avg_rating ? rating.avg_rating.toFixed(1) : "N/A"}
             <span>(${rating.reviews_count || 0})</span>
         `;
     });
