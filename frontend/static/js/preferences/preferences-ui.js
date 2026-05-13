@@ -90,7 +90,7 @@ export function initPreferencesUI({
 }
 
 export function aplicarVisibilidadFiltros(soloPersonalizados) {
-    const configRaw = localStorage.getItem("preferences.userFiltersConfig");
+    const configRaw = sessionStorage.getItem("preferences.userFiltersConfig");
     const filtersSidebar = document.getElementById('filtersSidebar');
     const appShell = document.querySelector('.app-shell');
     if (!configRaw) return;

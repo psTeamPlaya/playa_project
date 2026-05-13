@@ -697,7 +697,7 @@ async function handleFavoriteToggle(event) {
     console.log("btn pressed:", btn);
 
     const beachId = Number(btn.dataset.id);
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) {
         alert("Inicia sesion para gestionar favoritas.");
         return;

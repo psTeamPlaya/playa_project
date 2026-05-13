@@ -16,7 +16,7 @@ export function abrirConfiguradorInicial() {
     const lista = document.getElementById('configFilterList');
     if (!modal || !lista) return;
 
-    const configPrevia = JSON.parse(localStorage.getItem("preferences.userFiltersConfig") || "{}");
+    const configPrevia = JSON.parse(sessionStorage.getItem("preferences.userFiltersConfig") || "{}");
 
     lista.innerHTML = FILTROS_CONFIGURABLES.map(f => {
         const isChecked = configPrevia[f.id] !== false;
@@ -50,7 +50,7 @@ export function abrirConfiguradorInicial() {
             });
 
             if (response.ok) {
-                localStorage.setItem("preferences.userFiltersConfig", JSON.stringify(nuevaConfig));
+                sessionStorage.setItem("preferences.userFiltersConfig", JSON.stringify(nuevaConfig));
                 modal.hidden = true;
 
                 const checkPreferencias = document.getElementById('rememberSchedulePreference');
