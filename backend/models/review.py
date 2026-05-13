@@ -11,7 +11,7 @@ class Review(Base):
     beach_id = Column(Integer, ForeignKey("beaches.id"), nullable=False)
 
     rating = Column(Integer, nullable=False)  # 1 a 5
-    content = Column(Text)
+    content = Column(Text, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 

@@ -1,7 +1,7 @@
 import { authFetch } from "./auth-fetch.js";
 
 export async function getFavoriteBeachIds() {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) {
         return [];
     }

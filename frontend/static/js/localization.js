@@ -219,7 +219,7 @@ btnGeolocalizar.addEventListener("click", async () => {
 
 /**
  * ============================================
- * SEARCH HISTORY (localStorage)
+ * SEARCH HISTORY (sessionStorage)
  * ============================================
  */
 
@@ -227,12 +227,12 @@ btnGeolocalizar.addEventListener("click", async () => {
  * Save location to history (max 10 entries)
  */
 function saveToHistory(city) {
-    let history = JSON.parse(localStorage.getItem("locHistory") || "[]");
+    let history = JSON.parse(sessionStorage.getItem("locHistory") || "[]");
 
     // Remove duplicates and add new item at the beginning
     history = [city, ...history.filter(c => c !== city)].slice(0, 10);
 
-    localStorage.setItem("locHistory", JSON.stringify(history));
+    sessionStorage.setItem("locHistory", JSON.stringify(history));
 
 }
 
