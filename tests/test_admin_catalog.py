@@ -10,6 +10,8 @@ import backend.models  # noqa: F401
 from backend.db import Base
 from backend.models.activity import Activity
 from backend.models.service import Service
+from backend.models.user import User
+from backend.models.user_audit_log import UserAuditLog
 
 
 ADMIN_ROUTE_PATH = Path(__file__).resolve().parents[1] / "backend" / "routes" / "admin.py"
@@ -27,10 +29,13 @@ delete_admin_service = ADMIN_ROUTE_MODULE.delete_admin_service
 ensure_beach_id_sequence = ADMIN_ROUTE_MODULE.ensure_beach_id_sequence
 list_admin_activities = ADMIN_ROUTE_MODULE.list_admin_activities
 list_admin_services = ADMIN_ROUTE_MODULE.list_admin_services
+list_user_audit_logs = ADMIN_ROUTE_MODULE.list_user_audit_logs
 normalize_service_name = ADMIN_ROUTE_MODULE.normalize_service_name
 normalize_activity_name = ADMIN_ROUTE_MODULE.normalize_activity_name
 serialize_beach = ADMIN_ROUTE_MODULE.serialize_beach
 AdminCatalogItemPayload = ADMIN_ROUTE_MODULE.AdminCatalogItemPayload
+AdminUserBanPayload = ADMIN_ROUTE_MODULE.AdminUserBanPayload
+set_user_ban_status = ADMIN_ROUTE_MODULE.set_user_ban_status
 
 
 def make_test_session():
@@ -248,3 +253,67 @@ def test_admin_service_rejects_duplicates():
         create_admin_service(AdminCatalogItemPayload(name="Hamacas"), db=db, _=object())
 
     assert excinfo.value.status_code == 400
+
+
+def test_set_user_ban_status_updates_non_admin_user():
+    db = make_test_session()
+    admin_user = User(email="admin@ejemplo.com", hashed_password="hashed", is_admin=True)
+    regular_user = User(email="user@ejemplo.com", hashed_password="hashed", is_admin=False, is_banned=False)
+    db.add_all([admin_user, regular_user])
+    db.commit()
+
+    updated_user = set_user_ban_status(
+        regular_user.id,
+        AdminUserBanPayload(is_banned=True),
+        db=db,
+        current_user=admin_user,
+    )
+
+    assert updated_user.is_banned is True
+    assert db.get(User, regular_user.id).is_banned is True
+    audit_log = db.query(UserAuditLog).filter(UserAuditLog.target_email == "user@ejemplo.com").one()
+    assert audit_log.action == "ban"
+
+
+def test_set_user_ban_status_rejects_self_ban():
+    db = make_test_session()
+    admin_user = User(email="admin@ejemplo.com", hashed_password="hashed", is_admin=True)
+    db.add(admin_user)
+    db.commit()
+
+    with pytest.raises(HTTPException) as excinfo:
+        set_user_ban_status(
+            admin_user.id,
+            AdminUserBanPayload(is_banned=True),
+            db=db,
+            current_user=admin_user,
+        )
+
+    assert excinfo.value.status_code == 400
+
+
+def test_delete_user_creates_audit_log():
+    db = make_test_session()
+    admin_user = User(email="admin@ejemplo.com", hashed_password="hashed", is_admin=True)
+    regular_user = User(email="delete@ejemplo.com", hashed_password="hashed", is_admin=False)
+    db.add_all([admin_user, regular_user])
+    db.commit()
+
+    ADMIN_ROUTE_MODULE.delete_user(regular_user.id, db=db, current_user=admin_user)
+
+    audit_log = db.query(UserAuditLog).filter(UserAuditLog.target_email == "delete@ejemplo.com").one()
+    assert audit_log.action == "delete"
+
+
+def test_list_user_audit_logs_returns_latest_first():
+    db = make_test_session()
+    db.add_all([
+        UserAuditLog(action="register", target_email="uno@ejemplo.com"),
+        UserAuditLog(action="ban", target_email="dos@ejemplo.com"),
+    ])
+    db.commit()
+
+    logs = list_user_audit_logs(db=db, _=object())
+
+    assert len(logs) == 2
+    assert logs[0].target_email == "dos@ejemplo.com"
