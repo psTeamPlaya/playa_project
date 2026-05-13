@@ -29,13 +29,15 @@ def ensure_user_schema() -> None:
         return
 
     user_columns = {column["name"] for column in inspector.get_columns("users")}
-    if "is_admin" in user_columns:
-        return
-
     with engine.begin() as conn:
-        conn.execute(
-            text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT FALSE")
-        )
+        if "is_admin" not in user_columns:
+            conn.execute(
+                text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT FALSE")
+            )
+        if "is_banned" not in user_columns:
+            conn.execute(
+                text("ALTER TABLE users ADD COLUMN is_banned BOOLEAN NOT NULL DEFAULT FALSE")
+            )
 
 
 def ensure_admin_user() -> None:
@@ -47,10 +49,12 @@ def ensure_admin_user() -> None:
                 email="admin",
                 hashed_password=hash_password("admin"),
                 is_admin=True,
+                is_banned=False,
             )
             session.add(admin_user)
         else:
             admin_user.is_admin = True
+            admin_user.is_banned = False
             admin_user.hashed_password = hash_password("admin")
 
         session.commit()

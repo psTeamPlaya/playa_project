@@ -27,7 +27,7 @@ export function formatearMarea(condiciones = {}) {
 
     const tideValue = Number(condiciones.tide);
     if (Number.isNaN(tideValue)) {
-        return "N/A";
+        return "---";
     }
     if (tideValue <= -0.10) {
         return "baja";

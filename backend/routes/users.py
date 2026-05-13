@@ -29,6 +29,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         "id": new_user.id,
         "email": new_user.email,
         "is_admin": new_user.is_admin,
+        "is_banned": new_user.is_banned,
     }
 
 
@@ -44,6 +45,7 @@ def list_users(db: Session = Depends(get_db)):
             "id": user.id,
             "email": user.email,
             "is_admin": user.is_admin,
+            "is_banned": user.is_banned,
         }
         for user in users
     ]

@@ -9,4 +9,5 @@ class User(Base):
     email = Column(String, nullable=False, unique=True)
     hashed_password = Column(String, nullable=False)
     is_admin = Column(Boolean, nullable=False, default=False)
+    is_banned = Column(Boolean, nullable=False, default=False)
     filter_preferences = Column(JSON, nullable=True, default=dict)

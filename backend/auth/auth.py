@@ -38,9 +38,19 @@ def create_token(user_id: int):
     return jwt.encode({"sub": str(user_id)}, settings.SECRET_KEY, algorithm="HS256")
 
 def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
-    payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-    user_id = int(payload["sub"])
-    return db.query(User).get(user_id)
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        user_id = int(payload["sub"])
+    except (JWTError, KeyError, TypeError, ValueError):
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = db.query(User).get(user_id)
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+    if user.is_banned:
+        raise HTTPException(status_code=403, detail="User is banned")
+
+    return user
 
 
 def require_admin(current_user: User = Depends(get_current_user)):

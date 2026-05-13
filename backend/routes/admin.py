@@ -13,7 +13,14 @@ from backend.models.activity import Activity
 from backend.models.beach import Beach
 from backend.models.service import Service
 from backend.models.user import User
-from backend.schemas.user import UserResponse
+from backend.models.user_audit_log import UserAuditLog
+from backend.schemas.user import UserAuditLogResponse, UserResponse
+from backend.user_audit import (
+    USER_AUDIT_BAN,
+    USER_AUDIT_DELETE,
+    USER_AUDIT_UNBAN,
+    create_user_audit_log,
+)
 from backend.engine_recomendation import PESOS_ACTIVIDAD
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -56,6 +63,10 @@ class AdminBeachPayload(BaseModel):
 
 class AdminCatalogItemPayload(BaseModel):
     name: str = Field(min_length=1)
+
+
+class AdminUserBanPayload(BaseModel):
+    is_banned: bool
 
 
 def normalize_activity_name(name: str | None) -> str | None:
@@ -304,6 +315,19 @@ def list_users(
     return db.query(User).order_by(User.is_admin.desc(), User.email.asc()).all()
 
 
+@router.get("/users/history", response_model=list[UserAuditLogResponse])
+def list_user_audit_logs(
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    return (
+        db.query(UserAuditLog)
+        .order_by(UserAuditLog.created_at.desc(), UserAuditLog.id.desc())
+        .limit(100)
+        .all()
+    )
+
+
 @router.delete("/users/{user_id}")
 def delete_user(
     user_id: int,
@@ -318,9 +342,37 @@ def delete_user(
     if user.is_admin:
         raise HTTPException(status_code=400, detail="No puedes eliminar otro usuario admin")
 
+    create_user_audit_log(db, USER_AUDIT_DELETE, target_user=user, actor_user=current_user)
     db.delete(user)
     db.commit()
     return {"ok": True}
+
+
+@router.patch("/users/{user_id}/ban", response_model=UserResponse)
+def set_user_ban_status(
+    user_id: int,
+    payload: AdminUserBanPayload,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="No puedes banear tu propio usuario admin")
+    if user.is_admin:
+        raise HTTPException(status_code=400, detail="No puedes banear otro usuario admin")
+
+    user.is_banned = payload.is_banned
+    create_user_audit_log(
+        db,
+        USER_AUDIT_BAN if payload.is_banned else USER_AUDIT_UNBAN,
+        target_user=user,
+        actor_user=current_user,
+    )
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 @router.get("/catalog")
