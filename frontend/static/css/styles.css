@@ -587,7 +587,7 @@ button {
 
 .beach-summary {
     list-style: none;
-    cursor: pointer;
+    cursor: default;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -782,6 +782,7 @@ button {
 }
 
 .expand-hint {
+    cursor: pointer;
     width: 2.25rem;
     height: 2.25rem;
     border-radius: 999px;
