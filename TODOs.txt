@@ -1,6 +1,1 @@
-
-TODO: cuando se añade una nueva actividad, debe haber un panel para asignarle pesos atmosféricos.
-TODO: revisa el motor de score porque está resultando notas mayores a 10 y no puede ser.
-TODO: al añadir actividades, deben mostrarse en el contenido principal y también en los chips para seleccionar esa actividad en esa playa.
-TODO: al añadir servicios, deben actualizarse los chips de la playa para seleccionarlo.
 TODO: el JSON de playas debe cargarse en la DB.
