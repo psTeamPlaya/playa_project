@@ -9,26 +9,31 @@
     "descripcion": "Playa urbana muy conocida, amplia y con gran disponibilidad de servicios.",
     "actividades_ideales": [
       {
+        "actividad": "bucear",
+        "condicion": "adecuada en zonas tranquilas y con buena visibilidad"
+      },
+      {
         "actividad": "nadar",
         "condicion": "ideal con marea baja"
       },
       {
-        "actividad": "tomar_sol",
-        "condicion": "ideal en condiciones generales"
+        "actividad": "paddle_surf",
+        "condicion": "gestionado desde panel admin"
       },
       {
-        "actividad": "bucear",
-        "condicion": "adecuada en zonas tranquilas y con buena visibilidad"
+        "actividad": "tomar_sol",
+        "condicion": "ideal en condiciones generales"
       }
     ],
     "servicios": {
       "restaurantes": true,
       "comida_para_llevar": true,
-      "balneario": true,
+      "balnearios": true,
       "zona_deportiva": true,
       "escuela_surf": true,
       "escuela_windsurf": false,
-      "pet_friendly": true
+      "pet_friendly": true,
+      "hamacas": true
     },
     "imagen": "las_canteras.jpg",
     "accesibilidad": "alta"
@@ -211,18 +216,18 @@
     "descripcion": "Playa de ambiente tranquilo, adecuada para baño relajado y descanso.",
     "actividades_ideales": [
       {
-        "actividad": "Nadar",
+        "actividad": "caminar",
         "condicion": "gestionado desde panel admin"
       },
       {
-        "actividad": "Pasear",
+        "actividad": "nadar",
         "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {
       "restaurantes": true,
       "comida_para_llevar": true,
-      "balneario": false,
+      "balnearios": false,
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false
@@ -395,12 +400,16 @@
       {
         "actividad": "bucear",
         "condicion": "ideal con buena visibilidad y mar favorable"
+      },
+      {
+        "actividad": "pescar",
+        "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {
       "restaurantes": false,
       "comida_para_llevar": false,
-      "balneario": false,
+      "balnearios": false,
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false

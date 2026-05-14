@@ -9,9 +9,11 @@ from sqlalchemy.orm import sessionmaker
 import backend.models  # noqa: F401
 from backend.db import Base
 from backend.models.activity import Activity
+from backend.models.activity_variable_weight import ActivityVariableWeight
 from backend.models.service import Service
 from backend.models.user import User
 from backend.models.user_audit_log import UserAuditLog
+from backend.models.variable import Variable
 
 
 ADMIN_ROUTE_PATH = Path(__file__).resolve().parents[1] / "backend" / "routes" / "admin.py"
@@ -27,12 +29,14 @@ create_admin_service = ADMIN_ROUTE_MODULE.create_admin_service
 delete_admin_activity = ADMIN_ROUTE_MODULE.delete_admin_activity
 delete_admin_service = ADMIN_ROUTE_MODULE.delete_admin_service
 ensure_beach_id_sequence = ADMIN_ROUTE_MODULE.ensure_beach_id_sequence
+ensure_activity_id_sequence = ADMIN_ROUTE_MODULE.ensure_activity_id_sequence
 list_admin_activities = ADMIN_ROUTE_MODULE.list_admin_activities
 list_admin_services = ADMIN_ROUTE_MODULE.list_admin_services
 list_user_audit_logs = ADMIN_ROUTE_MODULE.list_user_audit_logs
 normalize_service_name = ADMIN_ROUTE_MODULE.normalize_service_name
 normalize_activity_name = ADMIN_ROUTE_MODULE.normalize_activity_name
 serialize_beach = ADMIN_ROUTE_MODULE.serialize_beach
+update_admin_activity = ADMIN_ROUTE_MODULE.update_admin_activity
 AdminCatalogItemPayload = ADMIN_ROUTE_MODULE.AdminCatalogItemPayload
 AdminUserBanPayload = ADMIN_ROUTE_MODULE.AdminUserBanPayload
 set_user_ban_status = ADMIN_ROUTE_MODULE.set_user_ban_status
@@ -93,6 +97,7 @@ def test_normalize_activity_name_handles_aliases():
     assert normalize_activity_name("Pasear") == "caminar"
     assert normalize_activity_name("Piscina Natural") == "piscina_natural"
     assert normalize_activity_name("Kite-Surf") == "kitesurf"
+    assert normalize_activity_name("Buceo") == "bucear"
 
 
 def test_collect_available_activities_unifies_db_and_defaults(monkeypatch):
@@ -171,6 +176,20 @@ def test_ensure_beach_id_sequence_executes_setval():
     assert "pg_get_serial_sequence('beaches', 'id')" in calls[0]
 
 
+def test_ensure_activity_id_sequence_executes_setval():
+    calls = []
+
+    class DummySequenceDb:
+        def execute(self, statement):
+            calls.append(str(statement))
+
+    ensure_activity_id_sequence(DummySequenceDb())
+
+    assert calls
+    assert "setval" in calls[0].lower()
+    assert "pg_get_serial_sequence('activities', 'id')" in calls[0]
+
+
 def test_normalize_service_name_handles_aliases():
     assert normalize_service_name("Balneario") == "balnearios"
     assert normalize_service_name("Pet Friendly") == "pet_friendly"
@@ -180,6 +199,11 @@ def test_normalize_service_name_handles_aliases():
 def test_admin_activity_crud_updates_metadata(monkeypatch):
     db = make_test_session()
     saved_metadata = {}
+    db.add_all([
+        Variable(name="wave_height", unit="m"),
+        Variable(name="wind_speed", unit="km/h"),
+    ])
+    db.commit()
 
     monkeypatch.setattr(
         ADMIN_ROUTE_MODULE,
@@ -192,15 +216,28 @@ def test_admin_activity_crud_updates_metadata(monkeypatch):
         lambda metadata: saved_metadata.setdefault("value", metadata),
     )
 
-    created = create_admin_activity(AdminCatalogItemPayload(name="Paddle Surf"), db=db, _=object())
+    created = create_admin_activity(
+        AdminCatalogItemPayload(
+            name="Paddle Surf",
+            weights={"wave_height": 0.7, "wind_speed": 0.3},
+        ),
+        db=db,
+        _=object(),
+    )
     listed = list_admin_activities(db=db, _=object())
 
     assert created["name"] == "paddle_surf"
-    assert listed[0]["name"] == "paddle_surf"
+    assert "paddle_surf" in {item["name"] for item in listed}
+    saved_weights = {
+        db.get(Variable, weight.variable_id).name: weight.weight
+        for weight in db.query(ActivityVariableWeight).all()
+    }
+    assert saved_weights == {"wave_height": 0.7, "wind_speed": 0.3}
 
     delete_admin_activity(created["id"], db=db, _=object())
 
     assert db.query(Activity).count() == 0
+    assert db.query(ActivityVariableWeight).count() == 0
     assert saved_metadata["value"][0]["actividades_ideales"] == [{"actividad": "Kayak"}]
 
 
@@ -251,6 +288,115 @@ def test_admin_service_rejects_duplicates():
 
     with pytest.raises(HTTPException) as excinfo:
         create_admin_service(AdminCatalogItemPayload(name="Hamacas"), db=db, _=object())
+
+    assert excinfo.value.status_code == 400
+
+
+def test_admin_activity_requires_weights_for_new_custom_activity():
+    db = make_test_session()
+    db.add(Variable(name="wave_height", unit="m"))
+    db.commit()
+
+    with pytest.raises(HTTPException) as excinfo:
+        create_admin_activity(AdminCatalogItemPayload(name="Paddle Surf"), db=db, _=object())
+
+    assert excinfo.value.status_code == 400
+
+
+def test_list_admin_activities_deduplicates_aliased_names():
+    db = make_test_session()
+    db.add(Activity(name="buceo"))
+    db.add(Activity(name="bucear"))
+    db.commit()
+
+    listed = list_admin_activities(db=db, _=object())
+
+    assert [item["name"] for item in listed].count("bucear") == 1
+
+
+def test_update_admin_activity_updates_custom_name_and_weights(monkeypatch):
+    db = make_test_session()
+    db.add_all([
+        Variable(name="wave_height", unit="m"),
+        Variable(name="wind_speed", unit="km/h"),
+    ])
+    db.commit()
+
+    monkeypatch.setattr(ADMIN_ROUTE_MODULE, "load_beach_metadata", lambda: [])
+    monkeypatch.setattr(ADMIN_ROUTE_MODULE, "save_beach_metadata", lambda metadata: metadata)
+
+    created = create_admin_activity(
+        AdminCatalogItemPayload(
+            name="Paddle Surf",
+            weights={"wave_height": 0.8, "wind_speed": 0.2},
+        ),
+        db=db,
+        _=object(),
+    )
+
+    updated = update_admin_activity(
+        created["name"],
+        AdminCatalogItemPayload(
+            name="Downwind",
+            weights={"wave_height": 0.25, "wind_speed": 0.75},
+        ),
+        db=db,
+        _=object(),
+    )
+
+    assert updated["name"] == "downwind"
+    assert updated["weights"] == {"wave_height": 0.25, "wind_speed": 0.75}
+
+
+def test_update_admin_activity_allows_weight_edit_for_system_activity():
+    db = make_test_session()
+    db.add_all([
+        Variable(name="wave_height", unit="m"),
+        Variable(name="wind_speed", unit="km/h"),
+        Variable(name="air_temp", unit="C"),
+        Variable(name="water_temp", unit="C"),
+        Variable(name="cloud_cover", unit="%"),
+        Variable(name="rain_probability", unit="%"),
+    ])
+    db.commit()
+
+    updated = update_admin_activity(
+        "surf",
+        AdminCatalogItemPayload(
+            name="surf",
+            weights={"wave_height": 0.6, "wind_speed": 0.4},
+        ),
+        db=db,
+        _=object(),
+    )
+
+    assert updated["name"] == "surf"
+    assert updated["weights"] == {"wave_height": 0.6, "wind_speed": 0.4}
+
+
+def test_update_admin_activity_rejects_renaming_system_activity():
+    db = make_test_session()
+    db.add(Variable(name="wave_height", unit="m"))
+    db.commit()
+
+    with pytest.raises(HTTPException) as excinfo:
+        update_admin_activity(
+            "surf",
+            AdminCatalogItemPayload(name="surfing", weights={"wave_height": 1}),
+            db=db,
+            _=object(),
+        )
+
+    assert excinfo.value.status_code == 400
+
+
+def test_admin_activity_rejects_aliased_duplicates():
+    db = make_test_session()
+    db.add(Activity(name="buceo"))
+    db.commit()
+
+    with pytest.raises(HTTPException) as excinfo:
+        create_admin_activity(AdminCatalogItemPayload(name="Bucear"), db=db, _=object())
 
     assert excinfo.value.status_code == 400
 

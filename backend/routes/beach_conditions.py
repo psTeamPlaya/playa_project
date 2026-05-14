@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, Query
 from datetime import date, timedelta, datetime
+import json
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
-import requests
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 from backend.db import get_db
 from backend.models.beach import Beach
@@ -24,40 +27,45 @@ MAP = {
 }
 
 def fetch_weather(latitude, longitude, day):
-    return requests.get(
-        "https://api.open-meteo.com/v1/forecast",
-        params={
-            "latitude": latitude,
-            "longitude": longitude,
-            "hourly": ",".join([
-                MAP["air_temperature"],
-                MAP["wind_speed"],
-                MAP["cloud_cover"],
-                MAP["rain_probability"]
-            ]),
-            "daily": MAP["uv_index"],
-            "timezone": "auto",
-            "start_date": day,
-            "end_date": day
-        }
-    ).json()
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "hourly": ",".join([
+            MAP["air_temperature"],
+            MAP["wind_speed"],
+            MAP["cloud_cover"],
+            MAP["rain_probability"]
+        ]),
+        "daily": MAP["uv_index"],
+        "timezone": "auto",
+        "start_date": day,
+        "end_date": day
+    }
+    return fetch_remote_json("https://api.open-meteo.com/v1/forecast", params)
 
 
 def fetch_marine(latitude, longitude, day):
-    return requests.get(
-        "https://marine-api.open-meteo.com/v1/marine",
-        params={
-            "latitude": latitude,
-            "longitude": longitude,
-            "hourly": ",".join([
-                MAP["wave_height"],
-                MAP["water_temp"],
-                MAP["tide"]
-            ]),
-            "start_date": day,
-            "end_date": day
-        }
-    ).json()
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "hourly": ",".join([
+            MAP["wave_height"],
+            MAP["water_temp"],
+            MAP["tide"]
+        ]),
+        "start_date": day,
+        "end_date": day
+    }
+    return fetch_remote_json("https://marine-api.open-meteo.com/v1/marine", params)
+
+
+def fetch_remote_json(url, params):
+    query_string = urlencode(params)
+    try:
+        with urlopen(f"{url}?{query_string}", timeout=15) as response:
+            return json.load(response)
+    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"Error fetching remote weather data: {exc}") from exc
 
 
 def upsert_beach_conditions(db: Session = Depends(get_db)):

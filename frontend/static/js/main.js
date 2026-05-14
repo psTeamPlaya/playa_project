@@ -30,7 +30,7 @@ import {
 import { initQuantity } from "./search/quantity.js";
 import { initResultsMap } from "./results/results-map.js";
 
-const activityCards = document.querySelectorAll(".activity-card");
+const activitiesGrid = document.getElementById("activitiesGrid");
 const fechaInput = document.getElementById("fecha");
 
 const fechaShell = document.getElementById("fechaShell");
@@ -136,6 +136,9 @@ const beachServicesOptions = document.getElementById("beachServicesOptions");
 const beachActivitiesOptions = document.getElementById("beachActivitiesOptions");
 const activityCatalogForm = document.getElementById("activityCatalogForm");
 const activityCatalogNameInput = document.getElementById("activityCatalogName");
+const cancelActivityEditBtn = document.getElementById("cancelActivityEditBtn");
+const activityWeightsPanel = document.getElementById("activityWeightsPanel");
+const activityWeightsGrid = document.getElementById("activityWeightsGrid");
 const activityCatalogFeedback = document.getElementById("activityCatalogFeedback");
 const activityCatalogList = document.getElementById("activityCatalogList");
 const serviceCatalogForm = document.getElementById("serviceCatalogForm");
@@ -156,6 +159,18 @@ let lastRecommendationContext = null;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
+const ACTIVITY_ICON_MAP = {
+    tomar_sol: "\u2600\uFE0F",
+    nadar: "\u{1F3CA}",
+    surf: "\u{1F3C4}",
+    windsurf: "\u{1F32C}\uFE0F",
+    bucear: "\u{1F93F}",
+    caminar: "\u{1F6B6}",
+    pescar: "\u{1F3A3}",
+    kayak: "\u{1F6F6}",
+    kitesurf: "\u{1FA81}",
+    paddle_surf: "\u{1F6F6}",
+};
 
 const staticFilterElements = {
     filterSandBeach,
@@ -236,6 +251,63 @@ function guardarActividadRecordada() {
         rememberActivityPreference,
         actividadSeleccionada
     });
+}
+
+function getActivityCards() {
+    return Array.from(document.querySelectorAll(".activity-card"));
+}
+
+function getActivityIcon(activityName = "") {
+    return ACTIVITY_ICON_MAP[activityName] || "\u{1F3D6}\uFE0F";
+}
+
+function renderActivityCards(activities = []) {
+    if (!activitiesGrid) {
+        return;
+    }
+
+    if (!Array.isArray(activities) || activities.length === 0) {
+        activitiesGrid.innerHTML = `
+            <div class="empty-state">
+                No hay actividades disponibles en este momento.
+            </div>
+        `;
+        return;
+    }
+
+    activitiesGrid.innerHTML = activities.map((activity) => `
+        <div class="activity-card" data-activity="${activity.name}">
+            <span class="activity-icon">${getActivityIcon(activity.name)}</span>
+            <span class="activity-name">${activity.label}</span>
+        </div>
+    `).join("");
+}
+
+async function loadActivities() {
+    if (!activitiesGrid) {
+        return [];
+    }
+
+    try {
+        const response = await fetch("/activities/");
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const activities = await response.json();
+        renderActivityCards(activities);
+        return Array.isArray(activities) ? activities : [];
+    }
+    catch (error) {
+        console.error("Error cargando actividades:", error);
+        activitiesGrid.innerHTML = `
+            <div class="empty-state">
+                No se pudieron cargar las actividades.
+            </div>
+        `;
+        statusEl.textContent = "No se pudieron cargar las actividades disponibles.";
+        return [];
+    }
 }
 
 function guardarHorarioRecordado() {
@@ -529,6 +601,9 @@ function initControllers() {
         beachActivitiesOptions,
         activityCatalogForm,
         activityCatalogNameInput,
+        cancelActivityEditBtn,
+        activityWeightsPanel,
+        activityWeightsGrid,
         activityCatalogFeedback,
         activityCatalogList,
         serviceCatalogForm,
@@ -551,7 +626,7 @@ function seleccionarActividad(actividad, limpiarResultados = false) {
     if (!card) return;
 
     const actividadAnterior = actividadSeleccionada;
-    activityCards.forEach(c => c.classList.remove("selected"));
+    getActivityCards().forEach(c => c.classList.remove("selected"));
     card.classList.add("selected");
     actividadSeleccionada = actividad;
     guardarActividadRecordada();
@@ -572,10 +647,17 @@ function configurarFechaYHoraIniciales() {
 // =========================================================
 
 function initActivityEvents() {
-    activityCards.forEach(card => {
-        card.addEventListener("click", () => {
-            seleccionarActividad(card.dataset.activity, true);
-        });
+    if (!activitiesGrid) {
+        return;
+    }
+
+    activitiesGrid.addEventListener("click", (event) => {
+        const card = event.target.closest(".activity-card");
+        if (!card) {
+            return;
+        }
+
+        seleccionarActividad(card.dataset.activity, true);
     });
 }
 
@@ -919,8 +1001,16 @@ async function initInitialState() {
     actualizarAlturaHeader();
     configurarBotonBusquedaFlotante();
 
-    if (fechaInput) {
-        seleccionarActividad(obtenerActividadInicial());
+    const activities = await loadActivities();
+
+    if (fechaInput && activities.length > 0) {
+        const rememberedActivity = obtenerActividadInicial();
+        const availableNames = new Set(activities.map((activity) => activity.name));
+        const initialActivity = availableNames.has(rememberedActivity)
+            ? rememberedActivity
+            : (availableNames.has(DEFAULT_ACTIVITY) ? DEFAULT_ACTIVITY : activities[0].name);
+
+        seleccionarActividad(initialActivity);
         configurarFechaYHoraIniciales();
     }
 
