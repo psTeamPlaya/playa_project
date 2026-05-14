@@ -196,7 +196,7 @@ function getCurrentSearchSignature() {
         actividad: actividadSeleccionada,
         fecha: fechaInput?.value || "",
         hora: dateTimeController?.getHoraSeleccionada() || "",
-        rango: radioSeleccionado ? radioSeleccionado.value : "5",
+        rango: radioSeleccionado ? radioSeleccionado.value : "50",
         coords: selectedCoords ? [...selectedCoords] : null
     };
 }
@@ -613,7 +613,7 @@ async function buscarRecomendaciones() {
     statusEl.textContent = "Buscando recomendaciones...";
     try {
         const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
-        const rango = radioSeleccionado ? radioSeleccionado.value : "5";
+        const rango = radioSeleccionado ? radioSeleccionado.value : "50";
         const cantidad = Math.max(0, Number(quantityController?.getCantidadSeleccionada() || 0));
         const recommendationResult = await fetchRecommendations({
             actividad: actividadSeleccionada,
