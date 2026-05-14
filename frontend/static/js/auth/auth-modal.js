@@ -109,7 +109,7 @@ export function initAuthModal({
             }
 
             const data = await login(email, password);
-            localStorage.setItem("token", data.access_token);
+            sessionStorage.setItem("token", data.access_token);
             await onAuthSuccess?.(data);
             cerrarModalLogin();
         } catch (error) {

@@ -613,9 +613,27 @@
           <span data-value="5">★</span>
         </div>
 
-        <textarea id="reviewText" placeholder="Escribe tu reseña..." required></textarea>
+        <textarea id="reviewText" placeholder="Escribe tu reseña..."></textarea>
         <button class="btn-primary" type="submit">Añadir reseña</button>
       </form>
+    </div>
+  </div>  
+  <div class="modal-backdrop" id="reviewManagementModal" hidden>
+    <div class="reviews-admin-modal">
+      <button class="modal-close" id="closeReviewManagementModal" type="button">×</button>
+      <div class="reviews-admin-layout">
+        <!-- IZQUIERDA: playas -->
+        <aside class="reviews-admin-sidebar">
+          <h3>Playas</h3>
+          <div id="reviewsBeachList" class="reviews-beach-list"></div>
+        </aside>
+        
+        <!-- DERECHA: reseñas -->
+        <section class="reviews-admin-content">
+          <h3>Reseñas</h3>
+          <div id="reviewsAdminList" class="reviews-list"></div>
+        </section>
+      </div>
     </div>
   </div>  
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>

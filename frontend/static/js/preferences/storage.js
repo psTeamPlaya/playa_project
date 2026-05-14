@@ -9,11 +9,11 @@ export const STORAGE_KEYS = {
 };
 
 export function leerPreferencia(clave) {
-    return localStorage.getItem(clave) === "true";
+    return sessionStorage.getItem(clave) === "true";
 }
 
 export function guardarPreferencia(clave, valor) {
-    localStorage.setItem(clave, valor ? "true" : "false");
+    sessionStorage.setItem(clave, valor ? "true" : "false");
 }
 
 export function cargarPreferenciasUI({
@@ -37,10 +37,10 @@ export function guardarActividadRecordada({
     actividadSeleccionada
 }) {
     if (!rememberActivityPreference?.checked || !actividadSeleccionada) {
-        localStorage.removeItem(STORAGE_KEYS.savedActivity);
+        sessionStorage.removeItem(STORAGE_KEYS.savedActivity);
         return;
     }
-    localStorage.setItem(STORAGE_KEYS.savedActivity, actividadSeleccionada);
+    sessionStorage.setItem(STORAGE_KEYS.savedActivity, actividadSeleccionada);
 }
 
 export function guardarHorarioRecordado({
@@ -49,19 +49,19 @@ export function guardarHorarioRecordado({
     horaSeleccionada
 }) {
     if (!rememberSchedulePreference?.checked || !fechaSeleccionada || !horaSeleccionada) {
-        localStorage.removeItem(STORAGE_KEYS.savedDate);
-        localStorage.removeItem(STORAGE_KEYS.savedHour);
+        sessionStorage.removeItem(STORAGE_KEYS.savedDate);
+        sessionStorage.removeItem(STORAGE_KEYS.savedHour);
         return;
     }
-    localStorage.setItem(STORAGE_KEYS.savedDate, fechaSeleccionada);
-    localStorage.setItem(STORAGE_KEYS.savedHour, horaSeleccionada);
+    sessionStorage.setItem(STORAGE_KEYS.savedDate, fechaSeleccionada);
+    sessionStorage.setItem(STORAGE_KEYS.savedHour, horaSeleccionada);
 }
 
 export function obtenerActividadInicial({
     rememberActivityPreference,
     defaultActivity
 }) {
-    const actividadGuardada = localStorage.getItem(STORAGE_KEYS.savedActivity);
+    const actividadGuardada = sessionStorage.getItem(STORAGE_KEYS.savedActivity);
     if (rememberActivityPreference?.checked && actividadGuardada) {
         return actividadGuardada;
     }
@@ -75,8 +75,8 @@ export function obtenerHorarioInicial({
 }) {
     if (!rememberSchedulePreference?.checked) return null;
 
-    const fechaGuardada = localStorage.getItem(STORAGE_KEYS.savedDate);
-    const horaGuardada = localStorage.getItem(STORAGE_KEYS.savedHour);
+    const fechaGuardada = sessionStorage.getItem(STORAGE_KEYS.savedDate);
+    const horaGuardada = sessionStorage.getItem(STORAGE_KEYS.savedHour);
     const hoy = formatearFechaLocal(new Date());
 
     if (!fechaGuardada || !horaGuardada || fechaGuardada < hoy) return null;
@@ -90,10 +90,10 @@ export function obtenerHorarioInicial({
 }
 
 export function guardarConfiguracionFiltrosUsuario(config) {
-    localStorage.setItem(STORAGE_KEYS.userFiltersConfig, JSON.stringify(config));
+    sessionStorage.setItem(STORAGE_KEYS.userFiltersConfig, JSON.stringify(config));
 }
 
 export function leerConfiguracionFiltrosUsuario() {
-    const config = localStorage.getItem(STORAGE_KEYS.userFiltersConfig);
+    const config = sessionStorage.getItem(STORAGE_KEYS.userFiltersConfig);
     return config ? JSON.parse(config) : null;
 }

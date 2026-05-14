@@ -119,7 +119,7 @@ if (showFavoritesBtn) {
     showFavoritesBtn.addEventListener("click", (event) => {
         event.preventDefault();
 
-        if (!localStorage.getItem("token")) {
+        if (!sessionStorage.getItem("token")) {
             alert("Inicia sesion para ver tus playas favoritas.");
             closePreferencePanel();
             return;

@@ -18,7 +18,7 @@ export function initSessionUI({
     let currentUser = null;
 
     async function loadCurrentUser() {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         if (!token) {
             currentUser = null;
             if (preferencesUserInfo) preferencesUserInfo.textContent = "";
@@ -27,7 +27,7 @@ export function initSessionUI({
         try {
             const response = await authFetch("/auth/me");
             if (!response.ok) {
-                localStorage.removeItem("token");
+                sessionStorage.removeItem("token");
                 currentUser = null;
                 if (preferencesUserInfo) {
                     preferencesUserInfo.textContent = "";
@@ -47,7 +47,7 @@ export function initSessionUI({
                 if (prefResponse.ok) {
                     const filtrosNube = await prefResponse.json();
                     console.log("🔍 Filtros recibidos del servidor:", filtrosNube);
-                    localStorage.setItem("preferences.userFiltersConfig", JSON.stringify(filtrosNube));
+                    sessionStorage.setItem("preferences.userFiltersConfig", JSON.stringify(filtrosNube));
 
                     /*const esUsuarioNuevo = Object.keys(filtrosNube).length === 0;*/
                     const tieneFiltros = filtrosNube && Object.keys(filtrosNube).length > 0;
@@ -62,7 +62,7 @@ export function initSessionUI({
                             });
 
                             if (response.ok) {
-                                localStorage.setItem("preferences.userFiltersConfig", JSON.stringify(configFinal));
+                                sessionStorage.setItem("preferences.userFiltersConfig", JSON.stringify(configFinal));
                                 aplicarVisibilidadFiltros(true);
                             }
                         });
@@ -87,7 +87,7 @@ export function initSessionUI({
     }
 
     function actualizarBotonesSesion() {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const estaLogueado = Boolean(token);
 
         document.body.classList.toggle("is-authenticated", estaLogueado);
@@ -122,8 +122,8 @@ export function initSessionUI({
     }
 
     async function logout() {
-        localStorage.removeItem("token");
-        localStorage.removeItem("preferences.userFiltersConfig");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("preferences.userFiltersConfig");
         if (preferencesUserInfo) preferencesUserInfo.textContent = "";
 
         const appShell = document.querySelector('.app-shell');
@@ -136,7 +136,7 @@ export function initSessionUI({
     }
 
     async function toggleAuthAction() {
-        if (localStorage.getItem("token")) {
+        if (sessionStorage.getItem("token")) {
             if (!preferencesPanel) return;
             if (preferencesPanel.hidden) {
                 onOpenPreferences?.();
