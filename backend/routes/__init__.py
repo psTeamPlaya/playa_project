@@ -7,5 +7,6 @@ from .activities import router as activities_router
 from .variables import router as variables_router
 from .beach_conditions import router as beach_conditions_router
 from .favorites import router as favourites_router
+from .alerts import router as alerts_router
 from .admin import router as admin_router
 from .reviews import router as reviews_router

@@ -10,6 +10,9 @@ class Settings:
     WEATHER_PROVIDER = os.getenv("WEATHER_PROVIDER", "openmeteo").lower()
     OPEN_METEO_TIMEZONE = os.getenv("OPEN_METEO_TIMEZONE", "Atlantic/Canary")
     OPEN_METEO_TIMEOUT_SECONDS = int(os.getenv("OPEN_METEO_TIMEOUT_SECONDS", "10"))
+    ALERTS_ENABLED = os.getenv("ALERTS_ENABLED", "true").lower() == "true"
+    ALERTS_INITIAL_DELAY_SECONDS = int(os.getenv("ALERTS_INITIAL_DELAY_SECONDS", "2"))
+    ALERTS_POLL_SECONDS = int(os.getenv("ALERTS_POLL_SECONDS", "900"))
     DATABASE_URL = os.getenv(
             "DATABASE_URL",
         )

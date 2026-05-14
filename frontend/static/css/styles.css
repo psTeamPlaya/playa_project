@@ -1191,6 +1191,20 @@ button {
     cursor: not-allowed;
 }
 
+.preferences-link-button {
+    width: 100%;
+    border-radius: 12px;
+    background: #f3f7fa;
+    color: var(--primary-dark);
+    text-align: left;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border);
+}
+
+.preferences-link-button:hover {
+    background: #eaf7fd;
+}
+
 .modal-backdrop {
     position: fixed;
     inset: 0;
@@ -1226,6 +1240,63 @@ button {
     background: #ffffff;
     box-shadow: 0 22px 60px rgba(15, 23, 42, 0.24);
     color: var(--text);
+}
+
+.alerts-modal {
+    width: min(100%, 640px);
+}
+
+.alerts-modal-copy {
+    margin: 0 0 1rem;
+    color: var(--muted);
+}
+
+.alerts-summary {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 16px;
+    background: #f8fbfd;
+    border: 1px solid var(--border);
+}
+
+.alerts-summary-row {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.alerts-summary-row span {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.alerts-list {
+    display: grid;
+    gap: 0.75rem;
+    max-height: 280px;
+    overflow: auto;
+}
+
+.alerts-list-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+}
+
+.alerts-list-card-body {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.alerts-list-card-body small {
+    color: var(--muted);
 }
 
 .admin-modal-wide {
