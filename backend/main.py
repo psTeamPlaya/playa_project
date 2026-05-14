@@ -77,6 +77,7 @@ async def lifespan(app: FastAPI):
     ensure_user_schema()
     ensure_admin_user()
 
+    """
     db = SessionLocal()
     try:
         if needs_weather_update(db):
@@ -87,6 +88,7 @@ async def lifespan(app: FastAPI):
             print("Beach conditions already up to date.")
     finally:
         db.close()
+    """
     yield
 
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)

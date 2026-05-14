@@ -1,5 +1,5 @@
 export function authFetch(url, options = {}) {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     const headers = {
         ...(options.headers || {})
     };
