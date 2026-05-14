@@ -5,7 +5,7 @@ def test_recomendar_playas_prioriza_actividad_ideal(monkeypatch):
     playas = [
         {
             "id": 1,
-            "nombre": "Playa Genérica",
+            "nombre": "Playa Generica",
             "ubicacion": "Norte",
             "latitud": 28.0,
             "longitud": -15.0,
@@ -16,8 +16,8 @@ def test_recomendar_playas_prioriza_actividad_ideal(monkeypatch):
         },
         {
             "id": 2,
-            "nombre": "Punta de Gáldar",
-            "ubicacion": "Gáldar",
+            "nombre": "Punta de Galdar",
+            "ubicacion": "Galdar",
             "latitud": 28.1,
             "longitud": -15.1,
             "descripcion": "B",
@@ -45,5 +45,49 @@ def test_recomendar_playas_prioriza_actividad_ideal(monkeypatch):
         filtros={},
     )
 
-    assert resultados[0]["nombre"] == "Punta de Gáldar"
+    assert resultados[0]["nombre"] == "Punta de Galdar"
     assert resultados[0]["score"] > resultados[1]["score"]
+
+
+def test_score_final_no_supera_diez_aun_con_bonus_de_actividad_ideal(monkeypatch):
+    playas = [
+        {
+            "id": 1,
+            "nombre": "Playa Ideal",
+            "ubicacion": "Este",
+            "latitud": 28.0,
+            "longitud": -15.0,
+            "descripcion": "Perfecta",
+            "tipo": "arena",
+            "servicios": {},
+            "actividades_ideales": ["tomar_sol"],
+        },
+    ]
+    condiciones = [
+        {
+            "beach_id": 1,
+            "air_temp": 25,
+            "wind_speed": 0,
+            "cloud_cover": 0,
+            "rain_probability": 0,
+            "wave_height": 1.5,
+            "uv_index": 6,
+        },
+    ]
+
+    monkeypatch.setattr(engine_recomendation, "cargar_playas", lambda: playas)
+    monkeypatch.setattr(engine_recomendation, "cargar_condiciones", lambda playas, fecha, hora: condiciones)
+
+    resultados = engine_recomendation.recomendar_playas(
+        actividad="tomar_sol",
+        fecha="2026-05-07",
+        hora="12:00",
+        lat_usuario=None,
+        lon_usuario=None,
+        radio_km=None,
+        top_n=1,
+        filtros={},
+    )
+
+    assert resultados[0]["actividad_ideal"] is True
+    assert resultados[0]["score"] == 10

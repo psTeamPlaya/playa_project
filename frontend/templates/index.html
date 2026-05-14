@@ -219,50 +219,7 @@
     <section class="panel">
       <h2>1. ¿Qué quieres hacer en tu día de playa?</h2>
       <div class="activities-grid" id="activitiesGrid">
-        <div class="activity-card" data-activity="tomar_sol">
-          <span class="activity-icon">☀️</span>
-          <span class="activity-name">Tomar el sol</span>
-        </div>
-
-        <div class="activity-card" data-activity="nadar">
-          <span class="activity-icon">🏊</span>
-          <span class="activity-name">Nadar</span>
-        </div>
-
-        <div class="activity-card" data-activity="surf">
-          <span class="activity-icon">🏄</span>
-          <span class="activity-name">Surf</span>
-        </div>
-
-        <div class="activity-card" data-activity="windsurf">
-          <span class="activity-icon">🌬️</span>
-          <span class="activity-name">Windsurf</span>
-        </div>
-
-        <div class="activity-card" data-activity="bucear">
-          <span class="activity-icon">🤿</span>
-          <span class="activity-name">Bucear</span>
-        </div>
-
-        <div class="activity-card" data-activity="caminar">
-          <span class="activity-icon">🚶</span>
-          <span class="activity-name">Pasear</span>
-        </div>
-        <div class="activity-card" data-activity="pescar">
-          <span class="activity-icon">&#127907;</span>
-          <span class="activity-name">Pescar</span>
-        </div>
-
-        <div class="activity-card" data-activity="kayak">
-          <span class="activity-icon">&#128758;</span>
-          <span class="activity-name">Kayak</span>
-        </div>
-
-        <div class="activity-card" data-activity="kitesurf">
-          <span class="activity-icon">&#129513;</span>
-          <span class="activity-name">KiteSurf</span>
-        </div>
-
+        <div class="empty-state">Cargando actividades disponibles...</div>
       </div>
     </section>
 
@@ -551,8 +508,16 @@
                 </div>
                 <form class="admin-inline-form" id="activityCatalogForm">
                   <input id="activityCatalogName" type="text" placeholder="Ej: paddle surf" required>
+                  <button class="btn-secondary" id="cancelActivityEditBtn" type="button" hidden>Cancelar</button>
                   <button class="btn-secondary" type="submit">Añadir</button>
                 </form>
+                <div class="admin-weights-panel" id="activityWeightsPanel">
+                  <div class="admin-weights-header">
+                    <h4>Pesos de la actividad</h4>
+                    <p>Define la importancia relativa de cada variable. No hace falta que sumen 1: se normalizan automáticamente.</p>
+                  </div>
+                  <div class="admin-weights-grid" id="activityWeightsGrid"></div>
+                </div>
                 <div class="admin-feedback" id="activityCatalogFeedback"></div>
                 <div class="admin-list" id="activityCatalogList"></div>
               </article>
@@ -641,4 +606,5 @@
   <script type="module" src="/static/js/favorites/favorites.js?v=admin-catalog-20260507"></script>
 </body>
 </html>
+
 

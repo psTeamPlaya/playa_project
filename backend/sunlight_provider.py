@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from datetime import datetime
 from functools import lru_cache
+import json
 from typing import Any
-
-import requests
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 SUNLIGHT_URL = "https://api.open-meteo.com/v1/forecast"
 
@@ -15,11 +17,11 @@ class SunlightError(RuntimeError):
 
 def _fetch_json(url: str, params: dict[str, Any], timeout_seconds: int) -> dict[str, Any]:
     try:
-        response = requests.get(url, params=params, timeout=timeout_seconds)
-        response.raise_for_status()
-    except requests.RequestException as exc:
+        query_string = urlencode(params)
+        with urlopen(f"{url}?{query_string}", timeout=timeout_seconds) as response:
+            return json.load(response)
+    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as exc:
         raise SunlightError(f"Open-Meteo sunlight request failed: {exc}") from exc
-    return response.json()
 
 
 def _build_query_params(

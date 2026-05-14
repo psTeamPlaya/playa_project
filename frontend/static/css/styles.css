@@ -1533,6 +1533,7 @@ button {
 
 .admin-catalog-card {
     display: grid;
+    align-content: start;
     gap: 0.85rem;
     padding: 1rem;
     border: 1px solid var(--border);
@@ -1575,6 +1576,59 @@ button {
     outline: none;
 }
 
+.admin-weights-panel {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.admin-weights-header h4 {
+    margin: 0 0 0.25rem;
+    font-size: 0.98rem;
+}
+
+.admin-weights-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.35;
+}
+
+.admin-weights-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.admin-weight-field {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.admin-weight-field span {
+    color: var(--ink);
+    font-size: 0.9rem;
+}
+
+.admin-weight-field input {
+    height: 2.6rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fafdff;
+    font-family: 'Atma';
+    font-size: 0.98rem;
+}
+
+.admin-weight-field input:focus {
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.12);
+    outline: none;
+}
+
 .admin-beach-map {
     width: 100%;
     height: 18rem;
@@ -1602,7 +1656,8 @@ button {
     }
 
     .admin-catalog-layout,
-    .admin-inline-form {
+    .admin-inline-form,
+    .admin-weights-grid {
         grid-template-columns: minmax(0, 1fr);
     }
 }

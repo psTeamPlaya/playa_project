@@ -9,10 +9,14 @@ const SERVICE_LABELS = {
     pet_friendly: "\u{1F43E} Pet-friendly"
 };
 
+export function getServiceLabel(serviceName = "") {
+    return SERVICE_LABELS[serviceName] || serviceName;
+}
+
 export function formatearServicios(servicios = {}) {
     return Object.entries(servicios)
         .filter(([, disponible]) => disponible)
-        .map(([clave]) => `<span class="chip">${SERVICE_LABELS[clave] || clave}</span>`)
+        .map(([clave]) => `<span class="chip">${getServiceLabel(clave)}</span>`)
         .join("");
 }
 
