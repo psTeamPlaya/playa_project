@@ -11,7 +11,7 @@ from backend.config import settings
 from backend.routes import (
     api_router, views_router, auth_router, users_router,
     services_router, activities_router, variables_router,
-    beach_conditions_router, favourites_router, admin_router,
+    beach_conditions_router, favourites_router, alerts_router, admin_router,
     reviews_router
 )
 
@@ -21,6 +21,8 @@ from backend.auth.auth import hash_password
 from backend.models.user import User
 from backend.sunlight_provider import obtener_aviso_luz_solar, SunlightError
 from backend.models.beach_condition import BeachCondition
+from backend.alerts_service import process_user_alerts_cycle
+import asyncio
 
 
 def ensure_user_schema() -> None:
@@ -76,6 +78,16 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     ensure_user_schema()
     ensure_admin_user()
+    alert_worker_task = None
+
+    async def alert_worker_loop():
+        await asyncio.sleep(getattr(settings, "ALERTS_INITIAL_DELAY_SECONDS", 2))
+        while True:
+            try:
+                await process_user_alerts_cycle()
+            except Exception as exc:
+                print(f"Alert worker error: {exc}")
+            await asyncio.sleep(getattr(settings, "ALERTS_POLL_SECONDS", 900))
 
     """
     db = SessionLocal()
@@ -89,7 +101,18 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
     """
-    yield
+    if getattr(settings, "ALERTS_ENABLED", True):
+        alert_worker_task = asyncio.create_task(alert_worker_loop())
+
+    try:
+        yield
+    finally:
+        if alert_worker_task is not None:
+            alert_worker_task.cancel()
+            try:
+                await alert_worker_task
+            except asyncio.CancelledError:
+                pass
 
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -99,7 +122,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 routers = [
     api_router, views_router, auth_router, users_router, services_router,
     activities_router, variables_router, beach_conditions_router, favourites_router,
-    admin_router, reviews_router
+    alerts_router, admin_router, reviews_router
 ]
 
 for router in routers: 

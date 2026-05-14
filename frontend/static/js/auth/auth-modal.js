@@ -31,7 +31,7 @@ export function initAuthModal({
             if (titleEl) titleEl.textContent = "Registrarse";
             authSubmitBtn.textContent = "Crear cuenta";
             authModeHint.textContent = "\u00bfYa tienes cuenta?";
-            toggleAuthModeBtn.textContent = "Iniciar sesion";
+            toggleAuthModeBtn.textContent = "Iniciar sesión";
             if (confirmPasswordGroup) {
                 confirmPasswordGroup.style.display = "block";
             }
@@ -40,7 +40,7 @@ export function initAuthModal({
             }
             return;
         }
-        if (titleEl) titleEl.textContent = "Iniciar sesion";
+        if (titleEl) titleEl.textContent = "Iniciar sesión";
         authSubmitBtn.textContent = "Entrar a mi cuenta";
         authModeHint.textContent = "\u00bfTodav\u00eda no tienes cuenta?";
         toggleAuthModeBtn.textContent = "Registrarse";
@@ -98,7 +98,7 @@ export function initAuthModal({
                 await registerUser(email, password);
                 authMode = "login";
                 aplicarModoAuth();
-                mostrarMensajeAuth("Cuenta creada. Ya puedes iniciar sesion.", "success");
+                mostrarMensajeAuth("Cuenta creada. Ya puedes iniciar sesión.", "success");
                 if (loginPasswordInput) {
                     loginPasswordInput.value = "";
                 }

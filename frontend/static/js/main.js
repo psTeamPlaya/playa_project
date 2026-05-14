@@ -15,6 +15,7 @@ import {
 } from "./filters/static-filters.js";
 import { selectedCoords } from "./localization.js";
 import { initPreferencesUI } from "./preferences/preferences-ui.js";
+import { initAlertsUI } from "./preferences/alerts-ui.js";
 import {
     obtenerActividadInicial as getInitialActivity,
     obtenerHorarioInicial as getInitialSchedule,
@@ -64,9 +65,9 @@ const adminPreferencesGroup = document.getElementById("adminPreferencesGroup");
 const openUserManagementBtn = document.getElementById("openUserManagementBtn");
 const openBeachManagementBtn = document.getElementById("openBeachManagementBtn");
 const openReviewManagementBtn = document.getElementById("openReviewManagementBtn");
+const openAlertsModalBtn = document.getElementById("openAlertsModalBtn");
 const rememberActivityPreference = document.getElementById("rememberActivityPreference");
 const rememberSchedulePreference = document.getElementById("rememberSchedulePreference");
-const expandResultsPreference = document.getElementById("expandResultsPreference");
 const appHeader = document.getElementById("appHeader");
 const filtersSidebar = document.getElementById("filtersSidebar");
 const disableStaticFilters = document.getElementById("disableStaticFilters");
@@ -145,6 +146,14 @@ const serviceCatalogForm = document.getElementById("serviceCatalogForm");
 const serviceCatalogNameInput = document.getElementById("serviceCatalogName");
 const serviceCatalogFeedback = document.getElementById("serviceCatalogFeedback");
 const serviceCatalogList = document.getElementById("serviceCatalogList");
+const alertsModal = document.getElementById("alertsModal");
+const closeAlertsModal = document.getElementById("closeAlertsModal");
+const saveCurrentAlertBtn = document.getElementById("saveCurrentAlertBtn");
+const alertsFeedback = document.getElementById("alertsFeedback");
+const alertsList = document.getElementById("alertsList");
+const alertSummaryActivity = document.getElementById("alertSummaryActivity");
+const alertSummaryLocation = document.getElementById("alertSummaryLocation");
+const alertSummaryFilters = document.getElementById("alertSummaryFilters");
 
 let actividadSeleccionada = "";
 let dateTimeController;
@@ -155,6 +164,7 @@ let authModalController;
 let sessionUIController;
 let adminUIController;
 let resultsMapController;
+let alertsUIController;
 let lastRecommendationContext = null;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
@@ -388,6 +398,24 @@ function obtenerFiltrosActivos() {
     };
 }
 
+function getCurrentAlertDraft() {
+    const selectedActivityCard = document.querySelector(".activity-card.selected");
+    const locationInput = document.getElementById("locationInput");
+    const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
+    const filters = obtenerFiltrosActivos();
+
+    return {
+        activityName: actividadSeleccionada || "",
+        activityLabel: selectedActivityCard?.querySelector(".activity-name")?.textContent?.trim() || "",
+        selectedCoords: selectedCoords ? [...selectedCoords] : null,
+        range: radioSeleccionado?.value || "",
+        locationLabel: locationInput?.value?.trim()
+            ? `${locationInput.value.trim()} · ${radioSeleccionado?.value || "50"} km`
+            : (selectedCoords ? `Lat ${selectedCoords[1].toFixed(4)}, Lon ${selectedCoords[0].toFixed(4)} · ${radioSeleccionado?.value || "50"} km` : ""),
+        filters
+    };
+}
+
 function cumpleFiltros(playa, filtros) {
     const condiciones = playa?.condiciones || {};
     const servicios = playa?.servicios || {};
@@ -523,9 +551,22 @@ function initControllers() {
         authActionBtn,
         rememberActivityPreference,
         rememberSchedulePreference,
-        expandResultsPreference,
         onRememberActivityChange: guardarActividadRecordada,
         onRememberScheduleChange: guardarHorarioRecordado
+    });
+
+    alertsUIController = initAlertsUI({
+        openAlertsModalBtn,
+        alertsModal,
+        closeAlertsModalBtn: closeAlertsModal,
+        alertsList,
+        alertsFeedback,
+        saveCurrentAlertBtn,
+        alertSummaryActivity,
+        alertSummaryLocation,
+        alertSummaryFilters,
+        getCurrentUser: () => sessionUIController?.getCurrentUser?.(),
+        getAlertDraft: getCurrentAlertDraft
     });
 
     authModalController = initAuthModal({
@@ -630,6 +671,7 @@ function seleccionarActividad(actividad, limpiarResultados = false) {
     card.classList.add("selected");
     actividadSeleccionada = actividad;
     guardarActividadRecordada();
+    alertsUIController?.refreshDraftSummary?.();
 
     if (limpiarResultados && actividadSeleccionada !== actividadAnterior) {
         resetRecommendationContext();
@@ -986,6 +1028,9 @@ function initLayoutEvents() {
         if (event.key !== "Escape") return;
         if (loginModalEl && !loginModalEl.hidden) {
             authModalController?.cerrarModalLogin();
+        }
+        if (alertsModal && !alertsModal.hidden) {
+            alertsUIController?.closeModal?.();
         }
         if (preferencesPanel && !preferencesPanel.hidden) {
             preferencesUIController?.cerrarPanelPreferencias();
