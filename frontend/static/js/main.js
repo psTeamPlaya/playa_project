@@ -721,6 +721,10 @@ async function handleReviewClick(event) {
     const btn = event.target.closest(".rating-badge");
     if (!btn) return;
 
+    const user = sessionUIController?.getCurrentUser?.();
+    console.log("User: ", user);
+    if (!user) return;
+
     event.preventDefault();
     event.stopPropagation();
 
