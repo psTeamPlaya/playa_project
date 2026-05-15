@@ -30,6 +30,16 @@ import {
 import { initQuantity } from "./search/quantity.js";
 import { initResultsMap } from "./results/results-map.js";
 
+import { initLanguage, setLanguage } from "./languages/i18n.js";
+
+initLanguage();
+
+document
+  .getElementById("languageSelect")
+  .addEventListener("change", e => {
+    setLanguage(e.target.value);
+  });
+
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
 

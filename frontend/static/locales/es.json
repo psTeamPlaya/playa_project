@@ -1,0 +1,14 @@
+{
+  "app_title": "Mi día de Playa",
+  "preferences": "Preferencias",
+  "favorite_beaches": "Mis Playas Favoritas",
+  "filters": "Filtros",
+  "beach_type": "Tipo de playa",
+  "sand": "Arena",
+  "stone": "Piedra",
+  "natural_pool": "Piscina natural",
+  "search_beaches": "Buscar playas recomendadas",
+  "placeholders": {
+    "city": "Ej: Las Palmas"
+  }
+}

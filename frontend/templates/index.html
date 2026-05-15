@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,6 +17,7 @@
   <link rel="stylesheet" href="/static/css/reviews.css">
   <link rel="stylesheet" href="/static/css/questions-modal.css">
 </head>
+
 <body>
   <header class="container" id="appHeader">
     <section class="hero">
@@ -23,8 +25,8 @@
         <div class="hero-logo">
           <img src="/static/img/logo.png" alt="Logo Mi dia de Playa">
         </div>
-        
-        <h1>Mi día de Playa</h1>
+
+        <h1 data-i18n="app_title">Mi día de Playa</h1>
         <section class="auth-container">
           <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
             <span class="auth-trigger-icon" aria-hidden="true">
@@ -59,6 +61,11 @@
               <span>Configurar alertas</span>
             </label>
             <div class="preferences-divider"></div>
+            <select id="languageSelect">
+              <option value="es">🇪🇸 ES</option>
+              <option value="en">🇬🇧 EN</option>
+              <option value="cs">🇨🇿 CS</option>
+            </select>
             <button class="preferences-logout" id="preferencesLogoutBtn" type="button" aria-label="Cerrar sesion">
               <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
             </button>
@@ -129,8 +136,10 @@
               <span><strong id="cloudMaxValue">20</strong>%</span>
             </div>
             <div class="dual-range" id="cloudRangeTrack">
-              <input type="range" id="filterCloudMin" min="0" max="100" step="1" value="0" aria-label="Nubosidad minima">
-              <input type="range" id="filterCloudMax" min="0" max="100" step="1" value="20" aria-label="Nubosidad maxima">
+              <input type="range" id="filterCloudMin" min="0" max="100" step="1" value="0"
+                aria-label="Nubosidad minima">
+              <input type="range" id="filterCloudMax" min="0" max="100" step="1" value="20"
+                aria-label="Nubosidad maxima">
             </div>
           </div>
           <div class="dynamic-filter-actions-row">
@@ -143,7 +152,7 @@
             </label>
           </div>
         </fieldset>
-        
+
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="viento">
           <div class="dynamic-filter-title">Viento(km/h)</div>
           <div class="dynamic-filter-slider">
@@ -166,17 +175,19 @@
             </label>
           </div>
         </fieldset>
-        
+
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="temperatura">
           <div class="dynamic-filter-title">Temp.(&ordm;C)</div>
           <div class="dynamic-filter-slider">
             <div class="range-values">
-            <span><strong id="temperatureMinValue">20</strong> ºC</span>
-            <span><strong id="temperatureMaxValue">29</strong> ºC</span>
-          </div>
+              <span><strong id="temperatureMinValue">20</strong> ºC</span>
+              <span><strong id="temperatureMaxValue">29</strong> ºC</span>
+            </div>
             <div class="dual-range" id="temperatureRangeTrack">
-            <input type="range" id="filterTemperatureMin" min="0" max="45" step="1" value="20" aria-label="Temperatura ambiente minima">
-            <input type="range" id="filterTemperatureMax" min="0" max="45" step="1" value="29" aria-label="Temperatura ambiente maxima">
+              <input type="range" id="filterTemperatureMin" min="0" max="45" step="1" value="20"
+                aria-label="Temperatura ambiente minima">
+              <input type="range" id="filterTemperatureMax" min="0" max="45" step="1" value="29"
+                aria-label="Temperatura ambiente maxima">
             </div>
           </div>
           <div class="dynamic-filter-actions-row">
@@ -194,12 +205,12 @@
           <div class="dynamic-filter-title">Olas(m)</div>
           <div class="dynamic-filter-slider">
             <div class="range-values">
-            <span><strong id="waveMinValue">0</strong> m</span>
-            <span><strong id="waveMaxValue">1</strong> m</span>
-          </div>
+              <span><strong id="waveMinValue">0</strong> m</span>
+              <span><strong id="waveMaxValue">1</strong> m</span>
+            </div>
             <div class="dual-range" id="waveRangeTrack">
-            <input type="range" id="filterWaveMin" min="0" max="5" step="0.1" value="0" aria-label="Oleaje minimo">
-            <input type="range" id="filterWaveMax" min="0" max="5" step="0.1" value="1" aria-label="Oleaje maximo">
+              <input type="range" id="filterWaveMin" min="0" max="5" step="0.1" value="0" aria-label="Oleaje minimo">
+              <input type="range" id="filterWaveMax" min="0" max="5" step="0.1" value="1" aria-label="Oleaje maximo">
             </div>
           </div>
           <div class="dynamic-filter-actions-row">
@@ -215,153 +226,146 @@
       </div>
     </aside>
 
-  <main class="app-main">
-    <section class="panel">
-      <h2>1. ¿Qué quieres hacer en tu día de playa?</h2>
-      <div class="activities-grid" id="activitiesGrid">
-        <div class="activity-card" data-activity="tomar_sol">
-          <span class="activity-icon">☀️</span>
-          <span class="activity-name">Tomar el sol</span>
+    <main class="app-main">
+      <section class="panel">
+        <h2>1. ¿Qué quieres hacer en tu día de playa?</h2>
+        <div class="activities-grid" id="activitiesGrid">
+          <div class="activity-card" data-activity="tomar_sol">
+            <span class="activity-icon">☀️</span>
+            <span class="activity-name">Tomar el sol</span>
+          </div>
+
+          <div class="activity-card" data-activity="nadar">
+            <span class="activity-icon">🏊</span>
+            <span class="activity-name">Nadar</span>
+          </div>
+
+          <div class="activity-card" data-activity="surf">
+            <span class="activity-icon">🏄</span>
+            <span class="activity-name">Surf</span>
+          </div>
+
+          <div class="activity-card" data-activity="windsurf">
+            <span class="activity-icon">🌬️</span>
+            <span class="activity-name">Windsurf</span>
+          </div>
+
+          <div class="activity-card" data-activity="bucear">
+            <span class="activity-icon">🤿</span>
+            <span class="activity-name">Bucear</span>
+          </div>
+
+          <div class="activity-card" data-activity="caminar">
+            <span class="activity-icon">🚶</span>
+            <span class="activity-name">Pasear</span>
+          </div>
+          <div class="activity-card" data-activity="pescar">
+            <span class="activity-icon">&#127907;</span>
+            <span class="activity-name">Pescar</span>
+          </div>
+
+          <div class="activity-card" data-activity="kayak">
+            <span class="activity-icon">&#128758;</span>
+            <span class="activity-name">Kayak</span>
+          </div>
+
+          <div class="activity-card" data-activity="kitesurf">
+            <span class="activity-icon">&#129513;</span>
+            <span class="activity-name">KiteSurf</span>
+          </div>
+
         </div>
+      </section>
 
-        <div class="activity-card" data-activity="nadar">
-          <span class="activity-icon">🏊</span>
-          <span class="activity-name">Nadar</span>
-        </div>
+      <section class="panel">
+        <h2>2. ¿Cuándo quieres ir a la playa?</h2>
 
-        <div class="activity-card" data-activity="surf">
-          <span class="activity-icon">🏄</span>
-          <span class="activity-name">Surf</span>
-        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="fecha">Fecha</label>
 
-        <div class="activity-card" data-activity="windsurf">
-          <span class="activity-icon">🌬️</span>
-          <span class="activity-name">Windsurf</span>
-        </div>
-
-        <div class="activity-card" data-activity="bucear">
-          <span class="activity-icon">🤿</span>
-          <span class="activity-name">Bucear</span>
-        </div>
-
-        <div class="activity-card" data-activity="caminar">
-          <span class="activity-icon">🚶</span>
-          <span class="activity-name">Pasear</span>
-        </div>
-        <div class="activity-card" data-activity="pescar">
-          <span class="activity-icon">&#127907;</span>
-          <span class="activity-name">Pescar</span>
-        </div>
-
-        <div class="activity-card" data-activity="kayak">
-          <span class="activity-icon">&#128758;</span>
-          <span class="activity-name">Kayak</span>
-        </div>
-
-        <div class="activity-card" data-activity="kitesurf">
-          <span class="activity-icon">&#129513;</span>
-          <span class="activity-name">KiteSurf</span>
-        </div>
-
-      </div>
-    </section>
-
-    <section class="panel">
-      <h2>2. ¿Cuándo quieres ir a la playa?</h2>
-
-      <div class="form-grid">
-        <div class="field">
-          <label for="fecha">Fecha</label>
-
-          <div class="date-picker-shell" id="fechaShell">
-            <div class="date-display" id="fechaDisplay">---</div>
-            <div class="date-icon" aria-hidden="true">📅</div>
-            <input type="date" id="fecha" />
+            <div class="date-picker-shell" id="fechaShell">
+              <div class="date-display" id="fechaDisplay">---</div>
+              <div class="date-icon" aria-hidden="true">📅</div>
+              <input type="date" id="fecha" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="hourWheel">Hora</label>
+            <div class="hour-wheel-wrapper">
+              <div class="hour-wheel-highlight"></div>
+              <div class="hour-wheel" id="hourWheel"></div>
+            </div>
           </div>
         </div>
-        <div class="field">
-          <label for="hourWheel">Hora</label>
-          <div class="hour-wheel-wrapper">
-            <div class="hour-wheel-highlight"></div>
-            <div class="hour-wheel" id="hourWheel"></div>
+      </section>
+
+      <section class="panel location-panel">
+        <h2>3. Elige tu ubicación</h2>
+        <div class="form-grid location-grid">
+          <div class="field">
+            <label for="locationInput">Ciudad / Ubicación</label>
+            <input type="text" id="locationInput" data-i18n-placeholder="placeholders.city" placeholder="Ej: Las Palmas">
+            <div id="suggestions" class="suggestions-dropdown"></div>
+          </div>
+          <div class="field range-field">
+            <label>Rango de búsqueda:</label>
+            <div class="actions location-actions">
+              <button class="btn-secondary" id="btnGeolocalizar">📍 Mi ubicación</button>
+              <button class="btn-secondary" id="btnMapa">🗺️ Elige una ubicación</button>
+            </div>
+            <div class="range-selector">
+              <input type="radio" id="rango5" name="rango" value="5" checked>
+              <label for="rango5">5 km</label>
+
+              <input type="radio" id="rango15" name="rango" value="15">
+              <label for="rango15">15 km</label>
+
+              <input type="radio" id="rango50" name="rango" value="50">
+              <label for="rango50">50 km</label>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+        <div id="locationHistory" class="mini-chip-container"></div>
+      </section>
 
-    <section class="panel location-panel">
-      <h2>3. Elige tu ubicación</h2>
-      <div class="form-grid location-grid">
-        <div class="field">
-          <label for="locationInput">Ciudad / Ubicación</label>
-          <input type="text" id="locationInput" placeholder="Ej: Las Palmas">
-          <div id="suggestions" class="suggestions-dropdown"></div>
+      <section class="panel search-panel">
+        <div class="actions search-actions">
+          <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
         </div>
-        <div class="field range-field">
-          <label>Rango de búsqueda:</label>
-          <div class="actions location-actions">
-            <button class="btn-secondary" id="btnGeolocalizar">📍 Mi ubicación</button>
-            <button class="btn-secondary" id="btnMapa">🗺️ Elige una ubicación</button>
+        <div class="sun-alert" id="sunAlert" hidden></div>
+        <div class="status" id="status"></div>
+      </section>
+
+      <section class="panel" id="recommendedBeachesSection">
+        <div class="results-header">
+          <div class="results-title-row">
+            <h2 id="beachesLabel">Playas recomendadas</h2>
+            <button class="btn-secondary hidden" id="btnShowResultsMap" type="button">
+              Ver Mapa
+            </button>
           </div>
-          <div class="range-selector">
-            <input type="radio" id="rango5" name="rango" value="5" checked>
-            <label for="rango5">5 km</label>
-
-            <input type="radio" id="rango15" name="rango" value="15">
-            <label for="rango15">15 km</label>
-
-            <input type="radio" id="rango50" name="rango" value="50">
-            <label for="rango50">50 km</label>
-          </div>
-        </div>
-      </div>
-      <div id="locationHistory" class="mini-chip-container"></div>
-    </section>
-
-    <section class="panel search-panel">
-      <div class="actions search-actions">
-        <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
-      </div>
-      <div class="sun-alert" id="sunAlert" hidden></div>
-      <div class="status" id="status"></div>
-    </section>
-
-    <section class="panel" id="recommendedBeachesSection">
-      <div class="results-header">
-        <div class="results-title-row">
-          <h2 id="beachesLabel">Playas recomendadas</h2>
-          <button class="btn-secondary hidden" id="btnShowResultsMap" type="button">
-            Ver Mapa
-          </button>
-        </div>
-        <div id="quantitySlider" class="cantidad-wheel-container loggedIn hidden">
-          <div class="cantidad-slider-header">
-            <label for="cantidadSlider">Cantidad</label>
-            <output id="cantidadSliderValue" for="cantidadSlider">3</output>
-          </div>
-          <input
-            type="range"
-            id="cantidadSlider"
-            min="0"
-            max="3"
-            step="1"
-            value="3"
-            aria-label="Cantidad de playas recomendadas"
-          />
-          <div class="cantidad-slider-limits">
-            <span>0</span>
-            <span id="cantidadSliderMax">3</span>
+          <div id="quantitySlider" class="cantidad-wheel-container loggedIn hidden">
+            <div class="cantidad-slider-header">
+              <label for="cantidadSlider">Cantidad</label>
+              <output id="cantidadSliderValue" for="cantidadSlider">3</output>
+            </div>
+            <input type="range" id="cantidadSlider" min="0" max="3" step="1" value="3"
+              aria-label="Cantidad de playas recomendadas" />
+            <div class="cantidad-slider-limits">
+              <span>0</span>
+              <span id="cantidadSliderMax">3</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div id="resultsContainer" class="results-grid">
-        <div class="empty-state">
-          Por ahora no hay ninguna recomendacion de playas.
+        <div id="resultsContainer" class="results-grid">
+          <div class="empty-state">
+            Por ahora no hay ninguna recomendacion de playas.
+          </div>
         </div>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
   </div>
 
   <button class="btn-primary floating-search-button" id="floatingBuscarBtn" type="button" aria-hidden="true">
@@ -456,7 +460,8 @@
   </div>
 
   <div class="modal-backdrop" id="beachManagementModal" hidden>
-    <div class="admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="beachManagementModalTitle">
+    <div class="admin-modal admin-modal-wide" role="dialog" aria-modal="true"
+      aria-labelledby="beachManagementModalTitle">
       <button class="modal-close" id="closeBeachManagementModal" type="button" aria-label="Cerrar">×</button>
       <div class="admin-modal-header">
         <h2 id="beachManagementModalTitle">Gestión de playas</h2>
@@ -513,7 +518,8 @@
                 <p class="admin-map-help">
                   Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.
                 </p>
-                <div id="beachMap" class="admin-beach-map" aria-label="Mapa para seleccionar ubicación de la playa"></div>
+                <div id="beachMap" class="admin-beach-map" aria-label="Mapa para seleccionar ubicación de la playa">
+                </div>
               </div>
               <div class="field auth-field admin-full-width">
                 <label for="beachImage">Imagen</label>
@@ -581,18 +587,18 @@
       <p>Selecciona los filtros que deseas tener siempre a mano. Podrás cambiarlos luego en preferencias.</p>
 
       <div class="config-list" id="configFilterList">
-        </div>
+      </div>
 
       <button class="btn-primary auth-submit" id="saveFilterConfigBtn">Guardar mi configuración</button>
     </div>
   </div>
   <div id="onboarding-modal" class="modal" hidden>
     <div class="modal-content onboarding-card">
-        <div id="onboarding-step-container">
-            </div>
-        <div class="onboarding-footer">
-            <span id="onboarding-progress">Paso 1 de 3</span>
-        </div>
+      <div id="onboarding-step-container">
+      </div>
+      <div class="onboarding-footer">
+        <span id="onboarding-progress">Paso 1 de 3</span>
+      </div>
     </div>
   </div>
   <div class="modal-backdrop" id="reviewsModal" hidden>
@@ -617,7 +623,7 @@
         <button class="btn-primary" type="submit">Añadir reseña</button>
       </form>
     </div>
-  </div>  
+  </div>
   <div class="modal-backdrop" id="reviewManagementModal" hidden>
     <div class="reviews-admin-modal">
       <button class="modal-close" id="closeReviewManagementModal" type="button">×</button>
@@ -627,7 +633,7 @@
           <h3>Playas</h3>
           <div id="reviewsBeachList" class="reviews-beach-list"></div>
         </aside>
-        
+
         <!-- DERECHA: reseñas -->
         <section class="reviews-admin-content">
           <h3>Reseñas</h3>
@@ -635,10 +641,10 @@
         </section>
       </div>
     </div>
-  </div>  
+  </div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script type="module" src="/static/js/main.js?v=admin-catalog-20260507"></script>
   <script type="module" src="/static/js/favorites/favorites.js?v=admin-catalog-20260507"></script>
 </body>
-</html>
 
+</html>

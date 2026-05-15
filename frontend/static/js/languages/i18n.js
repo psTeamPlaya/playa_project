@@ -1,0 +1,71 @@
+let translations = {};
+let fallbackTranslations = {};
+let currentLang = "es";
+
+
+async function loadFallbackTranslations() {
+    const response = await fetch("/static/locales/es.json");
+    fallbackTranslations = await response.json();
+}
+
+export async function setLanguage(lang) {
+    currentLang = lang;
+
+    const response = await fetch(`/static/locales/${lang}.json`);
+    translations = await response.json();
+
+    translatePage();
+
+    const select = document.getElementById("languageSelect");
+
+    if (select) {
+        select.value = lang;
+    }
+
+    localStorage.setItem("lang", lang);
+}
+
+function getNestedValue(obj, path) {
+  return path.split(".").reduce((acc, part) => {
+    return acc?.[part];
+  }, obj);
+}
+
+function t(key) {
+  return getNestedValue(translations, key)
+    || getNestedValue(fallbackTranslations, key)
+    || key;
+}
+
+function translatePage() {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.dataset.i18n;
+
+    el.textContent = t(key);
+  });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+
+    el.placeholder = t(key);
+  });
+}
+
+export async function initLanguage() {
+    await loadFallbackTranslations();
+
+    const saved = localStorage.getItem("lang");
+
+    if (saved) {
+        setLanguage(saved);
+        return;
+    }
+
+    const browserLang = navigator.language.startsWith("cs")
+        ? "cs"
+        : navigator.language.startsWith("en")
+            ? "en"
+            : "es";
+
+    setLanguage(browserLang);
+}
