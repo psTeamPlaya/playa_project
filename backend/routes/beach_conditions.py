@@ -7,6 +7,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
+from backend.config import settings
 from backend.db import get_db
 from backend.models.beach import Beach
 from backend.models.beach_condition import BeachCondition
@@ -26,10 +27,24 @@ MAP = {
     "tide": "sea_level_height_msl",
 }
 
-def fetch_weather(latitude, longitude, day):
+def _normalize_batch_response(data):
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        return [data]
+    raise RuntimeError("Unexpected Open-Meteo payload format.")
+
+
+def _build_coordinate_params(beaches: list[Beach]) -> dict[str, str]:
+    return {
+        "latitude": ",".join(str(float(beach.latitude)) for beach in beaches),
+        "longitude": ",".join(str(float(beach.longitude)) for beach in beaches),
+    }
+
+
+def fetch_weather_batch(beaches: list[Beach], day: str):
     params = {
-        "latitude": latitude,
-        "longitude": longitude,
+        **_build_coordinate_params(beaches),
         "hourly": ",".join([
             MAP["air_temperature"],
             MAP["wind_speed"],
@@ -37,26 +52,30 @@ def fetch_weather(latitude, longitude, day):
             MAP["rain_probability"]
         ]),
         "daily": MAP["uv_index"],
-        "timezone": "auto",
+        "timezone": settings.OPEN_METEO_TIMEZONE,
         "start_date": day,
         "end_date": day
     }
-    return fetch_remote_json("https://api.open-meteo.com/v1/forecast", params)
+    return _normalize_batch_response(
+        fetch_remote_json("https://api.open-meteo.com/v1/forecast", params)
+    )
 
 
-def fetch_marine(latitude, longitude, day):
+def fetch_marine_batch(beaches: list[Beach], day: str):
     params = {
-        "latitude": latitude,
-        "longitude": longitude,
+        **_build_coordinate_params(beaches),
         "hourly": ",".join([
             MAP["wave_height"],
             MAP["water_temp"],
             MAP["tide"]
         ]),
+        "timezone": settings.OPEN_METEO_TIMEZONE,
         "start_date": day,
         "end_date": day
     }
-    return fetch_remote_json("https://marine-api.open-meteo.com/v1/marine", params)
+    return _normalize_batch_response(
+        fetch_remote_json("https://marine-api.open-meteo.com/v1/marine", params)
+    )
 
 
 def fetch_remote_json(url, params):
@@ -74,19 +93,15 @@ def upsert_beach_conditions(db: Session = Depends(get_db)):
     days = [today + timedelta(days=i) for i in range(16)]
     total = 0
 
-    for beach in beaches:
-        for day in days:
-            try:
-                weather = fetch_weather(
-                    beach.latitude,
-                    beach.longitude,
-                    day.isoformat()
-                )
-                marine = fetch_marine(
-                    beach.latitude,
-                    beach.longitude,
-                    day.isoformat()
-                )
+    for day in days:
+        try:
+            weather_payloads = fetch_weather_batch(beaches, day.isoformat())
+            marine_payloads = fetch_marine_batch(beaches, day.isoformat())
+
+            if len(weather_payloads) != len(beaches) or len(marine_payloads) != len(beaches):
+                raise RuntimeError("Open-Meteo returned an unexpected number of locations.")
+
+            for beach, weather, marine in zip(beaches, weather_payloads, marine_payloads):
                 if not weather.get("hourly") or not marine.get("hourly"):
                     continue
 
@@ -110,7 +125,6 @@ def upsert_beach_conditions(db: Session = Depends(get_db)):
                         stmt = insert(BeachCondition).values(
                             beach_id=beach.id,
                             datetime=dt,
-
                             air_temp=weather["hourly"]["temperature_2m"][i],
                             wind_speed=weather["hourly"]["wind_speed_10m"][i],
                             cloud_cover=weather["hourly"]["cloud_cover"][i],
@@ -136,13 +150,12 @@ def upsert_beach_conditions(db: Session = Depends(get_db)):
                         db.execute(stmt)
                         total += 1
                     except Exception as e:
-                        # evita que un punto roto mate todo el batch
                         print(f"[SKIP DATUM] beach={beach.id} time={t} err={e}")
                         continue
-            except Exception as e:
-                # evita que una playa entera rompa
-                print(f"[SKIP BEACH/DAY] beach={beach.id} day={day} err={e}")
-                continue
+        except Exception as e:
+            print(f"[SKIP DAY] day={day} err={e}")
+            db.rollback()
+            continue
         db.commit()
     return {
         "status": "ok",

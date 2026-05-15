@@ -134,6 +134,7 @@ export function initAdminUI({
         "wind surf": "windsurf",
         "buceo": "bucear",
         "bucear": "bucear",
+        "snorkel": "bucear",
         "caminar": "caminar",
         "pasear": "caminar",
         "pescar": "pescar",

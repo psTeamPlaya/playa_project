@@ -98,6 +98,7 @@ def test_normalize_activity_name_handles_aliases():
     assert normalize_activity_name("Piscina Natural") == "piscina_natural"
     assert normalize_activity_name("Kite-Surf") == "kitesurf"
     assert normalize_activity_name("Buceo") == "bucear"
+    assert normalize_activity_name("Snorkel") == "bucear"
 
 
 def test_collect_available_activities_unifies_db_and_defaults(monkeypatch):
