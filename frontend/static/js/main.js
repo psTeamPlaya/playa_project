@@ -30,7 +30,7 @@ import {
 import { initQuantity } from "./search/quantity.js";
 import { initResultsMap } from "./results/results-map.js";
 
-import { initLanguage, setLanguage } from "./languages/i18n.js";
+import { initLanguage, setLanguage } from "/static/js/languages/i18n.js";
 
 initLanguage();
 

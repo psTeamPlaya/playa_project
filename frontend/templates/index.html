@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mi día de Playa</title>
+  <title data-i18n="titles.app_title">Mi día de Playa</title>
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
   <link rel="stylesheet" href="/static/css/styles.css?v=admin-catalog-20260507">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
@@ -26,7 +26,7 @@
           <img src="/static/img/logo.png" alt="Logo Mi dia de Playa">
         </div>
 
-        <h1 data-i18n="app_title">Mi día de Playa</h1>
+        <h1 data-i18n="titles.app_title">Mi día de Playa</h1>
         <div class="right-part"> <!-- wrap buttons together -->
           <section class="languages">
             <button class="language-button btn-secondary" id="languageMenuBtn" type="button" aria-label="Language">
@@ -54,32 +54,32 @@
               </span>
             </button>
             <div class="preferences-panel" id="preferencesPanel" hidden>
-              <h3>Preferencias</h3>
+              <h3 data-i18n="titles.preferences">Preferencias</h3>
               <div class="preferences-user" id="preferencesUserInfo"></div>
               <label class="preference-item fav-item" id="favoritesLabel">
                 <button id="showFavoritesBtn" class="invisible-button" type="button">
-                  <i class="fas fa-heart fav-icon"></i><span>Mis Playas Favoritas</span>
+                  <i class="fas fa-heart fav-icon"></i><span data-i18n="titles.favorite_beaches">Mis Playas Favoritas</span>
                 </button>
               </label>
               <div class="preferences-admin-group hidden" id="adminPreferencesGroup">
-                <button class="preferences-action-button" id="openUserManagementBtn" type="button">
+                <button data-i18n="admin.management.users" class="preferences-action-button" id="openUserManagementBtn" type="button">
                   Gestión de usuarios
                 </button>
-                <button class="preferences-action-button" id="openBeachManagementBtn" type="button">
+                <button data-i18n="admin.management.beaches" class="preferences-action-button" id="openBeachManagementBtn" type="button">
                   Gestión de playas
                 </button>
-                <button class="preferences-action-button is-disabled" id="openReviewManagementBtn" type="button"
+                <button data-i18n="admin.management.reviews" class="preferences-action-button is-disabled" id="openReviewManagementBtn" type="button"
                   disabled>
                   Gestión de reseñas
                 </button>
               </div>
               <label class="preference-item">
                 <input type="checkbox" id="rememberSchedulePreference">
-                <span id="openConfigLink" style="cursor:pointer; text-decoration: underline;">Mis Filtros</span>
+                <span data-i18n="titles.my_filters" id="openConfigLink" style="cursor:pointer; text-decoration: underline;">Mis Filtros</span>
               </label>
               <label class="preference-item">
                 <input type="checkbox" id="expandResultsPreference">
-                <span>Configurar alertas</span>
+                <span data-i18n="titles.configure_alerts">Configurar alertas</span>
               </label>
               <div class="preferences-divider"></div>
               <button class="preferences-logout" id="preferencesLogoutBtn" type="button" aria-label="Cerrar sesion">
@@ -95,54 +95,54 @@
   <div class="app-shell container">
     <aside class="filters-sidebar" id="filtersSidebar" hidden aria-label="Filtros de playa">
       <div class="filters-content">
-        <h2>Filtros</h2>
+        <h2 data-i18n="titles.filters">Filtros</h2>
         <div class="filter-actions" aria-label="Acciones globales de filtros">
-          <button class="filter-chip-button filter-action-button" id="disableStaticFilters" type="button">
+          <button data-i18n="search.reset_filters" class="filter-chip-button filter-action-button" id="disableStaticFilters" type="button">
             Reset filtros estáticos
           </button>
         </div>
         <fieldset class="filter-group" data-user-filter="tipo_playa">
-          <legend>Tipo de playa</legend>
+          <legend data-i18n="search.beach_type">Tipo de playa</legend>
           <label class="filter-option">
             <input type="checkbox" id="filterSandBeach" value="arena">
-            <span>Arena</span>
+            <span data-i18n="search.types.sand">Arena</span>
           </label>
           <label class="filter-option">
             <input type="checkbox" id="filterStoneBeach" value="piedra">
-            <span>Piedra</span>
+            <span data-i18n="search.types.stone">Piedra</span>
           </label>
           <label class="filter-option">
             <input type="checkbox" id="filterNaturalPoolBeach" value="piscina_natural">
-            <span>Piscina natural</span>
+            <span data-i18n="search.types.natural_pool">Piscina natural</span>
           </label>
         </fieldset>
 
         <fieldset class="filter-group" data-user-filter="servicios">
-          <legend>Servicios</legend>
+          <legend data-i18n="search.services.title">Servicios</legend>
           <label class="filter-option">
             <input type="checkbox" id="filterRestaurant" value="restaurant">
-            <span>Restaurante</span>
+            <span data-i18n="search.services.restaurant">Restaurante</span>
           </label>
           <label class="filter-option">
             <input type="checkbox" id="filterTakeAwayFood" value="takeAwayFood">
-            <span>Comida para llevar</span>
+            <span data-i18n="search.services.take_away_food">Comida para llevar</span>
           </label>
           <label class="filter-option">
             <input type="checkbox" id="filterBalneario" value="balneario">
-            <span>Balneario</span>
+            <span data-i18n="search.services.spa">Balneario</span>
           </label>
           <label class="filter-option">
             <input type="checkbox" id="filterSportZone" value="sportZone">
-            <span>Zona deportiva</span>
+            <span data-i18n="search.services.sport_zone">Zona deportiva</span>
           </label>
           <label class="filter-option">
             <input type="checkbox" id="filterPetFriendly" value="petFriendly">
-            <span>Pet-friendly</span>
+            <span data-i18n="search.services.pet_friendly">Pet-friendly</span>
           </label>
         </fieldset>
         <div class="filter-actions" aria-label="Acciones globales de filtros">
-          <button class="filter-chip-button filter-action-button" id="disableDynamicFilters" type="button">
-            Desactivar filtros dinámicos
+          <button data-i18n="search.enable_dynamic_filters" class="filter-chip-button filter-action-button" id="disableDynamicFilters" type="button">
+            Activar filtros dinámicos
           </button>
         </div>
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="nubosidad">
