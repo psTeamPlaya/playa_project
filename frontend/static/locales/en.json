@@ -1,5 +1,10 @@
 {
-  "app_title": "My Day at the Beach",
+  "titles": {
+    "app_title": "My Day at the Beach",
+    "beaches": "Beaches",
+    "weather": "Weather",
+    "alerts": "Alerts"
+  },
   "preferences": "Preferences",
   "favorite_beaches": "My Favorite Beaches",
   "filters": "Filters",

@@ -1,14 +1,48 @@
 {
-  "app_title": "Mi día de Playa",
-  "preferences": "Preferencias",
-  "favorite_beaches": "Mis Playas Favoritas",
-  "filters": "Filtros",
-  "beach_type": "Tipo de playa",
-  "sand": "Arena",
-  "stone": "Piedra",
-  "natural_pool": "Piscina natural",
-  "search_beaches": "Buscar playas recomendadas",
+  "titles": {
+    "app_title": "Mi día de Playa",
+    "preferences": "Preferencias",
+    "favorite_beaches": "Mis Playas Favoritas",
+    "filters": "Filtros",
+    "my_filters": "Mis Filtros",
+    "configure_alerts": "Configurar alertas",
+    "beaches": "Playas",
+    "weather": "Clima",
+    "alerts": "Alertas"
+  },
+  "search": {
+    "beach_type": "Tipo de playa",
+    "types": {
+      "sand": "Arena",
+      "stone": "Piedra",
+      "natural_pool": "Piscina natural"
+    },
+    "search_beaches": "Buscar playas recomendadas",
+    "reset_filters": "Reset filtros estáticos",
+    "disable_dynamic_filters": "Desactivar filtros dinámicos",
+    "enable_dynamic_filters": "Activar filtros dinámicos",
+    "services": {
+      "title": "Servicios",
+      "restaurant": "Restaurante",
+      "take_away_food": "Comida para llevar",
+      "showers": "Duchas",
+      "toilets": "Baños",
+      "parking": "Aparcamiento",
+      "lifeguard": "Salvavidas",
+      "accessibility": "Accesibilidad",
+      "sport_zone": "Zona deportiva",
+      "pet_friendly": "Pet-friendly",
+      "spa": "Balneario"
+    }
+  },
   "placeholders": {
     "city": "Ej: Las Palmas"
+  },
+  "admin": {
+    "management": {
+      "users": "Gestión de usuarios",
+      "beaches": "Gestión de playas",
+      "reviews": "Gestión de reseñas"
+    }
   }
 }

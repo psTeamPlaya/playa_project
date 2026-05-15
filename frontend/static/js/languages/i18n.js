@@ -31,7 +31,7 @@ function getNestedValue(obj, path) {
   }, obj);
 }
 
-function t(key) {
+export function t(key) {
   return getNestedValue(translations, key)
     || getNestedValue(fallbackTranslations, key)
     || key;
