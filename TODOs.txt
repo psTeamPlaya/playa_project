@@ -1,1 +1,2 @@
 TODO: el JSON de playas debe cargarse en la DB.
+TODO: nueva rama para trabajar con ReDIS (BBDD)

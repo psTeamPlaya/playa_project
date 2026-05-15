@@ -39,15 +39,26 @@ ALLOWED_ALERT_FILTER_KEYS = {
     "min_altura_oleaje",
     "max_altura_oleaje",
 }
+INTERNAL_ALERT_FILTER_KEYS = {"target_beach_id"}
 
 
-def sanitize_alert_filters(filters: dict[str, Any] | None) -> dict[str, Any]:
+def sanitize_alert_filters(
+    filters: dict[str, Any] | None,
+    *,
+    include_internal: bool = False,
+) -> dict[str, Any]:
     if not isinstance(filters, dict):
         return {}
 
     sanitized: dict[str, Any] = {}
     for key, value in filters.items():
-        if key not in ALLOWED_ALERT_FILTER_KEYS or value is None:
+        if value is None:
+            continue
+        if key in INTERNAL_ALERT_FILTER_KEYS:
+            if include_internal and isinstance(value, (int, float)):
+                sanitized[key] = int(value)
+            continue
+        if key not in ALLOWED_ALERT_FILTER_KEYS:
             continue
         if isinstance(value, bool):
             sanitized[key] = value
@@ -57,17 +68,23 @@ def sanitize_alert_filters(filters: dict[str, Any] | None) -> dict[str, Any]:
     return sanitized
 
 
+def build_alert_filters(filters: dict[str, Any] | None, *, beach_id: int) -> dict[str, Any]:
+    sanitized = sanitize_alert_filters(filters)
+    sanitized["target_beach_id"] = int(beach_id)
+    return sanitized
+
+
 def serialize_user_alert(alert: UserAlert) -> dict[str, Any]:
     activity_name = normalize_activity_name(alert.activity_name) or alert.activity_name
+    stored_filters = sanitize_alert_filters(alert.filters, include_internal=True)
+    beach_id = stored_filters.get("target_beach_id")
     return {
         "id": alert.id,
         "activity_name": activity_name,
         "activity_label": prettify_catalog_name(activity_name),
+        "beach_id": int(beach_id) if beach_id is not None else None,
+        "beach_label": alert.location_label,
         "filters": sanitize_alert_filters(alert.filters),
-        "latitude": float(alert.latitude),
-        "longitude": float(alert.longitude),
-        "radio_km": int(alert.radio_km),
-        "location_label": alert.location_label,
         "is_active": bool(alert.is_active),
         "last_notified_match": alert.last_notified_match,
         "created_at": alert.created_at,
@@ -107,16 +124,23 @@ def evaluate_alert_match(
     if not activity_name:
         return None
 
-    beaches = [
-        beach
-        for beach in cargar_playas()
-        if distancia_km(
-            float(alert.latitude),
-            float(alert.longitude),
-            float(beach["latitud"]),
-            float(beach["longitud"]),
-        ) <= float(alert.radio_km)
-    ]
+    stored_filters = sanitize_alert_filters(alert.filters, include_internal=True)
+    target_beach_id = stored_filters.get("target_beach_id")
+    all_beaches = cargar_playas()
+
+    if target_beach_id is not None:
+        beaches = [beach for beach in all_beaches if int(beach["id"]) == int(target_beach_id)]
+    else:
+        beaches = [
+            beach
+            for beach in all_beaches
+            if distancia_km(
+                float(alert.latitude),
+                float(alert.longitude),
+                float(beach["latitud"]),
+                float(beach["longitud"]),
+            ) <= float(alert.radio_km)
+        ]
     if not beaches:
         return None
 

@@ -1,6 +1,17 @@
 import { authFetch } from "../api/auth-fetch.js";
 
 
+const FILTER_FIELDS = [
+    ["min_temperatura_ambiente", "Temperatura mín.", "ºC"],
+    ["max_temperatura_ambiente", "Temperatura máx.", "ºC"],
+    ["min_velocidad_viento", "Viento mín.", "km/h"],
+    ["max_velocidad_viento", "Viento máx.", "km/h"],
+    ["min_nubosidad", "Nubosidad mín.", "%"],
+    ["max_nubosidad", "Nubosidad máx.", "%"],
+    ["min_altura_oleaje", "Oleaje mín.", "m"],
+    ["max_altura_oleaje", "Oleaje máx.", "m"],
+];
+
 function escapeHtml(value = "") {
     return String(value)
         .replaceAll("&", "&amp;")
@@ -11,29 +22,49 @@ function escapeHtml(value = "") {
 }
 
 function formatAlertFilters(filters = {}) {
-    const entries = Object.entries(filters);
-    if (entries.length === 0) {
-        return "Sin filtros extra";
+    const formatted = FILTER_FIELDS
+        .filter(([key]) => filters[key] !== undefined && filters[key] !== null && filters[key] !== "")
+        .map(([key, label, unit]) => `${label}: ${filters[key]} ${unit}`.trim());
+
+    return formatted.length > 0 ? formatted.join(" · ") : "Sin condiciones extra";
+}
+
+function parseOptionalNumber(value) {
+    if (value === "" || value === null || value === undefined) {
+        return null;
     }
 
-    return entries
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(" · ");
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
 }
 
 export function initAlertsUI({
     openAlertsModalBtn,
     alertsModal,
     closeAlertsModalBtn,
+    alertsForm,
+    alertsEditingIdInput,
+    cancelAlertEditBtn,
+    saveCurrentAlertBtn,
+    alertsActivitySelect,
+    alertsBeachSelect,
+    alertMinTemperatureInput,
+    alertMaxTemperatureInput,
+    alertMinWindInput,
+    alertMaxWindInput,
+    alertMinCloudInput,
+    alertMaxCloudInput,
+    alertMinWaveInput,
+    alertMaxWaveInput,
     alertsList,
     alertsFeedback,
-    saveCurrentAlertBtn,
-    alertSummaryActivity,
-    alertSummaryLocation,
-    alertSummaryFilters,
     getCurrentUser,
-    getAlertDraft
+    getPreferredActivityName,
 }) {
+    let activityOptions = [];
+    let beachOptions = [];
+    let catalogsLoaded = false;
+
     function setFeedback(message = "", isError = false) {
         if (!alertsFeedback) {
             return;
@@ -51,7 +82,7 @@ export function initAlertsUI({
     }
 
     async function fetchJson(url, options = {}) {
-        const response = await authFetch(url, options);
+        const response = options.method ? await authFetch(url, options) : await fetch(url, options);
         if (!response.ok) {
             const payload = await response.json().catch(() => ({}));
             throw new Error(payload.detail || "No se pudo completar la operación.");
@@ -59,31 +90,164 @@ export function initAlertsUI({
         return response.json();
     }
 
-    function renderAlertDraftSummary() {
-        const draft = getAlertDraft?.();
-        if (!draft) {
-            if (alertSummaryActivity) alertSummaryActivity.textContent = "Selecciona una actividad";
-            if (alertSummaryLocation) alertSummaryLocation.textContent = "Selecciona una ubicación y rango";
-            if (alertSummaryFilters) alertSummaryFilters.textContent = "Configura los filtros que quieras guardar";
-            saveCurrentAlertBtn?.setAttribute("disabled", "disabled");
-            return null;
-        }
+    function getEditingId() {
+        return Number(alertsEditingIdInput?.value || 0) || null;
+    }
 
-        if (alertSummaryActivity) {
-            alertSummaryActivity.textContent = draft.activityLabel || draft.activityName || "Selecciona una actividad";
-        }
-        if (alertSummaryLocation) {
-            alertSummaryLocation.textContent = draft.locationLabel || "Selecciona una ubicación y rango";
-        }
-        if (alertSummaryFilters) {
-            alertSummaryFilters.textContent = formatAlertFilters(draft.filters);
-        }
+    function isEditing() {
+        return Boolean(getEditingId());
+    }
 
-        const isValid = Boolean(draft.activityName && draft.selectedCoords && draft.range);
+    function resetForm({ preservePreferredActivity = true } = {}) {
+        alertsForm?.reset();
+        if (alertsEditingIdInput) {
+            alertsEditingIdInput.value = "";
+        }
+        if (cancelAlertEditBtn) {
+            cancelAlertEditBtn.hidden = true;
+        }
         if (saveCurrentAlertBtn) {
-            saveCurrentAlertBtn.toggleAttribute("disabled", !isValid);
+            saveCurrentAlertBtn.textContent = "Guardar alerta";
         }
-        return draft;
+
+        const preferred = preservePreferredActivity ? getPreferredActivityName?.() || "" : "";
+        if (preferred && alertsActivitySelect && activityOptions.some((activity) => activity.name === preferred)) {
+            alertsActivitySelect.value = preferred;
+        }
+    }
+
+    function populateActivitySelect() {
+        if (!alertsActivitySelect) {
+            return;
+        }
+
+        const currentValue = alertsActivitySelect.value || getPreferredActivityName?.() || "";
+        alertsActivitySelect.innerHTML = `
+            <option value="">Selecciona una actividad</option>
+            ${activityOptions.map((activity) => `
+                <option value="${escapeHtml(activity.name)}">${escapeHtml(activity.label)}</option>
+            `).join("")}
+        `;
+
+        if (currentValue && activityOptions.some((activity) => activity.name === currentValue)) {
+            alertsActivitySelect.value = currentValue;
+        }
+    }
+
+    function populateBeachSelect() {
+        if (!alertsBeachSelect) {
+            return;
+        }
+
+        const currentValue = alertsBeachSelect.value;
+        alertsBeachSelect.innerHTML = `
+            <option value="">Selecciona una playa</option>
+            ${beachOptions.map((beach) => `
+                <option value="${escapeHtml(String(beach.id))}">${escapeHtml(beach.label)}</option>
+            `).join("")}
+        `;
+
+        if (currentValue && beachOptions.some((beach) => String(beach.id) === currentValue)) {
+            alertsBeachSelect.value = currentValue;
+        }
+    }
+
+    async function ensureCatalogsLoaded() {
+        if (catalogsLoaded) {
+            populateActivitySelect();
+            populateBeachSelect();
+            return;
+        }
+
+        const [activities, beaches] = await Promise.all([
+            fetchJson("/activities/"),
+            fetchJson("/beaches/"),
+        ]);
+
+        activityOptions = Array.isArray(activities) ? activities : [];
+        beachOptions = Array.isArray(beaches) ? beaches : [];
+        catalogsLoaded = true;
+        populateActivitySelect();
+        populateBeachSelect();
+    }
+
+    function buildFiltersPayload() {
+        const filters = {
+            min_temperatura_ambiente: parseOptionalNumber(alertMinTemperatureInput?.value),
+            max_temperatura_ambiente: parseOptionalNumber(alertMaxTemperatureInput?.value),
+            min_velocidad_viento: parseOptionalNumber(alertMinWindInput?.value),
+            max_velocidad_viento: parseOptionalNumber(alertMaxWindInput?.value),
+            min_nubosidad: parseOptionalNumber(alertMinCloudInput?.value),
+            max_nubosidad: parseOptionalNumber(alertMaxCloudInput?.value),
+            min_altura_oleaje: parseOptionalNumber(alertMinWaveInput?.value),
+            max_altura_oleaje: parseOptionalNumber(alertMaxWaveInput?.value),
+        };
+
+        return Object.fromEntries(
+            Object.entries(filters).filter(([, value]) => value !== null)
+        );
+    }
+
+    function validateFilters(filters) {
+        const ranges = [
+            ["Temperatura", filters.min_temperatura_ambiente, filters.max_temperatura_ambiente],
+            ["Viento", filters.min_velocidad_viento, filters.max_velocidad_viento],
+            ["Nubosidad", filters.min_nubosidad, filters.max_nubosidad],
+            ["Oleaje", filters.min_altura_oleaje, filters.max_altura_oleaje],
+        ];
+
+        for (const [label, minValue, maxValue] of ranges) {
+            if (minValue !== undefined && maxValue !== undefined && minValue > maxValue) {
+                throw new Error(`${label}: el mínimo no puede ser mayor que el máximo.`);
+            }
+        }
+    }
+
+    function populateFormForEdit(alert) {
+        if (!alert) {
+            return;
+        }
+
+        if (alertsEditingIdInput) {
+            alertsEditingIdInput.value = String(alert.id);
+        }
+        if (alertsActivitySelect) {
+            alertsActivitySelect.value = alert.activity_name || "";
+        }
+        if (alertsBeachSelect) {
+            alertsBeachSelect.value = String(alert.beach_id || "");
+        }
+        if (alertMinTemperatureInput) {
+            alertMinTemperatureInput.value = alert.filters?.min_temperatura_ambiente ?? "";
+        }
+        if (alertMaxTemperatureInput) {
+            alertMaxTemperatureInput.value = alert.filters?.max_temperatura_ambiente ?? "";
+        }
+        if (alertMinWindInput) {
+            alertMinWindInput.value = alert.filters?.min_velocidad_viento ?? "";
+        }
+        if (alertMaxWindInput) {
+            alertMaxWindInput.value = alert.filters?.max_velocidad_viento ?? "";
+        }
+        if (alertMinCloudInput) {
+            alertMinCloudInput.value = alert.filters?.min_nubosidad ?? "";
+        }
+        if (alertMaxCloudInput) {
+            alertMaxCloudInput.value = alert.filters?.max_nubosidad ?? "";
+        }
+        if (alertMinWaveInput) {
+            alertMinWaveInput.value = alert.filters?.min_altura_oleaje ?? "";
+        }
+        if (alertMaxWaveInput) {
+            alertMaxWaveInput.value = alert.filters?.max_altura_oleaje ?? "";
+        }
+        if (cancelAlertEditBtn) {
+            cancelAlertEditBtn.hidden = false;
+        }
+        if (saveCurrentAlertBtn) {
+            saveCurrentAlertBtn.textContent = "Guardar cambios";
+        }
+        setFeedback(`Editando alerta para ${alert.beach_label || alert.activity_label}.`, false);
     }
 
     function renderAlerts(alerts = []) {
@@ -104,7 +268,7 @@ export function initAlertsUI({
             <article class="alerts-list-card">
                 <div class="alerts-list-card-body">
                     <strong>${escapeHtml(alert.activity_label)}</strong>
-                    <div>${escapeHtml(alert.location_label || "Ubicación guardada")}</div>
+                    <div>${escapeHtml(alert.beach_label || "Playa guardada")}</div>
                     <small>${escapeHtml(formatAlertFilters(alert.filters))}</small>
                     <small>
                         ${alert.last_notified_match
@@ -112,9 +276,14 @@ export function initAlertsUI({
                             : "Sin avisos enviados todavía"}
                     </small>
                 </div>
-                <button class="btn-secondary alert-delete-btn" type="button" data-alert-id="${alert.id}">
-                    Eliminar
-                </button>
+                <div class="alerts-list-card-actions">
+                    <button class="btn-secondary alert-edit-btn" type="button" data-alert-id="${alert.id}">
+                        Editar
+                    </button>
+                    <button class="btn-secondary alert-delete-btn" type="button" data-alert-id="${alert.id}">
+                        Eliminar
+                    </button>
+                </div>
             </article>
         `).join("");
     }
@@ -131,7 +300,8 @@ export function initAlertsUI({
             return;
         }
 
-        renderAlertDraftSummary();
+        await ensureCatalogsLoaded();
+        resetForm();
         setFeedback("");
         if (alertsModal) {
             alertsModal.hidden = false;
@@ -139,33 +309,39 @@ export function initAlertsUI({
         await loadAlerts();
     }
 
-    async function saveCurrentAlert() {
-        const draft = renderAlertDraftSummary();
-        if (!draft || !draft.activityName || !draft.selectedCoords) {
-            setFeedback("Debes seleccionar actividad, ubicación y rango antes de guardar la alerta.", true);
+    async function saveAlert(event) {
+        event?.preventDefault?.();
+
+        const activityName = alertsActivitySelect?.value || "";
+        const beachId = Number(alertsBeachSelect?.value || 0);
+        const filters = buildFiltersPayload();
+
+        if (!activityName || !beachId) {
+            setFeedback("Debes seleccionar una actividad y una playa.", true);
             return;
         }
 
-        const [longitude, latitude] = draft.selectedCoords;
+        const editingId = getEditingId();
+        const method = editingId ? "PUT" : "POST";
+        const url = editingId ? `/api/users/me/alerts/${editingId}` : "/api/users/me/alerts";
+
         try {
-            await fetchJson("/api/users/me/alerts", {
-                method: "POST",
+            validateFilters(filters);
+            await fetchJson(url, {
+                method,
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    activity_name: draft.activityName,
-                    filters: draft.filters,
-                    latitude,
-                    longitude,
-                    radio_km: Number(draft.range),
-                    location_label: draft.locationLabel
-                })
+                    activity_name: activityName,
+                    beach_id: beachId,
+                    filters,
+                }),
             });
-            setFeedback("Alerta guardada correctamente.", false);
+            setFeedback(editingId ? "Alerta actualizada correctamente." : "Alerta guardada correctamente.", false);
+            resetForm();
             await loadAlerts();
-        }
-        catch (error) {
+        } catch (error) {
             setFeedback(error.message, true);
         }
     }
@@ -173,30 +349,54 @@ export function initAlertsUI({
     async function deleteAlert(alertId) {
         try {
             await fetchJson(`/api/users/me/alerts/${alertId}`, {
-                method: "DELETE"
+                method: "DELETE",
             });
+            if (getEditingId() === Number(alertId)) {
+                resetForm({ preservePreferredActivity: false });
+            }
             setFeedback("Alerta eliminada.", false);
             await loadAlerts();
-        }
-        catch (error) {
+        } catch (error) {
             setFeedback(error.message, true);
         }
     }
 
-    openAlertsModalBtn?.addEventListener("click", openModal);
-    closeAlertsModalBtn?.addEventListener("click", closeModal);
-    saveCurrentAlertBtn?.addEventListener("click", saveCurrentAlert);
-    alertsList?.addEventListener("click", async (event) => {
-        const button = event.target.closest(".alert-delete-btn");
-        if (!button) {
+    async function editAlert(alertId) {
+        const alerts = await loadAlerts();
+        const selectedAlert = alerts.find((alert) => Number(alert.id) === Number(alertId));
+        if (!selectedAlert) {
+            setFeedback("No se pudo cargar la alerta para editarla.", true);
             return;
         }
-        await deleteAlert(button.dataset.alertId);
+        populateFormForEdit(selectedAlert);
+    }
+
+    openAlertsModalBtn?.addEventListener("click", openModal);
+    closeAlertsModalBtn?.addEventListener("click", closeModal);
+    cancelAlertEditBtn?.addEventListener("click", () => {
+        resetForm();
+        setFeedback("");
+    });
+    alertsForm?.addEventListener("submit", saveAlert);
+    alertsList?.addEventListener("click", async (event) => {
+        const editButton = event.target.closest(".alert-edit-btn");
+        if (editButton) {
+            await editAlert(editButton.dataset.alertId);
+            return;
+        }
+
+        const deleteButton = event.target.closest(".alert-delete-btn");
+        if (deleteButton) {
+            await deleteAlert(deleteButton.dataset.alertId);
+        }
     });
 
     return {
         closeModal,
         openModal,
-        refreshDraftSummary: renderAlertDraftSummary,
+        syncFormDefaults: () => {
+            populateActivitySelect();
+            populateBeachSelect();
+        },
     };
 }

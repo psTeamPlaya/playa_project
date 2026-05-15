@@ -41,6 +41,7 @@ const buscarBtn = document.getElementById("buscarBtn");
 const floatingBuscarBtn = document.getElementById("floatingBuscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
+const sourceMetricsContainer = document.getElementById("sourceMetricsContainer");
 const favoritesResultsContainer = document.getElementById("favoritesResultsContainer");
 const recommendedBeachesSection = document.getElementById("recommendedBeachesSection");
 const hourWheel = document.getElementById("hourWheel");
@@ -148,12 +149,22 @@ const serviceCatalogFeedback = document.getElementById("serviceCatalogFeedback")
 const serviceCatalogList = document.getElementById("serviceCatalogList");
 const alertsModal = document.getElementById("alertsModal");
 const closeAlertsModal = document.getElementById("closeAlertsModal");
+const alertsForm = document.getElementById("alertsForm");
+const alertsEditingIdInput = document.getElementById("alertsEditingId");
+const cancelAlertEditBtn = document.getElementById("cancelAlertEditBtn");
 const saveCurrentAlertBtn = document.getElementById("saveCurrentAlertBtn");
+const alertsActivitySelect = document.getElementById("alertsActivitySelect");
+const alertsBeachSelect = document.getElementById("alertsBeachSelect");
+const alertMinTemperatureInput = document.getElementById("alertMinTemperature");
+const alertMaxTemperatureInput = document.getElementById("alertMaxTemperature");
+const alertMinWindInput = document.getElementById("alertMinWind");
+const alertMaxWindInput = document.getElementById("alertMaxWind");
+const alertMinCloudInput = document.getElementById("alertMinCloud");
+const alertMaxCloudInput = document.getElementById("alertMaxCloud");
+const alertMinWaveInput = document.getElementById("alertMinWave");
+const alertMaxWaveInput = document.getElementById("alertMaxWave");
 const alertsFeedback = document.getElementById("alertsFeedback");
 const alertsList = document.getElementById("alertsList");
-const alertSummaryActivity = document.getElementById("alertSummaryActivity");
-const alertSummaryLocation = document.getElementById("alertSummaryLocation");
-const alertSummaryFilters = document.getElementById("alertSummaryFilters");
 
 let actividadSeleccionada = "";
 let dateTimeController;
@@ -206,12 +217,70 @@ const staticFilterInputs = [
 
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
+    clearSourceMetrics();
     statusEl.textContent = "";
     ocultarAvisoSolar();
 }
 
 function resetRecommendationContext() {
     lastRecommendationContext = null;
+}
+
+function clearSourceMetrics() {
+    if (!sourceMetricsContainer) {
+        return;
+    }
+
+    sourceMetricsContainer.hidden = true;
+    sourceMetricsContainer.innerHTML = "";
+}
+
+function formatElapsedMs(value) {
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? `${numericValue.toFixed(2)} ms` : "N/D";
+}
+
+function renderSourceMetricCard(label, metric = {}) {
+    const isAvailable = Boolean(metric.available);
+    const statusClassName = isAvailable ? "is-available" : "is-unavailable";
+    const statusText = isAvailable ? "Disponible" : "Sin datos";
+    const records = Number.isFinite(Number(metric.records)) ? Number(metric.records) : 0;
+    const detailText = metric.error
+        ? metric.error
+        : (isAvailable ? `${records} registros encontrados` : "No hay registros para esa fecha y hora");
+
+    return `
+        <article class="source-metric-card">
+            <div class="source-metric-top">
+                <h3>${label}</h3>
+                <span class="source-metric-status ${statusClassName}">${statusText}</span>
+            </div>
+            <div class="source-metric-time">${formatElapsedMs(metric.elapsed_ms)}</div>
+            <p class="source-metric-detail">${detailText}</p>
+        </article>
+    `;
+}
+
+function renderSourceMetrics(metrics) {
+    if (!sourceMetricsContainer) {
+        return;
+    }
+
+    if (!metrics?.db) {
+        clearSourceMetrics();
+        return;
+    }
+
+    sourceMetricsContainer.innerHTML = `
+        <div class="source-metrics-header">
+            <h3>Métrica de consulta</h3>
+            <p>Tiempo medido para recuperar condiciones desde la base de datos.</p>
+        </div>
+        <div class="source-metrics-grid">
+            ${renderSourceMetricCard("Base de datos", metrics.db)}
+        </div>
+    `;
+    sourceMetricsContainer.hidden = false;
 }
 
 function getCurrentSearchSignature() {
@@ -398,24 +467,6 @@ function obtenerFiltrosActivos() {
     };
 }
 
-function getCurrentAlertDraft() {
-    const selectedActivityCard = document.querySelector(".activity-card.selected");
-    const locationInput = document.getElementById("locationInput");
-    const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
-    const filters = obtenerFiltrosActivos();
-
-    return {
-        activityName: actividadSeleccionada || "",
-        activityLabel: selectedActivityCard?.querySelector(".activity-name")?.textContent?.trim() || "",
-        selectedCoords: selectedCoords ? [...selectedCoords] : null,
-        range: radioSeleccionado?.value || "",
-        locationLabel: locationInput?.value?.trim()
-            ? `${locationInput.value.trim()} · ${radioSeleccionado?.value || "50"} km`
-            : (selectedCoords ? `Lat ${selectedCoords[1].toFixed(4)}, Lon ${selectedCoords[0].toFixed(4)} · ${radioSeleccionado?.value || "50"} km` : ""),
-        filters
-    };
-}
-
 function cumpleFiltros(playa, filtros) {
     const condiciones = playa?.condiciones || {};
     const servicios = playa?.servicios || {};
@@ -442,6 +493,7 @@ function cumpleFiltros(playa, filtros) {
 }
 
 function renderRecommendationResults(data, { shouldScroll = false } = {}) {
+    renderSourceMetrics(data.comparativa_consulta);
     pintarResultados(data.resultados);
     resultsMapController?.setResults(data.resultados);
     if (shouldScroll) {
@@ -559,14 +611,24 @@ function initControllers() {
         openAlertsModalBtn,
         alertsModal,
         closeAlertsModalBtn: closeAlertsModal,
+        alertsForm,
+        alertsEditingIdInput,
+        cancelAlertEditBtn,
+        saveCurrentAlertBtn,
+        alertsActivitySelect,
+        alertsBeachSelect,
+        alertMinTemperatureInput,
+        alertMaxTemperatureInput,
+        alertMinWindInput,
+        alertMaxWindInput,
+        alertMinCloudInput,
+        alertMaxCloudInput,
+        alertMinWaveInput,
+        alertMaxWaveInput,
         alertsList,
         alertsFeedback,
-        saveCurrentAlertBtn,
-        alertSummaryActivity,
-        alertSummaryLocation,
-        alertSummaryFilters,
         getCurrentUser: () => sessionUIController?.getCurrentUser?.(),
-        getAlertDraft: getCurrentAlertDraft
+        getPreferredActivityName: () => actividadSeleccionada || ""
     });
 
     authModalController = initAuthModal({
@@ -671,7 +733,7 @@ function seleccionarActividad(actividad, limpiarResultados = false) {
     card.classList.add("selected");
     actividadSeleccionada = actividad;
     guardarActividadRecordada();
-    alertsUIController?.refreshDraftSummary?.();
+    alertsUIController?.syncFormDefaults?.();
 
     if (limpiarResultados && actividadSeleccionada !== actividadAnterior) {
         resetRecommendationContext();
@@ -776,6 +838,7 @@ async function buscarRecomendaciones() {
     catch (error) {
         console.error(error);
         resetRecommendationContext();
+        clearSourceMetrics();
         statusEl.textContent = "Ha ocurrido un error al consultar la API.";
         resultsMapController?.setResults([]);
         resultsContainer.innerHTML = `

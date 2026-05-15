@@ -249,3 +249,50 @@ def test_recomendar_playas_con_top_n_cero_devuelve_todos(monkeypatch):
 
     assert len(resultados) == 2
     assert [resultado["beach_id"] for resultado in resultados] == [1, 2]
+
+
+def test_recomendar_playas_carga_pesos_una_vez_por_peticion(monkeypatch):
+    playas = [
+        {
+            "id": index,
+            "nombre": f"Playa {index}",
+            "ubicacion": "Sur",
+            "latitud": 28.0,
+            "longitud": -15.0,
+            "descripcion": "A",
+            "tipo": "arena",
+            "servicios": {},
+        }
+        for index in range(1, 4)
+    ]
+    condiciones = [
+        {
+            "beach_id": playa["id"],
+            "air_temp": 25,
+            "wind_speed": 5,
+            "cloud_cover": 10,
+            "rain_probability": 0,
+            "wave_height": 1,
+            "uv_index": 6,
+        }
+        for playa in playas
+    ]
+    calls = []
+
+    monkeypatch.setattr(engine_recomendation, "obtener_pesos_actividad", lambda actividad: calls.append(actividad) or {"air_temp": 1})
+
+    resultados = engine_recomendation.recomendar_playas(
+        actividad="tomar_sol",
+        fecha="2026-05-07",
+        hora="12:00",
+        lat_usuario=None,
+        lon_usuario=None,
+        radio_km=None,
+        top_n=0,
+        filtros={},
+        playas_override=playas,
+        condiciones_override=condiciones,
+    )
+
+    assert len(resultados) == 3
+    assert calls == ["tomar_sol"]
