@@ -34,11 +34,12 @@ import { initLanguage, setLanguage } from "./languages/i18n.js";
 
 initLanguage();
 
-document
-  .getElementById("languageSelect")
-  .addEventListener("change", e => {
-    setLanguage(e.target.value);
-  });
+
+const languageFlags = {
+    es: "🇪🇸",
+    en: "🇬🇧",
+    cs: "🇨🇿",
+};
 
 const activityCards = document.querySelectorAll(".activity-card");
 const fechaInput = document.getElementById("fecha");
@@ -188,6 +189,52 @@ const staticFilterInputs = [
     filterSportZone,
     filterPetFriendly
 ];
+
+function updateLanguageFlag(lang) {
+    currentLanguageFlag.textContent =
+        languageFlags[lang] || "🌍";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // const languageMenuBtn = document.getElementById("languageMenuBtn");
+    // const languageDropdown = document.getElementById("languageDropdown");
+    const currentLanguageFlag = document.getElementById("currentLanguageFlag");
+    const btn = document.getElementById("languageMenuBtn");
+    const dropdown = document.getElementById("languageDropdown");
+
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle("open");
+    });
+
+    document.addEventListener("click", () => {
+        dropdown.classList.remove("open");
+    });
+});
+
+document.querySelectorAll(".language-option").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const lang = btn.dataset.lang;
+
+        setLanguage(lang);
+
+        updateLanguageFlag(lang);
+
+        languageDropdown.hidden = true;
+    });
+});
+
+document.addEventListener("click", (e) => {
+    if (!e.target.closest(".language-menu")) {
+        languageDropdown.hidden = true;
+    }
+});
+
+updateLanguageFlag(
+    localStorage.getItem("lang") || "en"
+);
+
+
 
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
@@ -747,7 +794,7 @@ async function handleReviewClick(event) {
         const res = await authFetch(`/reviews/beach/${beachId}`);
         const reviews = await res.json();
         renderReviews(reviews);
-    } 
+    }
     catch (err) {
         list.innerHTML = "<div class='empty-state'>Error cargando reseñas</div>";
     }
@@ -774,7 +821,7 @@ document.getElementById("reviewsList").addEventListener("click", async (event) =
         const res = await authFetch(`/reviews/beach/${currentBeachForReviews}`);
         const reviews = await res.json();
         renderReviews(reviews);
-    } 
+    }
     catch (err) {
         alert("Error al eliminar la reseña");
     }
@@ -835,27 +882,27 @@ reviewForm.addEventListener("submit", async (e) => {
         const res = await authFetch(`/reviews/beach/${currentBeachForReviews}`);
         const reviews = await res.json();
         renderReviews(reviews);
-    } 
+    }
     catch (err) {
         alert("Error al enviar reseña");
     }
 });
 
 document.getElementById("openConfigLink").addEventListener("click", () => {
-  document.getElementById("filterConfigModal").hidden = false;
+    document.getElementById("filterConfigModal").hidden = false;
 });
 
 let selectedRating = 5;
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("#starsInput span").forEach(star => {
-    star.addEventListener("click", () => {
-      selectedRating = Number(star.dataset.value);
+    document.querySelectorAll("#starsInput span").forEach(star => {
+        star.addEventListener("click", () => {
+            selectedRating = Number(star.dataset.value);
 
-      document.querySelectorAll("#starsInput span").forEach(s => {
-        s.classList.toggle("active", Number(s.dataset.value) <= selectedRating);
-      });
+            document.querySelectorAll("#starsInput span").forEach(s => {
+                s.classList.toggle("active", Number(s.dataset.value) <= selectedRating);
+            });
+        });
     });
-  });
 });
 
 document.getElementById("closeReviewsModal").addEventListener("click", () => {

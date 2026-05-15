@@ -27,50 +27,67 @@
         </div>
 
         <h1 data-i18n="app_title">Mi día de Playa</h1>
-        <section class="auth-container">
-          <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
-            <span class="auth-trigger-icon" aria-hidden="true">
-              <i class="bi bi-box-arrow-in-right" id="authActionIcon"></i>
-            </span>
-          </button>
-          <div class="preferences-panel" id="preferencesPanel" hidden>
-            <h3>Preferencias</h3>
-            <div class="preferences-user" id="preferencesUserInfo"></div>
-            <label class="preference-item fav-item" id="favoritesLabel">
-              <button id="showFavoritesBtn" class="invisible-button" type="button">
-                <i class="fas fa-heart fav-icon"></i><span>Mis Playas Favoritas</span>
+        <div class="right-part"> <!-- wrap buttons together -->
+          <section class="languages">
+            <button class="language-button btn-secondary" id="languageMenuBtn" type="button" aria-label="Language">
+              <span id="currentLanguageFlag">🇬🇧</span>
+            </button>
+
+            <div class="language-dropdown" id="languageDropdown" hidden>
+              <button class="language-option" data-lang="es">
+                🇪🇸 Español
               </button>
-            </label>
-            <div class="preferences-admin-group hidden" id="adminPreferencesGroup">
-              <button class="preferences-action-button" id="openUserManagementBtn" type="button">
-                Gestión de usuarios
+
+              <button class="language-option" data-lang="en">
+                🇬🇧 English
               </button>
-              <button class="preferences-action-button" id="openBeachManagementBtn" type="button">
-                Gestión de playas
-              </button>
-              <button class="preferences-action-button is-disabled" id="openReviewManagementBtn" type="button" disabled>
-                Gestión de reseñas
+
+              <button class="language-option" data-lang="cs">
+                🇨🇿 Čeština
               </button>
             </div>
-            <label class="preference-item">
-              <input type="checkbox" id="rememberSchedulePreference">
-              <span id="openConfigLink" style="cursor:pointer; text-decoration: underline;">Mis Filtros</span>
-            </label>
-            <label class="preference-item">
-              <input type="checkbox" id="expandResultsPreference">
-              <span>Configurar alertas</span>
-            </label>
-            <div class="preferences-divider"></div>
-            <select id="languageSelect">
-              <option value="es">🇪🇸 ES</option>
-              <option value="en">🇬🇧 EN</option>
-              <option value="cs">🇨🇿 CS</option>
-            </select>
-            <button class="preferences-logout" id="preferencesLogoutBtn" type="button" aria-label="Cerrar sesion">
-              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+          </section>
+          <section class="auth-container">
+            <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
+              <span class="auth-trigger-icon" aria-hidden="true">
+                <i class="bi bi-box-arrow-in-right" id="authActionIcon"></i>
+              </span>
             </button>
-          </div>
-        </section>
+            <div class="preferences-panel" id="preferencesPanel" hidden>
+              <h3>Preferencias</h3>
+              <div class="preferences-user" id="preferencesUserInfo"></div>
+              <label class="preference-item fav-item" id="favoritesLabel">
+                <button id="showFavoritesBtn" class="invisible-button" type="button">
+                  <i class="fas fa-heart fav-icon"></i><span>Mis Playas Favoritas</span>
+                </button>
+              </label>
+              <div class="preferences-admin-group hidden" id="adminPreferencesGroup">
+                <button class="preferences-action-button" id="openUserManagementBtn" type="button">
+                  Gestión de usuarios
+                </button>
+                <button class="preferences-action-button" id="openBeachManagementBtn" type="button">
+                  Gestión de playas
+                </button>
+                <button class="preferences-action-button is-disabled" id="openReviewManagementBtn" type="button"
+                  disabled>
+                  Gestión de reseñas
+                </button>
+              </div>
+              <label class="preference-item">
+                <input type="checkbox" id="rememberSchedulePreference">
+                <span id="openConfigLink" style="cursor:pointer; text-decoration: underline;">Mis Filtros</span>
+              </label>
+              <label class="preference-item">
+                <input type="checkbox" id="expandResultsPreference">
+                <span>Configurar alertas</span>
+              </label>
+              <div class="preferences-divider"></div>
+              <button class="preferences-logout" id="preferencesLogoutBtn" type="button" aria-label="Cerrar sesion">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+              </button>
+            </div>
+          </section>
+        </div>
       </div>
     </section>
   </header>
@@ -305,7 +322,8 @@
         <div class="form-grid location-grid">
           <div class="field">
             <label for="locationInput">Ciudad / Ubicación</label>
-            <input type="text" id="locationInput" data-i18n-placeholder="placeholders.city" placeholder="Ej: Las Palmas">
+            <input type="text" id="locationInput" data-i18n-placeholder="placeholders.city"
+              placeholder="Ej: Las Palmas">
             <div id="suggestions" class="suggestions-dropdown"></div>
           </div>
           <div class="field range-field">
