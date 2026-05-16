@@ -7,6 +7,7 @@ export function initSessionUI({
     preferencesPanel,
     authActionBtn,
     authActionIcon,
+    authActionLabel,
     filtersSidebar,
     preferencesLogoutBtn,
     onOpenPreferences,
@@ -113,11 +114,13 @@ export function initSessionUI({
             authActionBtn.hidden = false;
             authActionBtn.setAttribute("aria-label", "Preferencias");
             authActionIcon.className = "bi bi-person-circle";
+            if (authActionLabel) authActionLabel.textContent = "Preferencias";
             return;
         }
         authActionIcon.className = "bi bi-box-arrow-in-right";
         authActionBtn.hidden = false;
         authActionBtn.setAttribute("aria-label", "Acceder");
+        if (authActionLabel) authActionLabel.textContent = "Acceder";
         onClosePreferences?.();
     }
 

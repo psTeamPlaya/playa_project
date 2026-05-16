@@ -422,3 +422,96 @@ def test_formatear_factor_recomendacion_redondea_al_mas_proximo():
     assert engine_recomendation._formatear_factor_recomendacion("wind_speed", 14.49) == "viento medio de 14 km/h"
     assert engine_recomendation._formatear_factor_recomendacion("wave_height", 1.12) == "oleaje medio de 1 m"
     assert engine_recomendation._formatear_factor_recomendacion("wave_height", 1.13) == "oleaje medio de 1.25 m"
+
+
+def test_infer_tide_status_detecta_marea_subiendo():
+    condiciones = [
+        {"sea_level_height_msl": -0.42},
+        {"sea_level_height_msl": -0.21},
+        {"sea_level_height_msl": 0.04},
+    ]
+
+    assert engine_recomendation.infer_tide_status(condiciones) == "subiendo"
+
+
+def test_infer_tide_status_detecta_marea_bajando():
+    condiciones = [
+        {"sea_level_height_msl": 0.28},
+        {"sea_level_height_msl": 0.06},
+        {"sea_level_height_msl": -0.18},
+    ]
+
+    assert engine_recomendation.infer_tide_status(condiciones) == "bajando"
+
+
+def test_infer_tide_status_detecta_pleamar_en_el_intervalo():
+    condiciones = [
+        {"sea_level_height_msl": 0.12},
+        {"sea_level_height_msl": 0.31},
+        {"sea_level_height_msl": 0.15},
+    ]
+
+    assert engine_recomendation.infer_tide_status(condiciones) == "pleamar"
+
+
+def test_infer_tide_status_detecta_bajamar_en_el_intervalo():
+    condiciones = [
+        {"sea_level_height_msl": -0.18},
+        {"sea_level_height_msl": -0.39},
+        {"sea_level_height_msl": -0.22},
+    ]
+
+    assert engine_recomendation.infer_tide_status(condiciones) == "bajamar"
+
+
+def test_agregar_condiciones_por_playa_infiere_tide_status_desde_tide_numerico_de_bd():
+    condiciones = [
+        {"beach_id": 1, "hora": "10:00", "tide": -0.42},
+        {"beach_id": 1, "hora": "11:00", "tide": -0.18},
+        {"beach_id": 1, "hora": "12:00", "tide": 0.09},
+    ]
+
+    agregadas = engine_recomendation.agregar_condiciones_por_playa(
+        condiciones,
+        ["10:00", "11:00", "12:00"],
+    )
+
+    assert agregadas[1]["tide_status"] == "subiendo"
+
+
+def test_infer_next_tide_event_devuelve_hora_de_pleamar_cuando_marea_sube():
+    condiciones = [
+        {"hora": "10:00", "sea_level_height_msl": -0.35},
+        {"hora": "11:00", "sea_level_height_msl": -0.12},
+        {"hora": "12:00", "sea_level_height_msl": 0.08},
+        {"hora": "13:00", "sea_level_height_msl": 0.26},
+        {"hora": "14:00", "sea_level_height_msl": 0.41},
+        {"hora": "15:00", "sea_level_height_msl": 0.22},
+    ]
+
+    evento = engine_recomendation.infer_next_tide_event(
+        condiciones,
+        "12:00",
+        "subiendo",
+    )
+
+    assert evento == {"label": "Pleamar", "hour": "14:00"}
+
+
+def test_infer_next_tide_event_devuelve_hora_de_bajamar_cuando_marea_baja():
+    condiciones = [
+        {"hora": "10:00", "sea_level_height_msl": 0.32},
+        {"hora": "11:00", "sea_level_height_msl": 0.14},
+        {"hora": "12:00", "sea_level_height_msl": -0.04},
+        {"hora": "13:00", "sea_level_height_msl": -0.27},
+        {"hora": "14:00", "sea_level_height_msl": -0.43},
+        {"hora": "15:00", "sea_level_height_msl": -0.18},
+    ]
+
+    evento = engine_recomendation.infer_next_tide_event(
+        condiciones,
+        "12:00",
+        "bajando",
+    )
+
+    assert evento == {"label": "Bajamar", "hour": "14:00"}

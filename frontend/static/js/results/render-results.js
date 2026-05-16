@@ -60,6 +60,17 @@ function renderIntervalChip(condiciones = {}) {
     return `<span class="chip">Tramo: ${horaInicio} - ${horaFin}</span>`;
 }
 
+function renderNextTideEventChip(condiciones = {}) {
+    const label = condiciones.tide_next_event_label;
+    const hour = condiciones.tide_next_event_hour;
+
+    if (!label || !hour) {
+        return "";
+    }
+
+    return `<span class="chip">\u23F0 ${label}: ${hour}</span>`;
+}
+
 function roundToNearestQuarter(value) {
     return Math.round(Number(value) * 4) / 4;
 }
@@ -157,6 +168,7 @@ export function pintarResultados(resultados, container, options = {}) {
 
                     <div class="meta-list">
                         ${renderIntervalChip(condiciones)}
+                        ${renderNextTideEventChip(condiciones)}
                         <span class="chip">${ICONS.beachType} Tipo: ${playa.tipo}</span>
                         <span class="chip">${ICONS.airTemp} Temp. aire media: ${formatConditionValue(condiciones.air_temp)} \u00baC</span>
                         <span class="chip">${ICONS.wave} Oleaje medio: ${formatConditionValue(condiciones.wave_height, { quarterStep: true })} m</span>

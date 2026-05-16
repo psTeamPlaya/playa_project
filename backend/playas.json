@@ -204,9 +204,9 @@
   {
     "id": 8,
     "nombre": "Anfi del Mar",
-    "ubicacion": "Mogán",
-    "latitud": 27.7777,
-    "longitud": -15.7102,
+    "ubicacion": "Mogán, Canarias, España",
+    "latitud": 27.772153,
+    "longitud": -15.693905,
     "tipo": "arena",
     "descripcion": "Playa de ambiente tranquilo, adecuada para baño relajado y descanso.",
     "actividades_ideales": [
@@ -216,6 +216,14 @@
       },
       {
         "actividad": "nadar",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "paddle_surf",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "tomar_sol",
         "condicion": "gestionado desde panel admin"
       }
     ],
