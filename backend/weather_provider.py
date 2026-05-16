@@ -28,6 +28,7 @@ MARINE_HOURLY_VARIABLES = (
 class OpenMeteoError(RuntimeError):
     pass
 
+
 def _fetch_json(url: str, params: dict[str, Any], timeout_seconds: int) -> dict[str, Any]:
     try:
         query_string = urlencode(params)
@@ -184,6 +185,21 @@ def _infer_marea(sea_level_height_msl: float | None) -> str:
     return "media"
 
 
+def _print_openmeteo_terminal_snapshot(
+    *,
+    fecha: str,
+    hora: str,
+    timezone: str,
+    condiciones: list[dict[str, Any]],
+) -> None:
+    print(
+        f"[Open-Meteo] Datos remotos para recomendaciones "
+        f"{fecha} {hora} ({timezone}) - {len(condiciones)} playas"
+    )
+    for condicion in condiciones:
+        print(f"[Open-Meteo] {json.dumps(condicion, ensure_ascii=False, sort_keys=True)}")
+
+
 def obtener_condiciones_open_meteo(
     playas: list[dict[str, Any]],
     fecha: str,
@@ -230,6 +246,12 @@ def obtener_condiciones_open_meteo(
         condiciones.append(obtener_condicion_open_meteo(playa, condicion, fecha, hora))
 
     if condiciones:
+        _print_openmeteo_terminal_snapshot(
+            fecha=fecha,
+            hora=hora,
+            timezone=timezone,
+            condiciones=condiciones,
+        )
         return condiciones
 
     raise OpenMeteoError("Open-Meteo returned no hourly data for the requested date/time.")

@@ -17,6 +17,7 @@ from backend.routes import (
 )
 
 from backend.engine_recomendation import (
+    cargar_condiciones_open_meteo,
     cargar_condiciones_desde_db,
     cargar_playas,
     recomendar_playas,
@@ -26,6 +27,7 @@ from backend.auth.auth import hash_password
 from backend.models.user import User
 from backend.sunlight_provider import obtener_aviso_luz_solar, SunlightError
 from backend.models.beach_condition import BeachCondition
+from backend.weather_provider import OpenMeteoError
 from backend.alerts_service import process_user_alerts_cycle
 import asyncio
 
@@ -175,7 +177,13 @@ def obtener_recomendaciones(
                 "available": False,
                 "records": 0,
                 "error": None,
-            }
+            },
+            "openmeteo": {
+                "elapsed_ms": None,
+                "available": False,
+                "records": 0,
+                "error": None,
+            },
         }
 
         db_conditions: list[dict] = []
@@ -211,6 +219,21 @@ def obtener_recomendaciones(
                 "comparativa_consulta": comparativa_consulta,
             }
 
+        openmeteo_conditions: list[dict] = []
+        if settings.WEATHER_PROVIDER == "openmeteo":
+            openmeteo_started_at = perf_counter()
+            try:
+                openmeteo_conditions = cargar_condiciones_open_meteo(playas, fecha, hora)
+                comparativa_consulta["openmeteo"]["available"] = bool(openmeteo_conditions)
+                comparativa_consulta["openmeteo"]["records"] = len(openmeteo_conditions)
+            except OpenMeteoError as exc:
+                comparativa_consulta["openmeteo"]["error"] = str(exc)
+            finally:
+                comparativa_consulta["openmeteo"]["elapsed_ms"] = round(
+                    (perf_counter() - openmeteo_started_at) * 1000,
+                    2,
+                )
+
         filtros = {
             "tipo_arena": tipo_arena,
             "tipo_piedra": tipo_piedra,
@@ -233,9 +256,20 @@ def obtener_recomendaciones(
         }
         filtros = {k: v for k, v in filtros.items() if v is not None}
         db_condition_ids = {int(condicion["beach_id"]) for condicion in db_conditions}
+        openmeteo_condition_ids = {int(condicion["beach_id"]) for condicion in openmeteo_conditions}
         beach_ids = {int(playa["id"]) for playa in playas}
-        condiciones_recomendacion = db_conditions if db_condition_ids == beach_ids else None
-        comparativa_consulta["db"]["used_for_recommendations"] = condiciones_recomendacion is not None
+        condiciones_recomendacion = None
+        if db_condition_ids == beach_ids:
+            condiciones_recomendacion = db_conditions
+        elif openmeteo_condition_ids == beach_ids:
+            condiciones_recomendacion = openmeteo_conditions
+
+        comparativa_consulta["db"]["used_for_recommendations"] = (
+            condiciones_recomendacion is db_conditions and bool(db_conditions)
+        )
+        comparativa_consulta["openmeteo"]["used_for_recommendations"] = (
+            condiciones_recomendacion is openmeteo_conditions and bool(openmeteo_conditions)
+        )
 
         resultados = recomendar_playas(
             actividad=actividad,

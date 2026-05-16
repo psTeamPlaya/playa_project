@@ -1,1 +1,2 @@
-TODO: nueva rama para trabajar con ReDIS (BBDD)
+TODO: nueva rama para trabajar con ReDIS (BBDD).
+TODO : revisar playas pet-friendly.
