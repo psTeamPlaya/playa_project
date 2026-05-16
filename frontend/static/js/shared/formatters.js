@@ -21,6 +21,10 @@ export function formatearServicios(servicios = {}) {
 }
 
 export function formatearMarea(condiciones = {}) {
+    if (typeof condiciones.tide_status === "string" && condiciones.tide_status.trim()) {
+        return condiciones.tide_status;
+    }
+
     if (typeof condiciones.marea === "string" && condiciones.marea.trim()) {
         return condiciones.marea;
     }

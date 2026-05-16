@@ -40,7 +40,7 @@
 
     <section class="hero">
 
-      <div class="hero-brand">
+      <div class="hero-brand" id="heroBrand">
 
         <div class="hero-logo">
 
@@ -52,7 +52,11 @@
 
         <h1>Mi día de Playa</h1>
 
-        <section class="auth-container">
+        <button class="mobile-menu-trigger" id="mobileMenuBtn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenuDrawer">
+          <i class="bi bi-list" aria-hidden="true"></i>
+        </button>
+
+        <section class="auth-container" id="authContainer">
 
           <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
 
@@ -61,6 +65,8 @@
               <i class="bi bi-box-arrow-in-right" id="authActionIcon"></i>
 
             </span>
+
+            <span class="auth-trigger-label" id="authActionLabel">Acceder</span>
 
           </button>
 
@@ -106,7 +112,7 @@
 
               <input type="checkbox" id="rememberSchedulePreference">
 
-              <span id="openConfigLink" style="cursor:pointer; text-decoration: underline;">Mis Filtros</span>
+              <span id="openConfigLink" style="cursor:pointer; text-decoration: none;">Mis Filtros</span>
 
             </label>
 
@@ -136,6 +142,20 @@
     </section>
 
   </header>
+
+  <div class="mobile-menu-backdrop" id="mobileMenuBackdrop" hidden>
+    <aside class="mobile-menu-drawer" id="mobileMenuDrawer" aria-modal="true" aria-labelledby="mobileMenuTitle" role="dialog">
+      <div class="mobile-menu-drawer-header">
+        <div class="mobile-menu-heading">
+          <h2 id="mobileMenuTitle">Menú</h2>
+          <p>Acceso y filtros</p>
+        </div>
+        <button class="mobile-menu-close" id="mobileMenuCloseBtn" type="button" aria-label="Cerrar menú">&times;</button>
+      </div>
+      <div class="mobile-menu-section" id="mobileAuthMount"></div>
+      <div class="mobile-menu-section" id="mobileFiltersMount"></div>
+    </aside>
+  </div>
 
 
 
@@ -435,7 +455,7 @@
 
   <main class="app-main">
 
-    <section class="panel schedule-panel">
+    <section class="panel activities-panel">
 
       <h2>1. ¿Qué quieres hacer en tu día de playa?</h2>
       <div class="activities-grid" id="activitiesGrid">
@@ -448,7 +468,7 @@
 
 
 
-    <section class="panel">
+    <section class="panel schedule-panel">
 
       <h2>2. ¿Cuándo quieres ir a la playa?</h2>
 

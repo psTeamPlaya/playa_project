@@ -49,6 +49,7 @@ const sunAlertEl = document.getElementById("sunAlert");
 const loginModalEl = document.getElementById("loginModal");
 const authActionBtn = document.getElementById("authActionBtn");
 const authActionIcon = document.getElementById("authActionIcon");
+const authActionLabel = document.getElementById("authActionLabel");
 const closeLoginModalBtn = document.getElementById("closeLoginModal");
 const loginModalForm = document.getElementById("loginModalForm");
 const loginEmailInput = document.getElementById("loginEmail");
@@ -70,7 +71,17 @@ const openAlertsModalBtn = document.getElementById("openAlertsModalBtn");
 const rememberActivityPreference = document.getElementById("rememberActivityPreference");
 const rememberSchedulePreference = document.getElementById("rememberSchedulePreference");
 const appHeader = document.getElementById("appHeader");
+const heroBrand = document.getElementById("heroBrand");
+const authContainer = document.getElementById("authContainer");
+const appShell = document.querySelector(".app-shell");
+const appMain = document.querySelector(".app-main");
 const filtersSidebar = document.getElementById("filtersSidebar");
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const mobileMenuBackdrop = document.getElementById("mobileMenuBackdrop");
+const mobileMenuDrawer = document.getElementById("mobileMenuDrawer");
+const mobileMenuCloseBtn = document.getElementById("mobileMenuCloseBtn");
+const mobileAuthMount = document.getElementById("mobileAuthMount");
+const mobileFiltersMount = document.getElementById("mobileFiltersMount");
 const disableStaticFilters = document.getElementById("disableStaticFilters");
 const disableDynamicFilters = document.getElementById("disableDynamicFilters");
 const filterSandBeach = document.getElementById("filterSandBeach");
@@ -177,6 +188,8 @@ let adminUIController;
 let resultsMapController;
 let alertsUIController;
 let lastRecommendationContext = null;
+const mobileMenuMediaQuery = window.matchMedia("(max-width: 800px)");
+const mobileMenuCloseTimeoutRef = { current: null };
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
@@ -214,6 +227,69 @@ const staticFilterInputs = [
     filterSportZone,
     filterPetFriendly
 ];
+
+function esVistaMovil() {
+    return mobileMenuMediaQuery.matches;
+}
+
+function sincronizarUbicacionMenuMovil() {
+    if (!authContainer || !filtersSidebar || !heroBrand || !appShell || !appMain) {
+        return;
+    }
+
+    if (esVistaMovil()) {
+        if (authContainer.parentElement !== mobileAuthMount) {
+            mobileAuthMount?.appendChild(authContainer);
+        }
+        if (filtersSidebar.parentElement !== mobileFiltersMount) {
+            mobileFiltersMount?.appendChild(filtersSidebar);
+        }
+        return;
+    }
+
+    if (authContainer.parentElement !== heroBrand) {
+        heroBrand.appendChild(authContainer);
+    }
+    if (filtersSidebar.parentElement !== appShell) {
+        appShell.insertBefore(filtersSidebar, appMain);
+    }
+}
+
+function cerrarMenuMovil({ inmediato = false } = {}) {
+    if (!mobileMenuBackdrop) {
+        return;
+    }
+
+    clearTimeout(mobileMenuCloseTimeoutRef.current);
+    preferencesUIController?.cerrarPanelPreferencias();
+    mobileMenuBackdrop.classList.remove("is-open");
+    document.body.classList.remove("mobile-menu-open");
+    mobileMenuBtn?.setAttribute("aria-expanded", "false");
+
+    if (inmediato) {
+        mobileMenuBackdrop.hidden = true;
+        return;
+    }
+
+    mobileMenuCloseTimeoutRef.current = setTimeout(() => {
+        mobileMenuBackdrop.hidden = true;
+    }, 220);
+}
+
+function abrirMenuMovil() {
+    if (!esVistaMovil() || !mobileMenuBackdrop) {
+        return;
+    }
+
+    sincronizarUbicacionMenuMovil();
+    clearTimeout(mobileMenuCloseTimeoutRef.current);
+    mobileMenuBackdrop.hidden = false;
+    requestAnimationFrame(() => {
+        mobileMenuBackdrop.classList.add("is-open");
+    });
+    document.body.classList.add("mobile-menu-open");
+    mobileMenuBtn?.setAttribute("aria-expanded", "true");
+}
 
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
@@ -602,6 +678,7 @@ function initControllers() {
         preferencesPanel,
         authActionBtn,
         authActionIcon,
+        authActionLabel,
         filtersSidebar,
         preferencesLogoutBtn,
         onOpenPreferences: () => preferencesUIController?.abrirPanelPreferencias(),
@@ -1046,6 +1123,7 @@ function initAuthEvents() {
 function initLayoutEvents() {
     document.addEventListener("keydown", (event) => {
         if (event.key !== "Escape") return;
+        cerrarMenuMovil();
         if (loginModalEl && !loginModalEl.hidden) {
             authModalController?.cerrarModalLogin();
         }
@@ -1058,7 +1136,44 @@ function initLayoutEvents() {
         adminUIController?.closeModals();
     });
 
-    window.addEventListener("resize", actualizarAlturaHeader);
+    window.addEventListener("resize", () => {
+        actualizarAlturaHeader();
+        if (!esVistaMovil()) {
+            cerrarMenuMovil({ inmediato: true });
+        }
+        sincronizarUbicacionMenuMovil();
+    });
+
+    mobileMenuMediaQuery.addEventListener("change", () => {
+        if (!esVistaMovil()) {
+            cerrarMenuMovil({ inmediato: true });
+        }
+        sincronizarUbicacionMenuMovil();
+    });
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener("click", () => {
+            if (mobileMenuBackdrop?.hidden) {
+                abrirMenuMovil();
+                return;
+            }
+            cerrarMenuMovil();
+        });
+    }
+
+    if (mobileMenuCloseBtn) {
+        mobileMenuCloseBtn.addEventListener("click", () => {
+            cerrarMenuMovil();
+        });
+    }
+
+    if (mobileMenuBackdrop) {
+        mobileMenuBackdrop.addEventListener("click", (event) => {
+            if (event.target === mobileMenuBackdrop) {
+                cerrarMenuMovil();
+            }
+        });
+    }
 
     if (appHeader && "ResizeObserver" in window) {
         const headerObserver = new ResizeObserver(actualizarAlturaHeader);
@@ -1067,6 +1182,7 @@ function initLayoutEvents() {
 }
 
 async function initInitialState() {
+    sincronizarUbicacionMenuMovil();
     actualizarAlturaHeader();
     configurarBotonBusquedaFlotante();
 

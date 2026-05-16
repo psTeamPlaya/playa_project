@@ -129,6 +129,9 @@ FACTOR_UNITS = {
     "rain_probability": "%",
     "uv_index": "",
 }
+TIDE_EXTREME_THRESHOLD = 0.10
+TIDE_TREND_THRESHOLD = 0.05
+TIDE_EXTREME_AMPLITUDE = 0.12
 
 
 def _round_to_nearest_quarter(value: float) -> float:
@@ -140,6 +143,114 @@ def _format_condition_value_for_display(variable: str, value: float) -> str:
         rounded_value = _round_to_nearest_quarter(value)
         return f"{rounded_value:g}"
     return str(round(float(value)))
+
+
+def _infer_tide_level_label(sea_level_height_msl: float | None) -> str | None:
+    if sea_level_height_msl is None:
+        return None
+    if sea_level_height_msl <= -TIDE_EXTREME_THRESHOLD:
+        return "baja"
+    if sea_level_height_msl >= TIDE_EXTREME_THRESHOLD:
+        return "alta"
+    return "media"
+
+
+def infer_tide_status(condiciones: list[dict[str, Any]]) -> str | None:
+    sea_levels = [
+        float(condicion["sea_level_height_msl"])
+        for condicion in condiciones
+        if isinstance(condicion.get("sea_level_height_msl"), (int, float))
+    ]
+
+    if not sea_levels:
+        return None
+
+    if len(sea_levels) == 1:
+        tide_label = _infer_tide_level_label(sea_levels[0])
+        if tide_label == "alta":
+            return "pleamar"
+        if tide_label == "baja":
+            return "bajamar"
+        return None
+
+    amplitude = max(sea_levels) - min(sea_levels)
+    max_index = max(range(len(sea_levels)), key=sea_levels.__getitem__)
+    min_index = min(range(len(sea_levels)), key=sea_levels.__getitem__)
+
+    if amplitude >= TIDE_EXTREME_AMPLITUDE:
+        if 0 < max_index < len(sea_levels) - 1:
+            return "pleamar"
+        if 0 < min_index < len(sea_levels) - 1:
+            return "bajamar"
+
+    delta = sea_levels[-1] - sea_levels[0]
+    if delta >= TIDE_TREND_THRESHOLD:
+        return "subiendo"
+    if delta <= -TIDE_TREND_THRESHOLD:
+        return "bajando"
+
+    tide_label = _infer_tide_level_label(sea_levels[-1])
+    if tide_label == "alta":
+        return "pleamar"
+    if tide_label == "baja":
+        return "bajamar"
+
+    return "subiendo" if sea_levels[-1] >= sea_levels[0] else "bajando"
+
+
+def infer_next_tide_event(
+    condiciones: list[dict[str, Any]],
+    hora_referencia: str,
+    tide_status: str | None,
+) -> dict[str, str] | None:
+    if tide_status not in {"subiendo", "bajando"}:
+        return None
+
+    puntos = []
+    for condicion in condiciones:
+        hora = condicion.get("hora")
+        nivel = condicion.get("sea_level_height_msl")
+        if not hora or not isinstance(nivel, (int, float)):
+            continue
+        puntos.append((hora, float(nivel)))
+
+    if len(puntos) < 3:
+        return None
+
+    puntos.sort(key=lambda item: item[0])
+    indices_referencia = [
+        index for index, (hora, _) in enumerate(puntos)
+        if hora <= hora_referencia
+    ]
+    if not indices_referencia:
+        return None
+
+    referencia_index = indices_referencia[-1]
+    if referencia_index >= len(puntos) - 2:
+        return None
+
+    if tide_status == "subiendo":
+        for index in range(referencia_index + 1, len(puntos) - 1):
+            valor_anterior = puntos[index - 1][1]
+            valor_actual = puntos[index][1]
+            valor_siguiente = puntos[index + 1][1]
+            if valor_actual >= valor_anterior and valor_actual >= valor_siguiente:
+                return {
+                    "label": "Pleamar",
+                    "hour": puntos[index][0],
+                }
+        return None
+
+    for index in range(referencia_index + 1, len(puntos) - 1):
+        valor_anterior = puntos[index - 1][1]
+        valor_actual = puntos[index][1]
+        valor_siguiente = puntos[index + 1][1]
+        if valor_actual <= valor_anterior and valor_actual <= valor_siguiente:
+            return {
+                "label": "Bajamar",
+                "hour": puntos[index][0],
+            }
+    return None
 
 
 def _activity_slug(name: str | None) -> str | None:
@@ -252,6 +363,7 @@ def agregar_condiciones_por_intervalo(
 
     tides = [condicion.get("tide") for condicion in condiciones if condicion.get("tide")]
     agregada["tide"] = Counter(tides).most_common(1)[0][0] if tides else None
+    agregada["tide_status"] = infer_tide_status(condiciones)
     return agregada
 
 
@@ -289,6 +401,33 @@ def agregar_condiciones_por_playa(
         )
 
     return agregadas
+
+
+def calcular_eventos_marea_siguientes_por_playa(
+    condiciones: list[dict[str, Any]],
+    hora_referencia: str,
+) -> dict[int, dict[str, str]]:
+    condiciones_normalizadas = [_normalizar_condicion(condicion) for condicion in condiciones]
+    beach_conditions: dict[int, list[dict[str, Any]]] = defaultdict(list)
+
+    for condicion in condiciones_normalizadas:
+        beach_id = condicion.get("beach_id")
+        if beach_id is None:
+            continue
+        beach_conditions[int(beach_id)].append(condicion)
+
+    eventos: dict[int, dict[str, str]] = {}
+    for beach_id, hourly_conditions in beach_conditions.items():
+        tide_status = infer_tide_status(hourly_conditions)
+        siguiente_evento = infer_next_tide_event(
+            hourly_conditions,
+            hora_referencia,
+            tide_status,
+        )
+        if siguiente_evento:
+            eventos[beach_id] = siguiente_evento
+
+    return eventos
 
 
 def fusionar_playas(playas_locales, playas_db):
@@ -525,6 +664,7 @@ def cargar_condiciones_desde_db(playas, fecha, hora):
                 "water_temp": row.water_temp,
                 "cloud_cover": row.cloud_cover,
                 "rain_probability": row.rain_probability,
+                "sea_level_height_msl": row.tide,
                 "tide": row.tide,
                 "uv_index": row.uv_index,
                 "fuente": "PostgreSQL beach_conditions",
@@ -573,6 +713,7 @@ def cargar_condiciones_desde_db_intervalo(playas, fecha, hora_inicio, hora_fin):
                 "water_temp": row.water_temp,
                 "cloud_cover": row.cloud_cover,
                 "rain_probability": row.rain_probability,
+                "sea_level_height_msl": row.tide,
                 "tide": row.tide,
                 "uv_index": row.uv_index,
                 "fuente": "PostgreSQL beach_conditions",
@@ -595,7 +736,7 @@ def _normalizar_condicion(condicion: dict[str, Any]) -> dict[str, Any]:
         "water_temp": condicion.get("water_temp", condicion.get("temperatura_agua")),
         "cloud_cover": condicion.get("cloud_cover", condicion.get("nubosidad")),
         "rain_probability": condicion.get("rain_probability", condicion.get("probabilidad_lluvia")),
-        "sea_level_height_msl": condicion.get("sea_level_height_msl"),
+        "sea_level_height_msl": condicion.get("sea_level_height_msl", condicion.get("tide")),
         "tide": condicion.get("tide", condicion.get("marea")),
         "uv_index": condicion.get("uv_index"),
         "fuente": condicion.get("fuente"),
@@ -881,6 +1022,21 @@ def recomendar_playas(
 
     condiciones_agregadas = agregar_condiciones_por_playa(condiciones, horas_consideradas)
     pesos_actividad = obtener_pesos_actividad(actividad)
+    eventos_marea_por_playa: dict[int, dict[str, str]] = {}
+
+    try:
+        condiciones_dia_completo = cargar_condiciones_intervalo(
+            playas,
+            fecha,
+            "00:00",
+            "23:00",
+        )
+        eventos_marea_por_playa = calcular_eventos_marea_siguientes_por_playa(
+            condiciones_dia_completo,
+            hora_fin_resuelta,
+        )
+    except Exception:
+        eventos_marea_por_playa = {}
 
     resultados = []
     for playa in playas:
@@ -898,6 +1054,13 @@ def recomendar_playas(
 
         actividad_ideal = actividad in set(playa.get("actividades_ideales", []))
         score = calcular_score_final(cond, actividad, actividad_ideal, pesos_actividad)
+        siguiente_evento_marea = eventos_marea_por_playa.get(int(playa["id"]))
+        if siguiente_evento_marea:
+            cond = {
+                **cond,
+                "tide_next_event_label": siguiente_evento_marea["label"],
+                "tide_next_event_hour": siguiente_evento_marea["hour"],
+            }
         resultados.append({
             "beach_id": playa["id"],
             "nombre": playa["nombre"],
