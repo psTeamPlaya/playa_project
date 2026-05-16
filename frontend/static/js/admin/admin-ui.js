@@ -768,7 +768,8 @@ export function initAdminUI({
 
     openUserManagementBtn?.addEventListener("click", openUsersModal);
     openBeachManagementBtn?.addEventListener("click", openBeachesModal);
-    openReviewManagementBtn?.addEventListener("click", () => {});
+    import { openReviewAdminModal } from "../reviews/review_admin.js";
+    openReviewManagementBtn?.addEventListener("click", openReviewAdminModal);
 
     closeUserManagementModal?.addEventListener("click", () => closeModal(userManagementModal));
     closeBeachManagementModal?.addEventListener("click", () => closeModal(beachManagementModal));

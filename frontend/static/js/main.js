@@ -30,7 +30,7 @@ import {
 } from "./search/date-time.js";
 import { initQuantity } from "./search/quantity.js";
 import { initResultsMap } from "./results/results-map.js";
-import "./reviews/reviews.js"
+import { initReviewsModule }  from "./reviews/reviews.js"
 
 const activitiesGrid = document.getElementById("activitiesGrid");
 const fechaInput = document.getElementById("fecha");
@@ -173,7 +173,7 @@ let quantityController;
 let dynamicFiltersController;
 let preferencesUIController;
 let authModalController;
-export let sessionUIController;
+let sessionUIController;
 let adminUIController;
 let resultsMapController;
 let alertsUIController;
@@ -719,6 +719,8 @@ function initControllers() {
     });
 
     resultsMapController = initResultsMap();
+
+    initReviewsModule(sessionUIController);
 }
 
 // ============================================================

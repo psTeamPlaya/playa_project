@@ -1,4 +1,3 @@
-import { sessionUIController } from "../main.js"
 import { authFetch } from "../api/auth-fetch.js";
 
 const resultsContainer = document.getElementById("resultsContainer");
@@ -9,6 +8,12 @@ resultsContainer.addEventListener("click", handleReviewClick);
 favoritesResultsContainer.addEventListener("click", handleReviewClick);
 
 let currentBeachForReviews = null;
+
+let sessionUIController;
+
+export function initReviewsModule(sessionUI){
+    sessionUIController = sessionUI;
+}
 
 async function handleReviewClick(event) {
     const btn = event.target.closest(".rating-badge");
