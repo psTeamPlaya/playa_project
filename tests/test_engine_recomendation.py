@@ -479,6 +479,43 @@ def test_agregar_condiciones_por_playa_infiere_tide_status_desde_tide_numerico_d
     assert agregadas[1]["tide_status"] == "subiendo"
 
 
+def test_infer_tide_events_devuelve_pleamar_y_bajamar_del_intervalo():
+    condiciones = [
+        {"hora": "10:00", "sea_level_height_msl": -0.18},
+        {"hora": "11:00", "sea_level_height_msl": 0.34},
+        {"hora": "12:00", "sea_level_height_msl": 0.05},
+        {"hora": "13:00", "sea_level_height_msl": -0.39},
+        {"hora": "14:00", "sea_level_height_msl": -0.12},
+    ]
+
+    eventos = engine_recomendation.infer_tide_events(condiciones)
+
+    assert eventos == [
+        {"label": "Pleamar", "hour": "11:00"},
+        {"label": "Bajamar", "hour": "13:00"},
+    ]
+
+
+def test_agregar_condiciones_por_playa_expone_todos_los_eventos_de_marea_del_tramo():
+    condiciones = [
+        {"beach_id": 1, "hora": "10:00", "tide": -0.18},
+        {"beach_id": 1, "hora": "11:00", "tide": 0.34},
+        {"beach_id": 1, "hora": "12:00", "tide": 0.05},
+        {"beach_id": 1, "hora": "13:00", "tide": -0.39},
+        {"beach_id": 1, "hora": "14:00", "tide": -0.12},
+    ]
+
+    agregadas = engine_recomendation.agregar_condiciones_por_playa(
+        condiciones,
+        ["10:00", "11:00", "12:00", "13:00", "14:00"],
+    )
+
+    assert agregadas[1]["tide_events"] == [
+        {"label": "Pleamar", "hour": "11:00"},
+        {"label": "Bajamar", "hour": "13:00"},
+    ]
+
+
 def test_infer_next_tide_event_devuelve_hora_de_pleamar_cuando_marea_sube():
     condiciones = [
         {"hora": "10:00", "sea_level_height_msl": -0.35},
