@@ -596,7 +596,7 @@
   {
     "id": 22,
     "nombre": "Bahía Feliz",
-    "ubicacion": "San Bartolomé de Tirajana, Canarias, España",
+    "ubicacion": "San Bartolomé de Tirajana",
     "latitud": 27.78176,
     "longitud": -15.516966,
     "tipo": "arena",
@@ -725,7 +725,7 @@
   },
   {
     "id": 26,
-    "nombre": "Playa de Guayedra",
+    "nombre": "Guayedra",
     "ubicacion": "Agaete",
     "latitud": 28.0868,
     "longitud": -15.7094,
@@ -737,18 +737,18 @@
         "condicion": "adecuada por su acceso y entorno natural"
       },
       {
-        "actividad": "tomar_sol",
-        "condicion": "adecuada en días tranquilos y con buen tiempo"
-      },
-      {
         "actividad": "nadar",
         "condicion": "solo recomendable con mar calmado y extremando la precaución"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en días tranquilos y con buen tiempo"
       }
     ],
     "servicios": {
       "restaurantes": false,
       "comida_para_llevar": false,
-      "balneario": false,
+      "balnearios": false,
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false,
@@ -759,13 +759,17 @@
   },
   {
     "id": 27,
-    "nombre": "Playa de Las Alcaravaneras",
+    "nombre": "Las Alcaravaneras",
     "ubicacion": "Las Palmas de Gran Canaria",
     "latitud": 28.1307,
     "longitud": -15.429,
     "tipo": "arena",
     "descripcion": "Playa urbana situada en la bahía de Las Palmas de Gran Canaria, de aguas generalmente tranquilas y muy utilizada para deportes de playa y actividades náuticas suaves.",
     "actividades_ideales": [
+      {
+        "actividad": "kayak",
+        "condicion": "adecuada por la protección de la bahía"
+      },
       {
         "actividad": "nadar",
         "condicion": "ideal con aguas tranquilas"
@@ -775,22 +779,18 @@
         "condicion": "adecuada con poco viento y mar calmado"
       },
       {
-        "actividad": "kayak",
-        "condicion": "adecuada por la protección de la bahía"
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
       },
       {
         "actividad": "voley_playa",
         "condicion": "adecuada por sus instalaciones deportivas"
-      },
-      {
-        "actividad": "tomar_sol",
-        "condicion": "adecuada en condiciones generales"
       }
     ],
     "servicios": {
       "restaurantes": true,
       "comida_para_llevar": true,
-      "balneario": true,
+      "balnearios": true,
       "zona_deportiva": true,
       "escuela_surf": false,
       "escuela_windsurf": false,
@@ -1161,13 +1161,17 @@
   },
   {
     "id": 38,
-    "nombre": "Piscinas de Roque Prieto",
-    "ubicacion": "Santa María de Guía",
-    "latitud": 28.1666,
-    "longitud": -15.6165,
+    "nombre": "Roque Prieto",
+    "ubicacion": "Santa María de Guía de Gran Canaria, Canarias, España",
+    "latitud": 28.169061,
+    "longitud": -15.633349,
     "tipo": "piscina_natural",
     "descripcion": "Conjunto de piscinas naturales situadas en la costa norte de Gran Canaria, adecuadas para baño tranquilo cuando la marea y el oleaje son favorables.",
     "actividades_ideales": [
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada con buena visibilidad y poca agitación"
+      },
       {
         "actividad": "nadar",
         "condicion": "ideal con marea media y oleaje controlado"
@@ -1175,16 +1179,12 @@
       {
         "actividad": "tomar_sol",
         "condicion": "adecuada por su zona de solárium"
-      },
-      {
-        "actividad": "bucear",
-        "condicion": "adecuada con buena visibilidad y poca agitación"
       }
     ],
     "servicios": {
       "restaurantes": false,
       "comida_para_llevar": false,
-      "balneario": false,
+      "balnearios": false,
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false,
@@ -1213,10 +1213,6 @@
       {
         "actividad": "bucear",
         "condicion": "adecuada con buena visibilidad"
-      },
-      {
-        "actividad": "bodyboard",
-        "condicion": "solo recomendable fuera de las piscinas y con experiencia"
       }
     ],
     "servicios": {
@@ -1309,13 +1305,21 @@
   },
   {
     "id": 42,
-    "nombre": "Piscinas naturales de Bañaderos",
-    "ubicacion": "Arucas",
-    "latitud": 28.1508,
-    "longitud": -15.5306,
+    "nombre": "Bañaderos",
+    "ubicacion": "Arucas, Canarias, España",
+    "latitud": 28.149916,
+    "longitud": -15.534564,
     "tipo": "piscina_natural",
     "descripcion": "Zona de baño natural próxima a Bañaderos y El Puertillo, adecuada para baño tranquilo cuando las condiciones del mar son favorables.",
     "actividades_ideales": [
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada con agua clara y mar tranquilo"
+      },
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su cercanía al paseo costero"
+      },
       {
         "actividad": "nadar",
         "condicion": "adecuada con marea favorable y poco oleaje"
@@ -1323,20 +1327,12 @@
       {
         "actividad": "tomar_sol",
         "condicion": "adecuada en zonas próximas al litoral"
-      },
-      {
-        "actividad": "pasear",
-        "condicion": "adecuada por su cercanía al paseo costero"
-      },
-      {
-        "actividad": "bucear",
-        "condicion": "adecuada con agua clara y mar tranquilo"
       }
     ],
     "servicios": {
       "restaurantes": true,
       "comida_para_llevar": true,
-      "balneario": false,
+      "balnearios": false,
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false,

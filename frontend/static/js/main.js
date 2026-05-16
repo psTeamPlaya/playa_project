@@ -41,7 +41,6 @@ const buscarBtn = document.getElementById("buscarBtn");
 const floatingBuscarBtn = document.getElementById("floatingBuscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
-const sourceMetricsContainer = document.getElementById("sourceMetricsContainer");
 const favoritesResultsContainer = document.getElementById("favoritesResultsContainer");
 const recommendedBeachesSection = document.getElementById("recommendedBeachesSection");
 const horaInicioSelect = document.getElementById("horaInicio");
@@ -218,73 +217,12 @@ const staticFilterInputs = [
 
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
-    clearSourceMetrics();
     statusEl.textContent = "";
     ocultarAvisoSolar();
 }
 
 function resetRecommendationContext() {
     lastRecommendationContext = null;
-}
-
-function clearSourceMetrics() {
-    if (!sourceMetricsContainer) {
-        return;
-    }
-
-    sourceMetricsContainer.hidden = true;
-    sourceMetricsContainer.innerHTML = "";
-}
-
-function formatElapsedMs(value) {
-    const numericValue = Number(value);
-    return Number.isFinite(numericValue) ? `${numericValue.toFixed(2)} ms` : "N/D";
-}
-
-function renderSourceMetricCard(label, metric = {}) {
-    const isAvailable = Boolean(metric.available);
-    const statusClassName = isAvailable ? "is-available" : "is-unavailable";
-    const statusText = isAvailable ? "Disponible" : "Sin datos";
-    const records = Number.isFinite(Number(metric.records)) ? Number(metric.records) : 0;
-    const expectedRecords = Number.isFinite(Number(metric.expected_records)) ? Number(metric.expected_records) : null;
-    const detailText = metric.error
-        ? metric.error
-        : (isAvailable
-            ? `${records}${expectedRecords ? `/${expectedRecords}` : ""} registros encontrados`
-            : `No hay registros completos para esa fecha y franja horaria${expectedRecords ? ` (${records}/${expectedRecords})` : ""}`);
-
-    return `
-        <article class="source-metric-card">
-            <div class="source-metric-top">
-                <h3>${label}</h3>
-                <span class="source-metric-status ${statusClassName}">${statusText}</span>
-            </div>
-            <div class="source-metric-time">${formatElapsedMs(metric.elapsed_ms)}</div>
-            <p class="source-metric-detail">${detailText}</p>
-        </article>
-    `;
-}
-
-function renderSourceMetrics(metrics) {
-    if (!sourceMetricsContainer) {
-        return;
-    }
-
-    if (!metrics?.db) {
-        clearSourceMetrics();
-        return;
-    }
-
-    sourceMetricsContainer.innerHTML = `
-        <div class="source-metrics-header">
-            <h3>Métrica de consulta</h3>
-            <p>Tiempo medido para recuperar condiciones desde la base de datos.</p>
-        </div>
-        <div class="source-metrics-grid">
-            ${renderSourceMetricCard("Base de datos", metrics.db)}
-        </div>
-    `;
-    sourceMetricsContainer.hidden = false;
 }
 
 function getCurrentSearchSignature() {
@@ -501,7 +439,6 @@ function cumpleFiltros(playa, filtros) {
 }
 
 function renderRecommendationResults(data, { shouldScroll = false } = {}) {
-    renderSourceMetrics(data.comparativa_consulta);
     pintarResultados(data.resultados);
     resultsMapController?.setResults(data.resultados);
     if (shouldScroll) {
@@ -510,11 +447,14 @@ function renderRecommendationResults(data, { shouldScroll = false } = {}) {
 
     if (data.aviso_sol?.mensaje) {
         mostrarAvisoSolar(data.aviso_sol.mensaje);
-        statusEl.textContent = "";
-        return;
+        if (data.aviso_sol.bloqueante) {
+            statusEl.textContent = "";
+            return;
+        }
     }
-
-    ocultarAvisoSolar();
+    else {
+        ocultarAvisoSolar();
+    }
     const horaInicio = data.hora_inicio || data.hora || "";
     const horaFin = data.hora_fin || data.hora || "";
     const rangoTexto = horaInicio && horaFin ? ` entre las ${horaInicio} y las ${horaFin}` : "";
@@ -856,7 +796,6 @@ async function buscarRecomendaciones() {
     catch (error) {
         console.error(error);
         resetRecommendationContext();
-        clearSourceMetrics();
         statusEl.textContent = "Ha ocurrido un error al consultar la API.";
         resultsMapController?.setResults([]);
         resultsContainer.innerHTML = `
