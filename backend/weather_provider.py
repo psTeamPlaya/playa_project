@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import lru_cache
 import json
 from typing import Any
@@ -17,6 +17,7 @@ WEATHER_HOURLY_VARIABLES = (
     "wind_speed_10m",
     "cloud_cover",
     "precipitation_probability",
+    "uv_index",
 )
 MARINE_HOURLY_VARIABLES = (
     "wave_height",
@@ -72,6 +73,7 @@ def _fetch_single_location_payload(
         "temperatura_agua": marine_values["sea_surface_temperature"],
         "nubosidad": weather_values["cloud_cover"],
         "probabilidad_lluvia": weather_values["precipitation_probability"],
+        "uv_index": weather_values["uv_index"],
         "sea_level_height_msl": sea_level_height_msl,
         "marea": _infer_marea(sea_level_height_msl),
     }
@@ -97,43 +99,46 @@ def obtener_condicion_open_meteo(
 
 def _build_weather_query_params(
     playas: tuple[tuple[float, float], ...],
-    timestamp: str,
+    start_timestamp: str,
+    end_timestamp: str,
     timezone: str,
 ) -> dict[str, Any]:
     return {
         **_build_coordinate_params(playas),
         "hourly": ",".join(WEATHER_HOURLY_VARIABLES),
         "timezone": timezone,
-        "start_hour": timestamp,
-        "end_hour": timestamp,
+        "start_hour": start_timestamp,
+        "end_hour": end_timestamp,
     }
 
 
 def _build_marine_query_params(
     playas: tuple[tuple[float, float], ...],
-    timestamp: str,
+    start_timestamp: str,
+    end_timestamp: str,
     timezone: str,
 ) -> dict[str, Any]:
     return {
         **_build_coordinate_params(playas),
         "hourly": ",".join(MARINE_HOURLY_VARIABLES),
         "timezone": timezone,
-        "start_hour": timestamp,
-        "end_hour": timestamp,
+        "start_hour": start_timestamp,
+        "end_hour": end_timestamp,
     }
 
 
 @lru_cache(maxsize=256)
 def _fetch_weather_batch(
     playas: tuple[tuple[float, float], ...],
-    timestamp: str,
+    start_timestamp: str,
+    end_timestamp: str,
     timezone: str,
     timeout_seconds: int,
 ) -> tuple[dict[str, Any], ...]:
     return _normalize_batch_response(
         _fetch_json(
             WEATHER_URL,
-            _build_weather_query_params(playas, timestamp, timezone),
+            _build_weather_query_params(playas, start_timestamp, end_timestamp, timezone),
             timeout_seconds,
         )
     )
@@ -142,17 +147,29 @@ def _fetch_weather_batch(
 @lru_cache(maxsize=256)
 def _fetch_marine_batch(
     playas: tuple[tuple[float, float], ...],
-    timestamp: str,
+    start_timestamp: str,
+    end_timestamp: str,
     timezone: str,
     timeout_seconds: int,
 ) -> tuple[dict[str, Any], ...]:
     return _normalize_batch_response(
         _fetch_json(
             MARINE_URL,
-            _build_marine_query_params(playas, timestamp, timezone),
+            _build_marine_query_params(playas, start_timestamp, end_timestamp, timezone),
             timeout_seconds,
         )
     )
+
+
+def _generar_timestamps_intervalo(fecha: str, hora_inicio: str, hora_fin: str) -> list[str]:
+    start_dt = datetime.fromisoformat(f"{fecha}T{hora_inicio}")
+    end_dt = datetime.fromisoformat(f"{fecha}T{hora_fin}")
+    timestamps: list[str] = []
+    current_dt = start_dt
+    while current_dt <= end_dt:
+        timestamps.append(current_dt.strftime("%Y-%m-%dT%H:%M"))
+        current_dt += timedelta(hours=1)
+    return timestamps
 
 
 def _find_hourly_values(
@@ -189,12 +206,14 @@ def _print_openmeteo_terminal_snapshot(
     *,
     fecha: str,
     hora: str,
+    hora_fin: str | None = None,
     timezone: str,
     condiciones: list[dict[str, Any]],
 ) -> None:
+    tramo_horario = f"{hora}-{hora_fin}" if hora_fin and hora_fin != hora else hora
     print(
         f"[Open-Meteo] Datos remotos para recomendaciones "
-        f"{fecha} {hora} ({timezone}) - {len(condiciones)} playas"
+        f"{fecha} {tramo_horario} ({timezone}) - {len(condiciones)} playas"
     )
     for condicion in condiciones:
         print(f"[Open-Meteo] {json.dumps(condicion, ensure_ascii=False, sort_keys=True)}")
@@ -206,11 +225,15 @@ def obtener_condiciones_open_meteo(
     hora: str,
     timezone: str,
     timeout_seconds: int,
+    hora_fin: str | None = None,
 ) -> list[dict[str, Any]]:
     if not playas:
         return []
 
-    timestamp = f"{fecha}T{hora}"
+    hora_fin_resuelta = hora_fin or hora
+    timestamps = _generar_timestamps_intervalo(fecha, hora, hora_fin_resuelta)
+    start_timestamp = timestamps[0]
+    end_timestamp = timestamps[-1]
     coordenadas = tuple(
         (float(playa["latitud"]), float(playa["longitud"]))
         for playa in playas
@@ -220,14 +243,16 @@ def obtener_condiciones_open_meteo(
         weather_future = executor.submit(
             _fetch_weather_batch,
             coordenadas,
-            timestamp,
+            start_timestamp,
+            end_timestamp,
             timezone,
             timeout_seconds,
         )
         marine_future = executor.submit(
             _fetch_marine_batch,
             coordenadas,
-            timestamp,
+            start_timestamp,
+            end_timestamp,
             timezone,
             timeout_seconds,
         )
@@ -240,15 +265,25 @@ def obtener_condiciones_open_meteo(
 
     condiciones: list[dict[str, Any]] = []
     for playa, weather_payload, marine_payload in zip(playas, weather_payloads, marine_payloads):
-        condicion = _fetch_single_location_payload(weather_payload, marine_payload, timestamp)
-        if condicion is None:
-            continue
-        condiciones.append(obtener_condicion_open_meteo(playa, condicion, fecha, hora))
+        for timestamp in timestamps:
+            condicion = _fetch_single_location_payload(weather_payload, marine_payload, timestamp)
+            if condicion is None:
+                continue
+            condition_dt = datetime.fromisoformat(timestamp)
+            condiciones.append(
+                obtener_condicion_open_meteo(
+                    playa,
+                    condicion,
+                    condition_dt.strftime("%Y-%m-%d"),
+                    condition_dt.strftime("%H:%M"),
+                )
+            )
 
     if condiciones:
         _print_openmeteo_terminal_snapshot(
             fecha=fecha,
             hora=hora,
+            hora_fin=hora_fin_resuelta,
             timezone=timezone,
             condiciones=condiciones,
         )

@@ -435,7 +435,7 @@
 
   <main class="app-main">
 
-    <section class="panel">
+    <section class="panel schedule-panel">
 
       <h2>1. ¿Qué quieres hacer en tu día de playa?</h2>
       <div class="activities-grid" id="activitiesGrid">
@@ -453,7 +453,7 @@
       <h2>2. ¿Cuándo quieres ir a la playa?</h2>
 
 
-      <div class="form-grid">
+      <div class="form-grid schedule-grid">
 
         <div class="field">
 
@@ -475,15 +475,15 @@
 
         <div class="field">
 
-          <label for="hourWheel">Hora</label>
+          <label for="horaInicio">Hora de inicio</label>
+          <select id="horaInicio"></select>
 
-          <div class="hour-wheel-wrapper">
+        </div>
 
-            <div class="hour-wheel-highlight"></div>
+        <div class="field">
 
-            <div class="hour-wheel" id="hourWheel"></div>
-
-          </div>
+          <label for="horaFin">Hora de fin</label>
+          <select id="horaFin"></select>
 
         </div>
 
@@ -619,8 +619,6 @@
         </div>
 
       </div>
-
-      <div id="sourceMetricsContainer" class="source-metrics-panel" hidden></div>
 
       <div id="resultsContainer" class="results-grid">
 

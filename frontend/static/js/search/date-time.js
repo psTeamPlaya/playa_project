@@ -21,7 +21,7 @@ export function formatearFechaVisual(fechaTexto) {
 
     const [year, month, day] = fechaTexto.split("-");
     const diaSemana = obtenerAbreviaturaDia(fechaTexto);
-    return `${diaSemana} \u00b7 ${day}/${month}/${year}`;
+    return `${diaSemana} · ${day}/${month}/${year}`;
 }
 
 export function obtenerHoraMinimaPermitida() {
@@ -34,17 +34,32 @@ export function obtenerHoraMinimaPermitida() {
 }
 
 export function obtenerHoraTexto(hourNumber) {
-    const horaNormalizada = Math.min(hourNumber, 23);
+    const horaNormalizada = Math.min(Math.max(Number(hourNumber), 0), 23);
     return `${String(horaNormalizada).padStart(2, "0")}:00`;
 }
 
-export function obtenerHorasDisponiblesParaFecha(fechaTexto) {
-    const horas = [];
-    const hoy = formatearFechaLocal(new Date());
-    let horaInicio = 0;
+function obtenerHoraNumero(horaTexto) {
+    return Number(String(horaTexto || "").split(":")[0]);
+}
 
-    if (fechaTexto === hoy) horaInicio = obtenerHoraMinimaPermitida();
-    for (let hora = horaInicio; hora <= 23; hora++) horas.push(obtenerHoraTexto(hora));
+export function obtenerHorasDisponiblesParaFecha(fechaTexto) {
+    const hoy = formatearFechaLocal(new Date());
+    const horaMinima = fechaTexto === hoy ? obtenerHoraMinimaPermitida() : 0;
+    const horas = [];
+
+    for (let hora = horaMinima; hora <= 22; hora += 1) {
+        horas.push(obtenerHoraTexto(hora));
+    }
+    return horas;
+}
+
+export function obtenerHorasFinDisponibles(horaInicioTexto) {
+    const horaInicioNumero = obtenerHoraNumero(horaInicioTexto);
+    const horas = [];
+
+    for (let hora = horaInicioNumero + 1; hora <= 23; hora += 1) {
+        horas.push(obtenerHoraTexto(hora));
+    }
     return horas;
 }
 
@@ -56,20 +71,19 @@ export function esHoraPasadaParaFecha(fechaTexto, horaTexto) {
     if (!esFechaHoy(fechaTexto)) {
         return false;
     }
-    const horaNumero = Number(horaTexto.split(":")[0]);
-    return horaNumero < obtenerHoraMinimaPermitida();
+    return obtenerHoraNumero(horaTexto) < obtenerHoraMinimaPermitida();
 }
 
 export function initDateTime({
     fechaInput,
     fechaShell,
     fechaDisplay,
-    hourWheel,
+    horaInicioSelect,
+    horaFinSelect,
     onScheduleChange
 }) {
-    let horaSeleccionada = "";
-    let hourOptions = [];
-    let scrollTimeout;
+    let horaInicioSeleccionada = "";
+    let horaFinSeleccionada = "";
 
     function actualizarTextoFecha() {
         if (!fechaDisplay || !fechaInput) return;
@@ -79,115 +93,61 @@ export function initDateTime({
     function notificarCambio(changed) {
         onScheduleChange?.({
             fecha: fechaInput?.value || "",
-            hora: horaSeleccionada,
+            horaInicio: horaInicioSeleccionada,
+            horaFin: horaFinSeleccionada,
             changed
         });
     }
 
-    function fijarHoraInicial(valor = "12:00", options = {}) {
-        const { silent = false } = options;
-        const option = hourWheel?.querySelector(`.hour-option[data-hour="${valor}"]`);
+    function renderizarOpciones(select, options, selectedValue) {
+        if (!select) return;
 
-        if (option) {
-            option.scrollIntoView({
-                block: "center",
-                behavior: "auto"
-            });
-            horaSeleccionada = valor;
-            setTimeout(() => actualizarHoraActiva({ silent }), 50);
-        }
-    }
-
-    function renderizarWheelHoras(fechaTexto, options = {}) {
-        const { silent = false } = options;
-        const horasDisponibles = obtenerHorasDisponiblesParaFecha(fechaTexto);
-        if (!hourWheel) return;
-
-        hourWheel.innerHTML = horasDisponibles
-            .map(hora => `<div class="hour-option" data-hour="${hora}">${hora}</div>`)
+        select.innerHTML = options
+            .map((hora) => `<option value="${hora}">${hora}</option>`)
             .join("");
 
-        hourOptions = [...hourWheel.querySelectorAll(".hour-option")];
-        hourOptions.forEach(option => {
-            option.addEventListener("click", () => {
-                const horaAnterior = horaSeleccionada;
-                option.scrollIntoView({
-                    block: "center",
-                    behavior: "smooth"
-                });
-
-                horaSeleccionada = option.dataset.hour || "";
-                notificarCambio(horaSeleccionada !== horaAnterior);
-                setTimeout(() => actualizarHoraActiva(), 180);
-            });
-        });
-
-        if (!horasDisponibles.includes(horaSeleccionada)) {
-            horaSeleccionada = horasDisponibles[0] || "";
+        if (options.includes(selectedValue)) {
+            select.value = selectedValue;
         }
-        if (horaSeleccionada) {
-            fijarHoraInicial(horaSeleccionada, { silent });
+        else if (options[0]) {
+            select.value = options[0];
         }
     }
 
-    function actualizarHoraActiva(options = {}) {
+    function sincronizarHoras(options = {}) {
         const { silent = false } = options;
-        if (!hourWheel || hourOptions.length === 0) return;
+        const horasInicioDisponibles = obtenerHorasDisponiblesParaFecha(fechaInput?.value || "");
 
-        const wheelRect = hourWheel.getBoundingClientRect();
-        const wheelCenter = wheelRect.top + wheelRect.height / 2;
-
-        let opcionMasCercana = null;
-        let distanciaMinima = Infinity;
-        hourOptions.forEach(option => {
-            const rect = option.getBoundingClientRect();
-            const optionCenter = rect.top + rect.height / 2;
-            const distancia = Math.abs(wheelCenter - optionCenter);
-            option.classList.remove("active", "near");
-
-            if (distancia < distanciaMinima) {
-                distanciaMinima = distancia;
-                opcionMasCercana = option;
-            }
-        });
-
-        hourOptions.forEach(option => {
-            const rect = option.getBoundingClientRect();
-            const optionCenter = rect.top + rect.height / 2;
-            const distancia = Math.abs(wheelCenter - optionCenter);
-
-            if (distancia < 18) option.classList.add("active");
-            else if (distancia < 54) option.classList.add("near");
-        });
-
-        if (opcionMasCercana) {
-            const horaAnterior = horaSeleccionada;
-            horaSeleccionada = opcionMasCercana.dataset.hour || "";
-
+        if (!horasInicioDisponibles.length) {
+            horaInicioSeleccionada = "";
+            horaFinSeleccionada = "";
+            renderizarOpciones(horaInicioSelect, [], "");
+            renderizarOpciones(horaFinSelect, [], "");
             if (!silent) {
-                notificarCambio(horaSeleccionada !== horaAnterior);
+                notificarCambio(true);
             }
+            return;
         }
-    }
 
-    function actualizarHorasDisponibles(options = {}) {
-        if (!fechaInput) return;
-        renderizarWheelHoras(fechaInput.value, options);
-    }
+        if (!horasInicioDisponibles.includes(horaInicioSeleccionada)) {
+            horaInicioSeleccionada = horasInicioDisponibles[0];
+        }
+        renderizarOpciones(horaInicioSelect, horasInicioDisponibles, horaInicioSeleccionada);
+        horaInicioSeleccionada = horaInicioSelect?.value || horaInicioSeleccionada;
 
-    function asegurarHoraValidaSeleccionada(options = {}) {
-        const { silent = false } = options;
-        if (!fechaInput) return;
+        const horasFinDisponibles = obtenerHorasFinDisponibles(horaInicioSeleccionada);
+        if (!horasFinDisponibles.includes(horaFinSeleccionada)) {
+            const horaInicioNumero = obtenerHoraNumero(horaInicioSeleccionada);
+            const horaFinPreferida = obtenerHoraTexto(Math.min(horaInicioNumero + 4, 23));
+            horaFinSeleccionada = horasFinDisponibles.includes(horaFinPreferida)
+                ? horaFinPreferida
+                : (horasFinDisponibles[0] || "");
+        }
+        renderizarOpciones(horaFinSelect, horasFinDisponibles, horaFinSeleccionada);
+        horaFinSeleccionada = horaFinSelect?.value || horaFinSeleccionada;
 
-        const horasDisponibles = obtenerHorasDisponiblesParaFecha(fechaInput.value);
-
-        if (!horaSeleccionada || !horasDisponibles.includes(horaSeleccionada)) {
-            const nuevaHoraValida = horasDisponibles[0] || null;
-            if (nuevaHoraValida) {
-                fijarHoraInicial(nuevaHoraValida, { silent });
-            } else {
-                horaSeleccionada = "";
-            }
+        if (!silent) {
+            notificarCambio(true);
         }
     }
 
@@ -207,52 +167,34 @@ export function initDateTime({
         fechaInput.min = fechaHoy;
         fechaInput.max = formatearFechaLocal(fechaMaxima);
         fechaInput.value = initialSchedule?.fecha || fechaHoy;
-        actualizarTextoFecha();
-        actualizarHorasDisponibles({ silent: true });
 
-        if (initialSchedule?.hora && obtenerHorasDisponiblesParaFecha(fechaInput.value).includes(initialSchedule.hora)) {
-            fijarHoraInicial(initialSchedule.hora, { silent: true });
-            return;
-        }
-
-        const horaMinima = obtenerHoraMinimaPermitida();
-        if (fechaInput.value === fechaHoy && horaMinima > 23) {
+        if (fechaInput.value === fechaHoy && obtenerHoraMinimaPermitida() > 22) {
             const manana = new Date();
             manana.setDate(manana.getDate() + 1);
             fechaInput.value = formatearFechaLocal(manana);
-            actualizarTextoFecha();
-            actualizarHorasDisponibles({ silent: true });
-            fijarHoraInicial("00:00", { silent: true });
-            return;
         }
 
-        const horaInicial = fechaInput.value === fechaHoy
-            ? obtenerHoraTexto(horaMinima)
-            : "00:00";
+        horaInicioSeleccionada = initialSchedule?.horaInicio || "";
+        horaFinSeleccionada = initialSchedule?.horaFin || "";
 
-        fijarHoraInicial(horaInicial, { silent: true });
+        actualizarTextoFecha();
+        sincronizarHoras({ silent: true });
     }
 
-    if (hourWheel) {
-        hourWheel.addEventListener("scroll", () => {
-            actualizarHoraActiva();
+    if (horaInicioSelect) {
+        horaInicioSelect.addEventListener("change", () => {
+            const valorAnterior = horaInicioSeleccionada;
+            horaInicioSeleccionada = horaInicioSelect.value || "";
+            sincronizarHoras({ silent: true });
+            notificarCambio(horaInicioSeleccionada !== valorAnterior);
+        });
+    }
 
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                const activa = hourOptions.find(option => option.classList.contains("active"));
-
-                if (activa) {
-                    const horaAnterior = horaSeleccionada;
-                    activa.scrollIntoView({
-                        block: "center",
-                        behavior: "smooth"
-                    });
-                    horaSeleccionada = activa.dataset.hour || "";
-                    notificarCambio(horaSeleccionada !== horaAnterior);
-                } else {
-                    asegurarHoraValidaSeleccionada({ silent: true });
-                }
-            }, 120);
+    if (horaFinSelect) {
+        horaFinSelect.addEventListener("change", () => {
+            const valorAnterior = horaFinSeleccionada;
+            horaFinSeleccionada = horaFinSelect.value || "";
+            notificarCambio(horaFinSeleccionada !== valorAnterior);
         });
     }
 
@@ -260,7 +202,8 @@ export function initDateTime({
         fechaShell.addEventListener("click", () => {
             if (typeof fechaInput.showPicker === "function") {
                 fechaInput.showPicker();
-            } else {
+            }
+            else {
                 fechaInput.focus();
                 fechaInput.click();
             }
@@ -270,39 +213,40 @@ export function initDateTime({
     if (fechaInput) {
         fechaInput.addEventListener("change", () => {
             const hoy = formatearFechaLocal(new Date());
-
             const fechaMaxima = new Date();
             fechaMaxima.setDate(fechaMaxima.getDate() + 15);
-
             const fechaMaximaTexto = formatearFechaLocal(fechaMaxima);
 
             if (fechaInput.value < hoy) {
                 fechaInput.value = hoy;
             }
-
             if (fechaInput.value > fechaMaximaTexto) {
                 fechaInput.value = fechaMaximaTexto;
             }
+            if (fechaInput.value === hoy && obtenerHoraMinimaPermitida() > 22) {
+                const manana = new Date();
+                manana.setDate(manana.getDate() + 1);
+                fechaInput.value = formatearFechaLocal(manana);
+            }
 
             actualizarTextoFecha();
-            actualizarHorasDisponibles({ silent: true });
-            asegurarHoraValidaSeleccionada({ silent: true });
-            notificarCambio(true);
+            sincronizarHoras();
         });
     }
 
     return {
         actualizarTextoFecha,
-        renderizarWheelHoras,
-        actualizarHoraActiva,
-        fijarHoraInicial,
-        actualizarHorasDisponibles,
-        asegurarHoraValidaSeleccionada,
         configurarFechaYHoraIniciales,
         esFechaHoy,
         esHoraPasadaParaFecha,
         esHoraPasadaParaHoy,
         getFecha: () => fechaInput?.value || "",
-        getHoraSeleccionada: () => horaSeleccionada
+        getHoraInicioSeleccionada: () => horaInicioSeleccionada,
+        getHoraFinSeleccionada: () => horaFinSeleccionada,
+        getHorarioSeleccionado: () => ({
+            fecha: fechaInput?.value || "",
+            horaInicio: horaInicioSeleccionada,
+            horaFin: horaFinSeleccionada
+        })
     };
 }

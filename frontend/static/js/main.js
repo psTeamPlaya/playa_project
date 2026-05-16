@@ -44,7 +44,8 @@ const resultsContainer = document.getElementById("resultsContainer");
 const sourceMetricsContainer = document.getElementById("sourceMetricsContainer");
 const favoritesResultsContainer = document.getElementById("favoritesResultsContainer");
 const recommendedBeachesSection = document.getElementById("recommendedBeachesSection");
-const hourWheel = document.getElementById("hourWheel");
+const horaInicioSelect = document.getElementById("horaInicio");
+const horaFinSelect = document.getElementById("horaFin");
 const sunAlertEl = document.getElementById("sunAlert");
 const loginModalEl = document.getElementById("loginModal");
 const authActionBtn = document.getElementById("authActionBtn");
@@ -245,9 +246,12 @@ function renderSourceMetricCard(label, metric = {}) {
     const statusClassName = isAvailable ? "is-available" : "is-unavailable";
     const statusText = isAvailable ? "Disponible" : "Sin datos";
     const records = Number.isFinite(Number(metric.records)) ? Number(metric.records) : 0;
+    const expectedRecords = Number.isFinite(Number(metric.expected_records)) ? Number(metric.expected_records) : null;
     const detailText = metric.error
         ? metric.error
-        : (isAvailable ? `${records} registros encontrados` : "No hay registros para esa fecha y hora");
+        : (isAvailable
+            ? `${records}${expectedRecords ? `/${expectedRecords}` : ""} registros encontrados`
+            : `No hay registros completos para esa fecha y franja horaria${expectedRecords ? ` (${records}/${expectedRecords})` : ""}`);
 
     return `
         <article class="source-metric-card">
@@ -289,7 +293,8 @@ function getCurrentSearchSignature() {
     return {
         actividad: actividadSeleccionada,
         fecha: fechaInput?.value || "",
-        hora: dateTimeController?.getHoraSeleccionada() || "",
+        horaInicio: dateTimeController?.getHoraInicioSeleccionada() || "",
+        horaFin: dateTimeController?.getHoraFinSeleccionada() || "",
         rango: radioSeleccionado ? radioSeleccionado.value : "50",
         coords: selectedCoords ? [...selectedCoords] : null
     };
@@ -310,7 +315,8 @@ function canReuseRecommendationContext() {
     return (
         lastRecommendationContext.actividad === currentSignature.actividad
         && lastRecommendationContext.fecha === currentSignature.fecha
-        && lastRecommendationContext.hora === currentSignature.hora
+        && lastRecommendationContext.horaInicio === currentSignature.horaInicio
+        && lastRecommendationContext.horaFin === currentSignature.horaFin
         && lastRecommendationContext.rango === currentSignature.rango
         && hasSameCoords(lastRecommendationContext.coords, currentSignature.coords)
     );
@@ -391,11 +397,13 @@ async function loadActivities() {
 
 function guardarHorarioRecordado() {
     const fechaSeleccionada = dateTimeController?.getFecha() || fechaInput.value;
-    const horaSeleccionada = dateTimeController?.getHoraSeleccionada() || "";
+    const horaInicioSeleccionada = dateTimeController?.getHoraInicioSeleccionada() || "";
+    const horaFinSeleccionada = dateTimeController?.getHoraFinSeleccionada() || "";
     saveRememberedSchedule({
         rememberSchedulePreference,
         fechaSeleccionada,
-        horaSeleccionada
+        horaInicioSeleccionada,
+        horaFinSeleccionada
     });
 }
 
@@ -507,7 +515,10 @@ function renderRecommendationResults(data, { shouldScroll = false } = {}) {
     }
 
     ocultarAvisoSolar();
-    statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
+    const horaInicio = data.hora_inicio || data.hora || "";
+    const horaFin = data.hora_fin || data.hora || "";
+    const rangoTexto = horaInicio && horaFin ? ` entre las ${horaInicio} y las ${horaFin}` : "";
+    statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}${rangoTexto}.`;
 }
 
 function reaplicarResultadosCacheados() {
@@ -565,7 +576,8 @@ function initControllers() {
         fechaInput,
         fechaShell,
         fechaDisplay,
-        hourWheel,
+        horaInicioSelect,
+        horaFinSelect,
         onScheduleChange: manejarCambioHorario
     });
 
@@ -771,7 +783,8 @@ function initActivityEvents() {
 
 async function buscarRecomendaciones() {
     const fecha = fechaInput.value;
-    const hora = dateTimeController?.getHoraSeleccionada() || "";
+    const horaInicio = dateTimeController?.getHoraInicioSeleccionada() || "";
+    const horaFin = dateTimeController?.getHoraFinSeleccionada() || "";
     ocultarAvisoSolar();
 
     if (!actividadSeleccionada) {
@@ -782,18 +795,21 @@ async function buscarRecomendaciones() {
         statusEl.textContent = "Debes seleccionar una fecha.";
         return;
     }
-    if (!hora) {
-        statusEl.textContent = "Debes seleccionar una hora.";
+    if (!horaInicio || !horaFin) {
+        statusEl.textContent = "Debes seleccionar una hora de inicio y una hora de fin.";
         return;
     }
     if (fecha < formatearFechaLocal(new Date())) {
         statusEl.textContent = "No puedes seleccionar una fecha pasada.";
         return;
     }
-    if (dateTimeController?.esFechaHoy(fecha) && dateTimeController?.esHoraPasadaParaHoy(hora)) {
-        statusEl.textContent = "No puedes seleccionar una hora pasada para el d\u00eda de hoy.";
-        dateTimeController?.asegurarHoraValidaSeleccionada({ silent: true });
+    if (dateTimeController?.esFechaHoy(fecha) && dateTimeController?.esHoraPasadaParaHoy(horaInicio)) {
+        statusEl.textContent = "No puedes seleccionar una hora de inicio pasada para el d\u00eda de hoy.";
         guardarHorarioRecordado();
+        return;
+    }
+    if (horaFin <= horaInicio) {
+        statusEl.textContent = "La hora de fin debe ser posterior a la hora de inicio.";
         return;
     }
     statusEl.textContent = "Buscando recomendaciones...";
@@ -804,7 +820,8 @@ async function buscarRecomendaciones() {
         const recommendationResult = await fetchRecommendations({
             actividad: actividadSeleccionada,
             fecha,
-            hora,
+            horaInicio,
+            horaFin,
             rango,
             cantidad: 0,
             selectedCoords,
@@ -822,7 +839,8 @@ async function buscarRecomendaciones() {
         lastRecommendationContext = {
             actividad: actividadSeleccionada,
             fecha,
-            hora,
+            horaInicio,
+            horaFin,
             rango,
             cantidad,
             coords: selectedCoords ? [...selectedCoords] : null,
