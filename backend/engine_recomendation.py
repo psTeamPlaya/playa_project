@@ -131,6 +131,17 @@ FACTOR_UNITS = {
 }
 
 
+def _round_to_nearest_quarter(value: float) -> float:
+    return round(float(value) * 4) / 4
+
+
+def _format_condition_value_for_display(variable: str, value: float) -> str:
+    if variable == "wave_height":
+        rounded_value = _round_to_nearest_quarter(value)
+        return f"{rounded_value:g}"
+    return str(round(float(value)))
+
+
 def _activity_slug(name: str | None) -> str | None:
     if not name:
         return None
@@ -788,10 +799,7 @@ def filtrar(playa, conditions, filtros: dict):
 def _formatear_factor_recomendacion(variable: str, valor: float) -> str:
     label = FACTOR_LABELS.get(variable, variable)
     unit = FACTOR_UNITS.get(variable, "")
-    if variable in {"cloud_cover", "rain_probability", "uv_index"}:
-        value_text = f"{round(float(valor))}"
-    else:
-        value_text = f"{float(valor):.1f}"
+    value_text = _format_condition_value_for_display(variable, valor)
     return f"{label} de {value_text}{f' {unit}' if unit else ''}"
 
 

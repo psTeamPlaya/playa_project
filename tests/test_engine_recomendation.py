@@ -414,3 +414,11 @@ def test_recomendar_playas_excluye_playas_sin_cobertura_completa_del_intervalo()
     )
 
     assert [resultado["nombre"] for resultado in resultados] == ["Playa Completa"]
+
+
+def test_formatear_factor_recomendacion_redondea_al_mas_proximo():
+    motivo_temperatura = engine_recomendation._formatear_factor_recomendacion("air_temp", 19.76)
+    assert motivo_temperatura.startswith("temperatura media de 20")
+    assert engine_recomendation._formatear_factor_recomendacion("wind_speed", 14.49) == "viento medio de 14 km/h"
+    assert engine_recomendation._formatear_factor_recomendacion("wave_height", 1.12) == "oleaje medio de 1 m"
+    assert engine_recomendation._formatear_factor_recomendacion("wave_height", 1.13) == "oleaje medio de 1.25 m"

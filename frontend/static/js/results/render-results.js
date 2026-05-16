@@ -60,6 +60,24 @@ function renderIntervalChip(condiciones = {}) {
     return `<span class="chip">Tramo: ${horaInicio} - ${horaFin}</span>`;
 }
 
+function roundToNearestQuarter(value) {
+    return Math.round(Number(value) * 4) / 4;
+}
+
+function formatConditionValue(value, { quarterStep = false } = {}) {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) {
+        return "N/A";
+    }
+
+    if (quarterStep) {
+        const roundedValue = roundToNearestQuarter(numericValue);
+        return `${roundedValue}`;
+    }
+
+    return `${Math.round(numericValue)}`;
+}
+
 function renderFavoriteButton(playa, options) {
     const ariaLabel = options.favoriteButtonAriaLabel ? ` aria-label="${options.favoriteButtonAriaLabel}"` : "";
     return `
@@ -140,12 +158,12 @@ export function pintarResultados(resultados, container, options = {}) {
                     <div class="meta-list">
                         ${renderIntervalChip(condiciones)}
                         <span class="chip">${ICONS.beachType} Tipo: ${playa.tipo}</span>
-                        <span class="chip">${ICONS.airTemp} Temp. aire media: ${condiciones.air_temp ?? "N/A"} \u00baC</span>
-                        <span class="chip">${ICONS.wave} Oleaje medio: ${condiciones.wave_height ?? "N/A"} m</span>
-                        <span class="chip">${ICONS.wind} Viento medio: ${condiciones.wind_speed ?? "N/A"} km/h</span>
-                        <span class="chip">${ICONS.waterTemp} Agua media: ${condiciones.water_temp ?? "N/A"} \u00baC</span>
-                        <span class="chip">${ICONS.cloud} Nubosidad media: ${condiciones.cloud_cover ?? "N/A"}%</span>
-                        <span class="chip">${ICONS.rain} Lluvia media: ${condiciones.rain_probability ?? "N/A"}%</span>
+                        <span class="chip">${ICONS.airTemp} Temp. aire media: ${formatConditionValue(condiciones.air_temp)} \u00baC</span>
+                        <span class="chip">${ICONS.wave} Oleaje medio: ${formatConditionValue(condiciones.wave_height, { quarterStep: true })} m</span>
+                        <span class="chip">${ICONS.wind} Viento medio: ${formatConditionValue(condiciones.wind_speed)} km/h</span>
+                        <span class="chip">${ICONS.waterTemp} Agua media: ${formatConditionValue(condiciones.water_temp)} \u00baC</span>
+                        <span class="chip">${ICONS.cloud} Nubosidad media: ${formatConditionValue(condiciones.cloud_cover)}%</span>
+                        <span class="chip">${ICONS.rain} Lluvia media: ${formatConditionValue(condiciones.rain_probability)}%</span>
                         <span class="chip">${ICONS.tide} Marea: ${formatearMarea(condiciones)}</span>
                     </div>
 

@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 from sqlalchemy import inspect, text
 from datetime import date, timedelta
 from sqlalchemy import func
-from time import perf_counter
 
 import backend.models  # NO BORRAR
 from backend.config import settings
@@ -143,6 +142,51 @@ for router in routers:
 def inicio():
     return {"mensaje": "API de recomendación de playas funcionando"}
 
+def cargar_condiciones_para_recomendacion(
+    playas: list,
+    fecha: str,
+    hora_inicio: str,
+    hora_fin: str,
+    expected_records: int,
+) -> list[dict] | None:
+    try:
+        if hora_inicio == hora_fin:
+            db_conditions = cargar_condiciones_desde_db(playas, fecha, hora_inicio)
+        else:
+            db_conditions = cargar_condiciones_desde_db_intervalo(
+                playas,
+                fecha,
+                hora_inicio,
+                hora_fin,
+            )
+    except Exception:
+        db_conditions = []
+
+    if len(db_conditions) == expected_records:
+        return db_conditions
+
+    if settings.WEATHER_PROVIDER != "openmeteo":
+        return None
+
+    try:
+        if hora_inicio == hora_fin:
+            openmeteo_conditions = cargar_condiciones_open_meteo(playas, fecha, hora_inicio)
+        else:
+            openmeteo_conditions = cargar_condiciones_open_meteo_intervalo(
+                playas,
+                fecha,
+                hora_inicio,
+                hora_fin,
+            )
+    except OpenMeteoError:
+        return None
+
+    if len(openmeteo_conditions) == expected_records:
+        return openmeteo_conditions
+
+    return None
+
+
 @app.get("/recomendaciones", response_model=dict)
 def obtener_recomendaciones(
     actividad: str,
@@ -184,36 +228,6 @@ def obtener_recomendaciones(
         horas_consideradas = generar_horas_intervalo(hora_inicio_consulta, hora_fin_consulta)
         playas = cargar_playas()
         expected_records = len(playas) * len(horas_consideradas)
-        comparativa_consulta = {
-            "db": {
-                "elapsed_ms": None,
-                "available": False,
-                "records": 0,
-                "expected_records": expected_records,
-                "error": None,
-            },
-            "openmeteo": {
-                "elapsed_ms": None,
-                "available": False,
-                "records": 0,
-                "expected_records": expected_records,
-                "error": None,
-            },
-        }
-
-        db_conditions: list[dict] = []
-        db_started_at = perf_counter()
-        try:
-            if hora_inicio_consulta == hora_fin_consulta:
-                db_conditions = cargar_condiciones_desde_db(playas, fecha, hora_inicio_consulta)
-            else:
-                db_conditions = cargar_condiciones_desde_db_intervalo(playas, fecha, hora_inicio_consulta, hora_fin_consulta)
-            comparativa_consulta["db"]["available"] = len(db_conditions) == expected_records
-            comparativa_consulta["db"]["records"] = len(db_conditions)
-        except Exception as exc:
-            comparativa_consulta["db"]["error"] = str(exc)
-        finally:
-            comparativa_consulta["db"]["elapsed_ms"] = round((perf_counter() - db_started_at) * 1000, 2)
 
         try:
             aviso_sol = obtener_aviso_luz_solar(
@@ -221,13 +235,14 @@ def obtener_recomendaciones(
                 playas=playas,
                 fecha=fecha,
                 hora=hora_inicio_consulta,
+                hora_fin=hora_fin_consulta,
                 timezone=settings.OPEN_METEO_TIMEZONE,
                 timeout_seconds=settings.OPEN_METEO_TIMEOUT_SECONDS,
             )
         except SunlightError:
             aviso_sol = None
 
-        if aviso_sol:
+        if aviso_sol and aviso_sol.get("bloqueante", True):
             return {
                 "actividad": actividad,
                 "fecha": fecha,
@@ -237,26 +252,7 @@ def obtener_recomendaciones(
                 "horas_consideradas": horas_consideradas,
                 "resultados": [],
                 "aviso_sol": aviso_sol,
-                "comparativa_consulta": comparativa_consulta,
             }
-
-        openmeteo_conditions: list[dict] = []
-        if settings.WEATHER_PROVIDER == "openmeteo":
-            openmeteo_started_at = perf_counter()
-            try:
-                if hora_inicio_consulta == hora_fin_consulta:
-                    openmeteo_conditions = cargar_condiciones_open_meteo(playas, fecha, hora_inicio_consulta)
-                else:
-                    openmeteo_conditions = cargar_condiciones_open_meteo_intervalo(playas, fecha, hora_inicio_consulta, hora_fin_consulta)
-                comparativa_consulta["openmeteo"]["available"] = len(openmeteo_conditions) == expected_records
-                comparativa_consulta["openmeteo"]["records"] = len(openmeteo_conditions)
-            except OpenMeteoError as exc:
-                comparativa_consulta["openmeteo"]["error"] = str(exc)
-            finally:
-                comparativa_consulta["openmeteo"]["elapsed_ms"] = round(
-                    (perf_counter() - openmeteo_started_at) * 1000,
-                    2,
-                )
 
         filtros = {
             "tipo_arena": tipo_arena,
@@ -279,17 +275,12 @@ def obtener_recomendaciones(
             "max_altura_oleaje": max_altura_oleaje,
         }
         filtros = {k: v for k, v in filtros.items() if v is not None}
-        condiciones_recomendacion = None
-        if len(db_conditions) == expected_records:
-            condiciones_recomendacion = db_conditions
-        elif len(openmeteo_conditions) == expected_records:
-            condiciones_recomendacion = openmeteo_conditions
-
-        comparativa_consulta["db"]["used_for_recommendations"] = (
-            condiciones_recomendacion is db_conditions and bool(db_conditions)
-        )
-        comparativa_consulta["openmeteo"]["used_for_recommendations"] = (
-            condiciones_recomendacion is openmeteo_conditions and bool(openmeteo_conditions)
+        condiciones_recomendacion = cargar_condiciones_para_recomendacion(
+            playas=playas,
+            fecha=fecha,
+            hora_inicio=hora_inicio_consulta,
+            hora_fin=hora_fin_consulta,
+            expected_records=expected_records,
         )
 
         resultados = recomendar_playas(
@@ -314,8 +305,7 @@ def obtener_recomendaciones(
             "hora_fin": hora_fin_consulta,
             "horas_consideradas": horas_consideradas,
             "resultados": resultados,
-            "aviso_sol": None,
-            "comparativa_consulta": comparativa_consulta,
+            "aviso_sol": aviso_sol,
         }
 
     except ValueError as e:

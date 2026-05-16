@@ -58,7 +58,7 @@ uv sync
 ### 3. Para levantar el backend
 
 ```bash
-uvicorn backend.main:app --reload
+uv run uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 ## URL para comprobar que el backend está funcionando
 - Salud de la API: `http://127.0.0.1:8000/api/health`

@@ -1,2 +1,3 @@
 TODO: nueva rama para trabajar con ReDIS (BBDD).
 TODO : revisar playas pet-friendly.
+TODO: si la "hora fin" para tomar sol es mayor que la hora de puesta de sol, avisar al usuario con mensaje de status o modal.
