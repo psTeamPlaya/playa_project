@@ -1,5 +1,6 @@
 import math, logging
 import json
+from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -100,6 +101,34 @@ PESOS_ACTIVIDAD: dict[str, dict[str, float]] = {
 }
 
 BONUS_ACTIVIDAD_IDEAL = 2.5
+NUMERIC_CONDITION_KEYS = (
+    "air_temp",
+    "wind_speed",
+    "wave_height",
+    "water_temp",
+    "cloud_cover",
+    "rain_probability",
+    "uv_index",
+    "sea_level_height_msl",
+)
+FACTOR_LABELS = {
+    "air_temp": "temperatura media",
+    "wind_speed": "viento medio",
+    "wave_height": "oleaje medio",
+    "water_temp": "temperatura del agua",
+    "cloud_cover": "nubosidad media",
+    "rain_probability": "probabilidad media de lluvia",
+    "uv_index": "índice UV medio",
+}
+FACTOR_UNITS = {
+    "air_temp": "ºC",
+    "wind_speed": "km/h",
+    "wave_height": "m",
+    "water_temp": "ºC",
+    "cloud_cover": "%",
+    "rain_probability": "%",
+    "uv_index": "",
+}
 
 
 def _activity_slug(name: str | None) -> str | None:
@@ -134,6 +163,121 @@ def _normalize_condition_keys(conditions: dict[str, Any] | None) -> dict[str, An
         "tide": conditions.get("tide", conditions.get("marea")),
         "sea_level_height_msl": conditions.get("sea_level_height_msl"),
     }
+
+
+def _normalizar_hora_texto(hora: str) -> str:
+    try:
+        return datetime.strptime(str(hora).strip(), "%H:%M").strftime("%H:%M")
+    except ValueError as exc:
+        raise ValueError("Debes indicar horas válidas con formato HH:MM.") from exc
+
+
+def resolver_intervalo_horario(
+    *,
+    hora: str | None = None,
+    hora_inicio: str | None = None,
+    hora_fin: str | None = None,
+) -> tuple[str, str]:
+    if hora and hora_inicio is None and hora_fin is None:
+        hora_normalizada = _normalizar_hora_texto(hora)
+        return hora_normalizada, hora_normalizada
+
+    if not hora_inicio or not hora_fin:
+        raise ValueError("Debes indicar una hora de inicio y una hora de fin válidas.")
+
+    hora_inicio_normalizada = _normalizar_hora_texto(hora_inicio)
+    hora_fin_normalizada = _normalizar_hora_texto(hora_fin)
+
+    inicio_dt = datetime.strptime(hora_inicio_normalizada, "%H:%M")
+    fin_dt = datetime.strptime(hora_fin_normalizada, "%H:%M")
+    if fin_dt <= inicio_dt:
+        raise ValueError("La hora de fin debe ser posterior a la hora de inicio.")
+
+    return hora_inicio_normalizada, hora_fin_normalizada
+
+
+def generar_horas_intervalo(hora_inicio: str, hora_fin: str) -> list[str]:
+    inicio_dt = datetime.strptime(hora_inicio, "%H:%M")
+    fin_dt = datetime.strptime(hora_fin, "%H:%M")
+
+    horas = []
+    current_dt = inicio_dt
+    while current_dt <= fin_dt:
+        horas.append(current_dt.strftime("%H:%M"))
+        current_dt += timedelta(hours=1)
+    return horas
+
+
+def agregar_condiciones_por_intervalo(
+    condiciones: list[dict[str, Any]],
+    horas_consideradas: list[str],
+) -> dict[str, Any]:
+    if not condiciones:
+        return {}
+
+    agregada: dict[str, Any] = {
+        "beach_id": condiciones[0].get("beach_id"),
+        "nombre_playa": condiciones[0].get("nombre_playa"),
+        "fecha": condiciones[0].get("fecha"),
+        "hora": horas_consideradas[0] if len(horas_consideradas) == 1 else f"{horas_consideradas[0]}-{horas_consideradas[-1]}",
+        "hora_inicio": horas_consideradas[0],
+        "hora_fin": horas_consideradas[-1],
+        "hours_count": len(horas_consideradas),
+        "horas_consideradas": horas_consideradas,
+        "condiciones_por_hora": condiciones,
+        "timezone": next((condicion.get("timezone") for condicion in condiciones if condicion.get("timezone")), None),
+        "fuente": " / ".join(
+            sorted({condicion.get("fuente") for condicion in condiciones if condicion.get("fuente")})
+        ) or None,
+    }
+
+    for key in NUMERIC_CONDITION_KEYS:
+        values = [
+            float(condicion[key])
+            for condicion in condiciones
+            if isinstance(condicion.get(key), (int, float))
+        ]
+        agregada[key] = round(sum(values) / len(values), 2) if values else None
+
+    tides = [condicion.get("tide") for condicion in condiciones if condicion.get("tide")]
+    agregada["tide"] = Counter(tides).most_common(1)[0][0] if tides else None
+    return agregada
+
+
+def agregar_condiciones_por_playa(
+    condiciones: list[dict[str, Any]],
+    horas_consideradas: list[str],
+) -> dict[int, dict[str, Any]]:
+    condiciones_normalizadas = [_normalizar_condicion(condicion) for condicion in condiciones]
+    beach_conditions: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    expected_hours = set(horas_consideradas)
+
+    for condicion in condiciones_normalizadas:
+        beach_id = condicion.get("beach_id")
+        if beach_id is None:
+            continue
+        beach_conditions[int(beach_id)].append(condicion)
+
+    agregadas: dict[int, dict[str, Any]] = {}
+    for beach_id, hourly_conditions in beach_conditions.items():
+        unique_by_hour = {}
+        for condicion in hourly_conditions:
+            hora_condicion = condicion.get("hora")
+            if hora_condicion is None and len(horas_consideradas) == 1:
+                hora_condicion = horas_consideradas[0]
+                condicion = {**condicion, "hora": hora_condicion}
+            if hora_condicion in expected_hours:
+                unique_by_hour[hora_condicion] = condicion
+        if len(unique_by_hour) != len(horas_consideradas):
+            continue
+
+        ordered_conditions = [unique_by_hour[hora] for hora in horas_consideradas]
+        agregadas[beach_id] = agregar_condiciones_por_intervalo(
+            ordered_conditions,
+            horas_consideradas,
+        )
+
+    return agregadas
 
 
 def fusionar_playas(playas_locales, playas_db):
@@ -300,8 +444,39 @@ def cargar_condiciones_open_meteo(playas, fecha, hora):
     return [_normalizar_condicion(condicion) for condicion in condiciones]
 
 
+def cargar_condiciones_intervalo(playas, fecha, hora_inicio, hora_fin):
+    if hora_inicio == hora_fin:
+        return cargar_condiciones(playas, fecha, hora_inicio)
+
+    if settings.WEATHER_PROVIDER == "local":
+        return _cargar_condiciones_locales_intervalo(playas, fecha, hora_inicio, hora_fin)
+
+    try:
+        condiciones = cargar_condiciones_open_meteo_intervalo(playas, fecha, hora_inicio, hora_fin)
+        return [_normalizar_condicion(condicion) for condicion in condiciones]
+    except OpenMeteoError as exc:
+        logger.warning("Fallo consultando Open-Meteo para el intervalo, usando fallback local: %s", exc)
+        return _cargar_condiciones_locales_intervalo(playas, fecha, hora_inicio, hora_fin)
+
+
+def cargar_condiciones_open_meteo_intervalo(playas, fecha, hora_inicio, hora_fin):
+    condiciones = obtener_condiciones_open_meteo(
+        playas=playas,
+        fecha=fecha,
+        hora=hora_inicio,
+        hora_fin=hora_fin,
+        timezone=settings.OPEN_METEO_TIMEZONE,
+        timeout_seconds=settings.OPEN_METEO_TIMEOUT_SECONDS,
+    )
+    return [_normalizar_condicion(condicion) for condicion in condiciones]
+
+
 def cargar_condiciones_locales(playas, fecha, hora):
     return _cargar_condiciones_locales(playas, fecha, hora)
+
+
+def cargar_condiciones_locales_intervalo(playas, fecha, hora_inicio, hora_fin):
+    return _cargar_condiciones_locales_intervalo(playas, fecha, hora_inicio, hora_fin)
 
 
 def cargar_condiciones_desde_db(playas, fecha, hora):
@@ -321,6 +496,54 @@ def cargar_condiciones_desde_db(playas, fecha, hora):
                 and_(
                     BeachCondition.datetime >= target_dt,
                     BeachCondition.datetime < next_minute,
+                )
+            )
+            .all()
+        )
+
+        beach_names = {int(playa["id"]): playa.get("nombre") for playa in playas}
+        return [
+            {
+                "beach_id": row.beach_id,
+                "nombre_playa": beach_names.get(int(row.beach_id)),
+                "fecha": row.datetime.strftime("%Y-%m-%d"),
+                "hora": row.datetime.strftime("%H:%M"),
+                "air_temp": row.air_temp,
+                "wind_speed": row.wind_speed,
+                "wave_height": row.wave_height,
+                "water_temp": row.water_temp,
+                "cloud_cover": row.cloud_cover,
+                "rain_probability": row.rain_probability,
+                "tide": row.tide,
+                "uv_index": row.uv_index,
+                "fuente": "PostgreSQL beach_conditions",
+            }
+            for row in rows
+        ]
+    finally:
+        session.close()
+
+
+def cargar_condiciones_desde_db_intervalo(playas, fecha, hora_inicio, hora_fin):
+    if not playas:
+        return []
+
+    if hora_inicio == hora_fin:
+        return cargar_condiciones_desde_db(playas, fecha, hora_inicio)
+
+    session = SessionLocal()
+    try:
+        beach_ids = [int(playa["id"]) for playa in playas]
+        target_start = datetime.fromisoformat(f"{fecha}T{hora_inicio}")
+        target_end = datetime.fromisoformat(f"{fecha}T{hora_fin}") + timedelta(hours=1)
+
+        rows = (
+            session.query(BeachCondition)
+            .filter(BeachCondition.beach_id.in_(beach_ids))
+            .filter(
+                and_(
+                    BeachCondition.datetime >= target_start,
+                    BeachCondition.datetime < target_end,
                 )
             )
             .all()
@@ -383,6 +606,27 @@ def _cargar_condiciones_locales(playas, fecha, hora):
         if condicion.get("beach_id") in beach_ids
         and condicion.get("fecha") == fecha
         and condicion.get("hora") == hora
+    ]
+
+
+def _cargar_condiciones_locales_intervalo(playas, fecha, hora_inicio, hora_fin):
+    if not CONDICIONES_JSON.exists():
+        return []
+
+    if hora_inicio == hora_fin:
+        return _cargar_condiciones_locales(playas, fecha, hora_inicio)
+
+    beach_ids = {playa["id"] for playa in playas}
+    horas_consideradas = set(generar_horas_intervalo(hora_inicio, hora_fin))
+    with CONDICIONES_JSON.open("r", encoding="utf-8") as fh:
+        condiciones = json.load(fh)
+
+    return [
+        _normalizar_condicion(condicion)
+        for condicion in condiciones
+        if condicion.get("beach_id") in beach_ids
+        and condicion.get("fecha") == fecha
+        and condicion.get("hora") in horas_consideradas
     ]
 
 
@@ -541,6 +785,62 @@ def filtrar(playa, conditions, filtros: dict):
     return True
 
 
+def _formatear_factor_recomendacion(variable: str, valor: float) -> str:
+    label = FACTOR_LABELS.get(variable, variable)
+    unit = FACTOR_UNITS.get(variable, "")
+    if variable in {"cloud_cover", "rain_probability", "uv_index"}:
+        value_text = f"{round(float(valor))}"
+    else:
+        value_text = f"{float(valor):.1f}"
+    return f"{label} de {value_text}{f' {unit}' if unit else ''}"
+
+
+def generar_motivo_intervalo(
+    actividad,
+    cond,
+    *,
+    pesos: dict[str, float] | None = None,
+    actividad_ideal: bool = False,
+):
+    pesos = pesos if pesos is not None else obtener_pesos_actividad(actividad)
+    hours_count = int(cond.get("hours_count") or 1)
+    horas_consideradas = list(cond.get("horas_consideradas") or [])
+
+    variables_ordenadas = [
+        variable
+        for variable, _ in sorted(pesos.items(), key=lambda item: item[1], reverse=True)
+        if isinstance(cond.get(variable), (int, float))
+    ]
+    if not variables_ordenadas:
+        variables_ordenadas = [
+            variable
+            for variable in ("air_temp", "wind_speed", "wave_height", "rain_probability", "cloud_cover", "uv_index")
+            if isinstance(cond.get(variable), (int, float))
+        ]
+
+    factores = [
+        _formatear_factor_recomendacion(variable, cond[variable])
+        for variable in variables_ordenadas[:3]
+    ]
+    if not factores:
+        return "Condiciones evaluadas para la actividad."
+
+    if hours_count > 1 and len(horas_consideradas) >= 2:
+        tramo = f"entre las {horas_consideradas[0]} y las {horas_consideradas[-1]}"
+    elif horas_consideradas:
+        tramo = f"a las {horas_consideradas[0]}"
+    else:
+        tramo = "en ese momento"
+
+    descripcion = factores[0] if len(factores) == 1 else ", ".join(factores[:-1]) + f" y {factores[-1]}"
+    motivo = f"Se recomienda {tramo} por {descripcion}"
+    if actividad_ideal:
+        motivo += ". Además, la playa encaja especialmente bien con la actividad seleccionada."
+    else:
+        motivo += "."
+    return motivo
+
+
 def recomendar_playas(
     actividad: str,
     fecha: str,
@@ -553,13 +853,25 @@ def recomendar_playas(
     *,
     playas_override: list[dict[str, Any]] | None = None,
     condiciones_override: list[dict[str, Any]] | None = None,
+    hora_inicio: str | None = None,
+    hora_fin: str | None = None,
 ):
-    playas = playas_override if playas_override is not None else cargar_playas()
-    condiciones = (
-        condiciones_override
-        if condiciones_override is not None
-        else cargar_condiciones(playas, fecha, hora)
+    hora_inicio_resuelta, hora_fin_resuelta = resolver_intervalo_horario(
+        hora=hora,
+        hora_inicio=hora_inicio,
+        hora_fin=hora_fin,
     )
+    horas_consideradas = generar_horas_intervalo(hora_inicio_resuelta, hora_fin_resuelta)
+
+    playas = playas_override if playas_override is not None else cargar_playas()
+    if condiciones_override is not None:
+        condiciones = condiciones_override
+    elif hora_inicio_resuelta == hora_fin_resuelta:
+        condiciones = cargar_condiciones(playas, fecha, hora_inicio_resuelta)
+    else:
+        condiciones = cargar_condiciones_intervalo(playas, fecha, hora_inicio_resuelta, hora_fin_resuelta)
+
+    condiciones_agregadas = agregar_condiciones_por_playa(condiciones, horas_consideradas)
     pesos_actividad = obtener_pesos_actividad(actividad)
 
     resultados = []
@@ -572,10 +884,7 @@ def recomendar_playas(
             )
             if d > radio_km:
                 continue
-        cond = next(
-            (c for c in condiciones if c["beach_id"] == playa["id"]),
-            None
-        )
+        cond = condiciones_agregadas.get(int(playa["id"]))
         if not cond or not filtrar(playa, cond, filtros):
             continue
 
@@ -593,7 +902,12 @@ def recomendar_playas(
             "actividad_ideal": actividad_ideal,
             "condiciones": cond,
             "servicios": playa["servicios"],
-            "motivo": generar_motivo(actividad, cond)
+            "motivo": generar_motivo_intervalo(
+                actividad,
+                cond,
+                pesos=pesos_actividad,
+                actividad_ideal=actividad_ideal,
+            )
         })
 
     resultados_ordenados = sorted(

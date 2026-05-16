@@ -18,9 +18,13 @@ from backend.routes import (
 
 from backend.engine_recomendation import (
     cargar_condiciones_open_meteo,
+    cargar_condiciones_open_meteo_intervalo,
     cargar_condiciones_desde_db,
+    cargar_condiciones_desde_db_intervalo,
     cargar_playas,
+    generar_horas_intervalo,
     recomendar_playas,
+    resolver_intervalo_horario,
 )
 from backend.db import SessionLocal, engine, Base
 from backend.auth.auth import hash_password
@@ -143,7 +147,9 @@ def inicio():
 def obtener_recomendaciones(
     actividad: str,
     fecha: str,
-    hora: str,
+    hora: str | None = None,
+    hora_inicio: str | None = None,
+    hora_fin: str | None = None,
     lat: float | None = None,
     lon: float | None = None,
     radio_km: int | None = None,
@@ -170,18 +176,27 @@ def obtener_recomendaciones(
     max_altura_oleaje: float | None = None,
 ):
     try:
+        hora_inicio_consulta, hora_fin_consulta = resolver_intervalo_horario(
+            hora=hora,
+            hora_inicio=hora_inicio,
+            hora_fin=hora_fin,
+        )
+        horas_consideradas = generar_horas_intervalo(hora_inicio_consulta, hora_fin_consulta)
         playas = cargar_playas()
+        expected_records = len(playas) * len(horas_consideradas)
         comparativa_consulta = {
             "db": {
                 "elapsed_ms": None,
                 "available": False,
                 "records": 0,
+                "expected_records": expected_records,
                 "error": None,
             },
             "openmeteo": {
                 "elapsed_ms": None,
                 "available": False,
                 "records": 0,
+                "expected_records": expected_records,
                 "error": None,
             },
         }
@@ -189,8 +204,11 @@ def obtener_recomendaciones(
         db_conditions: list[dict] = []
         db_started_at = perf_counter()
         try:
-            db_conditions = cargar_condiciones_desde_db(playas, fecha, hora)
-            comparativa_consulta["db"]["available"] = bool(db_conditions)
+            if hora_inicio_consulta == hora_fin_consulta:
+                db_conditions = cargar_condiciones_desde_db(playas, fecha, hora_inicio_consulta)
+            else:
+                db_conditions = cargar_condiciones_desde_db_intervalo(playas, fecha, hora_inicio_consulta, hora_fin_consulta)
+            comparativa_consulta["db"]["available"] = len(db_conditions) == expected_records
             comparativa_consulta["db"]["records"] = len(db_conditions)
         except Exception as exc:
             comparativa_consulta["db"]["error"] = str(exc)
@@ -202,7 +220,7 @@ def obtener_recomendaciones(
                 actividad=actividad,
                 playas=playas,
                 fecha=fecha,
-                hora=hora,
+                hora=hora_inicio_consulta,
                 timezone=settings.OPEN_METEO_TIMEZONE,
                 timeout_seconds=settings.OPEN_METEO_TIMEOUT_SECONDS,
             )
@@ -213,7 +231,10 @@ def obtener_recomendaciones(
             return {
                 "actividad": actividad,
                 "fecha": fecha,
-                "hora": hora,
+                "hora": hora_inicio_consulta,
+                "hora_inicio": hora_inicio_consulta,
+                "hora_fin": hora_fin_consulta,
+                "horas_consideradas": horas_consideradas,
                 "resultados": [],
                 "aviso_sol": aviso_sol,
                 "comparativa_consulta": comparativa_consulta,
@@ -223,8 +244,11 @@ def obtener_recomendaciones(
         if settings.WEATHER_PROVIDER == "openmeteo":
             openmeteo_started_at = perf_counter()
             try:
-                openmeteo_conditions = cargar_condiciones_open_meteo(playas, fecha, hora)
-                comparativa_consulta["openmeteo"]["available"] = bool(openmeteo_conditions)
+                if hora_inicio_consulta == hora_fin_consulta:
+                    openmeteo_conditions = cargar_condiciones_open_meteo(playas, fecha, hora_inicio_consulta)
+                else:
+                    openmeteo_conditions = cargar_condiciones_open_meteo_intervalo(playas, fecha, hora_inicio_consulta, hora_fin_consulta)
+                comparativa_consulta["openmeteo"]["available"] = len(openmeteo_conditions) == expected_records
                 comparativa_consulta["openmeteo"]["records"] = len(openmeteo_conditions)
             except OpenMeteoError as exc:
                 comparativa_consulta["openmeteo"]["error"] = str(exc)
@@ -255,13 +279,10 @@ def obtener_recomendaciones(
             "max_altura_oleaje": max_altura_oleaje,
         }
         filtros = {k: v for k, v in filtros.items() if v is not None}
-        db_condition_ids = {int(condicion["beach_id"]) for condicion in db_conditions}
-        openmeteo_condition_ids = {int(condicion["beach_id"]) for condicion in openmeteo_conditions}
-        beach_ids = {int(playa["id"]) for playa in playas}
         condiciones_recomendacion = None
-        if db_condition_ids == beach_ids:
+        if len(db_conditions) == expected_records:
             condiciones_recomendacion = db_conditions
-        elif openmeteo_condition_ids == beach_ids:
+        elif len(openmeteo_conditions) == expected_records:
             condiciones_recomendacion = openmeteo_conditions
 
         comparativa_consulta["db"]["used_for_recommendations"] = (
@@ -274,7 +295,7 @@ def obtener_recomendaciones(
         resultados = recomendar_playas(
             actividad=actividad,
             fecha=fecha,
-            hora=hora,
+            hora=hora_inicio_consulta,
             lat_usuario=lat,
             lon_usuario=lon,
             radio_km=radio_km,
@@ -282,11 +303,16 @@ def obtener_recomendaciones(
             filtros=filtros,
             playas_override=playas,
             condiciones_override=condiciones_recomendacion,
+            hora_inicio=hora_inicio_consulta,
+            hora_fin=hora_fin_consulta,
         )
         return {
             "actividad": actividad,
             "fecha": fecha,
-            "hora": hora,
+            "hora": hora_inicio_consulta,
+            "hora_inicio": hora_inicio_consulta,
+            "hora_fin": hora_fin_consulta,
+            "horas_consideradas": horas_consideradas,
             "resultados": resultados,
             "aviso_sol": None,
             "comparativa_consulta": comparativa_consulta,

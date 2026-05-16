@@ -2551,7 +2551,7 @@ button {
 }
 
 .schedule-grid {
-    grid-template-columns: minmax(230px, 1fr) minmax(230px, 1fr);
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
     align-items: end;
 }
 

@@ -48,6 +48,18 @@ function renderMotivo(playa, options) {
     `;
 }
 
+function renderIntervalChip(condiciones = {}) {
+    const horaInicio = condiciones.hora_inicio;
+    const horaFin = condiciones.hora_fin;
+    const hoursCount = Number(condiciones.hours_count || 1);
+
+    if (!horaInicio || !horaFin || hoursCount <= 1) {
+        return "";
+    }
+
+    return `<span class="chip">Tramo: ${horaInicio} - ${horaFin}</span>`;
+}
+
 function renderFavoriteButton(playa, options) {
     const ariaLabel = options.favoriteButtonAriaLabel ? ` aria-label="${options.favoriteButtonAriaLabel}"` : "";
     return `
@@ -126,13 +138,14 @@ export function pintarResultados(resultados, container, options = {}) {
                     <p class="beach-desc">${playa.descripcion}</p>
 
                     <div class="meta-list">
+                        ${renderIntervalChip(condiciones)}
                         <span class="chip">${ICONS.beachType} Tipo: ${playa.tipo}</span>
-                        <span class="chip">${ICONS.airTemp} Temp. aire: ${condiciones.air_temp ?? "N/A"} \u00baC</span>
-                        <span class="chip">${ICONS.wave} Oleaje: ${condiciones.wave_height ?? "N/A"} m</span>
-                        <span class="chip">${ICONS.wind} Viento: ${condiciones.wind_speed ?? "N/A"} km/h</span>
-                        <span class="chip">${ICONS.waterTemp} Agua: ${condiciones.water_temp ?? "N/A"} \u00baC</span>
-                        <span class="chip">${ICONS.cloud} Nubosidad: ${condiciones.cloud_cover ?? "N/A"}%</span>
-                        <span class="chip">${ICONS.rain} Lluvia: ${condiciones.rain_probability ?? "N/A"}%</span>
+                        <span class="chip">${ICONS.airTemp} Temp. aire media: ${condiciones.air_temp ?? "N/A"} \u00baC</span>
+                        <span class="chip">${ICONS.wave} Oleaje medio: ${condiciones.wave_height ?? "N/A"} m</span>
+                        <span class="chip">${ICONS.wind} Viento medio: ${condiciones.wind_speed ?? "N/A"} km/h</span>
+                        <span class="chip">${ICONS.waterTemp} Agua media: ${condiciones.water_temp ?? "N/A"} \u00baC</span>
+                        <span class="chip">${ICONS.cloud} Nubosidad media: ${condiciones.cloud_cover ?? "N/A"}%</span>
+                        <span class="chip">${ICONS.rain} Lluvia media: ${condiciones.rain_probability ?? "N/A"}%</span>
                         <span class="chip">${ICONS.tide} Marea: ${formatearMarea(condiciones)}</span>
                     </div>
 
