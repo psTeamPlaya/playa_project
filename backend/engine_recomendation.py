@@ -290,13 +290,14 @@ def cargar_condiciones(playas, fecha, hora):
 
 
 def cargar_condiciones_open_meteo(playas, fecha, hora):
-    return obtener_condiciones_open_meteo(
+    condiciones = obtener_condiciones_open_meteo(
         playas=playas,
         fecha=fecha,
         hora=hora,
         timezone=settings.OPEN_METEO_TIMEZONE,
         timeout_seconds=settings.OPEN_METEO_TIMEOUT_SECONDS,
     )
+    return [_normalizar_condicion(condicion) for condicion in condiciones]
 
 
 def cargar_condiciones_locales(playas, fecha, hora):
