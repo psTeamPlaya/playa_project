@@ -253,6 +253,51 @@ def infer_next_tide_event(
     return None
 
 
+def infer_tide_events(condiciones: list[dict[str, Any]]) -> list[dict[str, str]]:
+    puntos = []
+    for condicion in condiciones:
+        hora = condicion.get("hora")
+        nivel = condicion.get("sea_level_height_msl")
+        if not hora or not isinstance(nivel, (int, float)):
+            continue
+        puntos.append((hora, float(nivel)))
+
+    if len(puntos) < 3:
+        return []
+
+    puntos.sort(key=lambda item: item[0])
+    eventos: list[dict[str, str]] = []
+
+    for index in range(1, len(puntos) - 1):
+        valor_anterior = puntos[index - 1][1]
+        valor_actual = puntos[index][1]
+        valor_siguiente = puntos[index + 1][1]
+
+        if valor_actual >= valor_anterior and valor_actual >= valor_siguiente:
+            eventos.append({
+                "label": "Pleamar",
+                "hour": puntos[index][0],
+            })
+            continue
+
+        if valor_actual <= valor_anterior and valor_actual <= valor_siguiente:
+            eventos.append({
+                "label": "Bajamar",
+                "hour": puntos[index][0],
+            })
+
+    eventos_unicos: list[dict[str, str]] = []
+    vistos: set[tuple[str, str]] = set()
+    for evento in eventos:
+        clave = (evento["label"], evento["hour"])
+        if clave in vistos:
+            continue
+        vistos.add(clave)
+        eventos_unicos.append(evento)
+
+    return eventos_unicos
+
+
 def _activity_slug(name: str | None) -> str | None:
     if not name:
         return None
@@ -364,6 +409,7 @@ def agregar_condiciones_por_intervalo(
     tides = [condicion.get("tide") for condicion in condiciones if condicion.get("tide")]
     agregada["tide"] = Counter(tides).most_common(1)[0][0] if tides else None
     agregada["tide_status"] = infer_tide_status(condiciones)
+    agregada["tide_events"] = infer_tide_events(condiciones)
     return agregada
 
 
@@ -1022,21 +1068,6 @@ def recomendar_playas(
 
     condiciones_agregadas = agregar_condiciones_por_playa(condiciones, horas_consideradas)
     pesos_actividad = obtener_pesos_actividad(actividad)
-    eventos_marea_por_playa: dict[int, dict[str, str]] = {}
-
-    try:
-        condiciones_dia_completo = cargar_condiciones_intervalo(
-            playas,
-            fecha,
-            "00:00",
-            "23:00",
-        )
-        eventos_marea_por_playa = calcular_eventos_marea_siguientes_por_playa(
-            condiciones_dia_completo,
-            hora_fin_resuelta,
-        )
-    except Exception:
-        eventos_marea_por_playa = {}
 
     resultados = []
     for playa in playas:
@@ -1054,13 +1085,6 @@ def recomendar_playas(
 
         actividad_ideal = actividad in set(playa.get("actividades_ideales", []))
         score = calcular_score_final(cond, actividad, actividad_ideal, pesos_actividad)
-        siguiente_evento_marea = eventos_marea_por_playa.get(int(playa["id"]))
-        if siguiente_evento_marea:
-            cond = {
-                **cond,
-                "tide_next_event_label": siguiente_evento_marea["label"],
-                "tide_next_event_hour": siguiente_evento_marea["hour"],
-            }
         resultados.append({
             "beach_id": playa["id"],
             "nombre": playa["nombre"],
