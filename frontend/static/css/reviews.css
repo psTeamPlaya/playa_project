@@ -55,3 +55,27 @@
     inset: 0;
     z-index: 9999;
 }
+
+.reviews-admin-layout { display: flex; gap: 20px; }
+#modalNavigation { display: flex; flex-direction: column; width: 200px; gap: 8px; border-right: 1px solid #ddd; padding-right: 15px; }
+#reviewsAdminContent { flex-grow: 1; max-height: 70vh; overflow-y: auto; padding-left: 15px; }
+
+/* Statystyki */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 15px 0 25px 0; }
+.stat-card { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e9ecef; }
+.stat-value { display: block; font-size: 24px; font-weight: bold; color: #007bff; }
+.stat-label { font-size: 12px; color: #6c757d; }
+
+/* Wykres paskowy */
+.chart-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.star-label { width: 40px; font-size: 13px; }
+.bar-fill-bg { flex-grow: 1; height: 12px; background: #e9ecef; border-radius: 6px; overflow: hidden; }
+.bar-fill { height: 100%; background: #ffc107; border-radius: 6px; }
+.count-label { width: 80px; font-size: 12px; text-align: right; color: #495057; }
+
+/* Przyciski i elementy listy */
+.admin-review-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; background: #fff; border-radius: 6px; margin-bottom: 8px; }
+.review-meta { display: flex; gap: 15px; margin-bottom: 4px; font-size: 13px; }
+.review-author { font-weight: 600; color: #333; }
+.scroll-trigger-wrapper { text-align: center; margin-top: 20px; padding-bottom: 10px; }
+.danger-border { border-left: 4px solid #dc3545; background: #fff5f5; }

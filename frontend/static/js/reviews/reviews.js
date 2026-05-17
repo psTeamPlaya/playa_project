@@ -92,12 +92,6 @@ function renderReviews(reviews) {
                 <strong>${r.email}</strong>
                 <p>${r.content}</p>
                 <small>⭐ ${r.rating}</small>
-
-                ${(isOwner || isAdmin) ? `
-                    <button class="delete-review-btn" data-id="${r.id}">
-                        🗑️ Eliminar
-                    </button>
-                ` : ""}
             </div>
         `;
     }).join("");
