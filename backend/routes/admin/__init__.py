@@ -25,7 +25,11 @@ from backend.user_audit import (
 )
 from backend.engine_recomendation import PESOS_ACTIVIDAD
 
-router = APIRouter(prefix="/admin", tags=["Admin"])
+from .reviews import router as reviews_router
+
+router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin)])
+
+router.include_router(reviews_router)
 
 PLAYAS_FILE = Path(__file__).resolve().parents[1] / "playas.json"
 
@@ -460,7 +464,6 @@ def remove_service_from_metadata(metadata: list[dict], service_name: str) -> lis
 @router.get("/users", response_model=list[UserResponse])
 def list_users(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     return db.query(User).order_by(User.is_admin.desc(), User.email.asc()).all()
 
@@ -468,7 +471,6 @@ def list_users(
 @router.get("/users/history", response_model=list[UserAuditLogResponse])
 def list_user_audit_logs(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     return (
         db.query(UserAuditLog)
@@ -528,7 +530,6 @@ def set_user_ban_status(
 @router.get("/catalog")
 def get_catalog(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     activities = [serialize_catalog_option(name) for name in collect_available_activities(db)]
     services = [serialize_catalog_option(name) for name in collect_available_services(db)]
@@ -547,7 +548,6 @@ def get_catalog(
 @router.get("/activities")
 def list_admin_activities(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     return [
         serialize_admin_activity(
@@ -563,7 +563,6 @@ def list_admin_activities(
 def create_admin_activity(
     payload: AdminCatalogItemPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     normalized_name = normalize_activity_name(payload.name)
     if not normalized_name or normalized_name in EXCLUDED_ADMIN_ACTIVITIES:
@@ -595,7 +594,6 @@ def update_admin_activity(
     activity_name: str,
     payload: AdminCatalogItemPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     current_name = normalize_activity_name(activity_name)
     new_name = normalize_activity_name(payload.name)
@@ -655,7 +653,6 @@ def update_admin_activity(
 def delete_admin_activity(
     activity_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     activity = db.get(Activity, activity_id)
     if activity is None:
@@ -676,7 +673,6 @@ def delete_admin_activity(
 @router.get("/services")
 def list_admin_services(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     services = db.query(Service).order_by(Service.name.asc()).all()
     return [serialize_catalog_item(service, normalize_service_name) for service in services]
@@ -686,7 +682,6 @@ def list_admin_services(
 def create_admin_service(
     payload: AdminCatalogItemPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     normalized_name = normalize_service_name(payload.name)
     if not normalized_name:
@@ -708,7 +703,6 @@ def create_admin_service(
 def delete_admin_service(
     service_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     service = db.query(Service).options(selectinload(Service.beaches)).filter(Service.id == service_id).first()
     if service is None:
@@ -727,7 +721,6 @@ def delete_admin_service(
 @router.get("/beaches")
 def list_beaches(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     metadata_by_id = {item["id"]: item for item in load_beach_metadata()}
     beaches = (
@@ -784,7 +777,6 @@ def persist_beach(
 def create_beach(
     payload: AdminBeachPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     return persist_beach(payload, db)
 
@@ -794,7 +786,6 @@ def update_beach(
     beach_id: int,
     payload: AdminBeachPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     beach = db.query(Beach).options(selectinload(Beach.services)).filter(Beach.id == beach_id).first()
     if beach is None:
