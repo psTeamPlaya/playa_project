@@ -3,12 +3,10 @@ import { authFetch } from "../api/auth-fetch.js";
 const resultsContainer = document.getElementById("resultsContainer");
 const favoritesResultsContainer = document.getElementById("favoritesResultsContainer");
 
-
 resultsContainer.addEventListener("click", handleReviewClick);
 favoritesResultsContainer.addEventListener("click", handleReviewClick);
 
 let currentBeachForReviews = null;
-
 let sessionUIController;
 
 export function initReviewsModule(sessionUI){
@@ -20,7 +18,7 @@ async function handleReviewClick(event) {
     if (!btn) return;
 
     const user = sessionUIController?.getCurrentUser?.();
-    console.log("User: ", user);
+    console.log("Usuario: ", user);
     if (!user) return;
 
     event.preventDefault();
@@ -41,7 +39,7 @@ async function handleReviewClick(event) {
         renderReviews(reviews);
     } 
     catch (err) {
-        list.innerHTML = "<div class='empty-state'>Error cargando reseñas</div>";
+        list.innerHTML = "<div class='empty-state'>Error al cargar las reseñas</div>";
         console.log(err);
     }
 }
@@ -63,7 +61,7 @@ document.getElementById("reviewsList").addEventListener("click", async (event) =
             method: "DELETE"
         });
 
-        // recargar reviews
+        // Recargar reseñas
         const res = await authFetch(`/reviews/beach/${currentBeachForReviews}`);
         const reviews = await res.json();
         renderReviews(reviews);
@@ -85,18 +83,22 @@ function renderReviews(reviews) {
     list.innerHTML = reviews.map(r => {
         const isOwner = user && user.email === r.email;
         
-        const reportButton = !isOwner && user 
-            ? `<button class="report-review-btn" data-id="${r.id}">⚠️ Report</button>` 
+        const reportActionHtml = !isOwner && user 
+            ? `<button class="review-action report-review-btn" data-id="${r.id}" title="Denunciar esta reseña">⚠️ Reportar</button>` 
             : '';
 
         return `
             <div class="review-item" data-id="${r.id}">
-                <div class="review-header">
+                <div class="review-item-header">
                     <strong>${r.email}</strong>
-                    ${reportButton}
+                    <div class="review-actions-meta">
+                        <span class="review-rating-badge">⭐ ${r.rating}</span>
+                        ${reportActionHtml}
+                    </div>
                 </div>
-                <p>${r.content}</p>
-                <small>⭐ ${r.rating}</small>
+                <div class="review-item-body">
+                    <p>${r.content}</p>
+                </div>
             </div>
         `;
     }).join("");
@@ -123,13 +125,13 @@ reviewForm.addEventListener("submit", async (e) => {
         });
         document.getElementById("reviewText").value = "";
 
-        // recargar lista
+        // Recargar lista
         const res = await authFetch(`/reviews/beach/${currentBeachForReviews}`);
         const reviews = await res.json();
         renderReviews(reviews);
     } 
     catch (err) {
-        alert("Error al enviar reseña");
+        alert("Error al enviar la reseña");
     }
 });
 
@@ -161,7 +163,7 @@ document.getElementById("reviewsList").addEventListener("click", async (event) =
 
     const reviewId = reportBtn.dataset.id;
 
-    const reason = prompt("Por favor, introduce el motivo del reporte (np. Spam, ofensivo, etc.):");
+    const reason = prompt("Por favor, introduce el motivo del reporte (ej. Spam, contenido ofensivo, etc.):");
     
     if (reason === null || reason.trim() === "") return;
 
@@ -172,7 +174,7 @@ document.getElementById("reviewsList").addEventListener("click", async (event) =
 
         if (res.ok) {
             alert("Reseña reportada con éxito. Un administrador la revisará.");
-            reportBtn.textContent = "✅ Reported";
+            reportBtn.textContent = "✅ Reportada";
             reportBtn.disabled = true;
             reportBtn.style.opacity = "0.5";
         } else {

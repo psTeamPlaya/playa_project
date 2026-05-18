@@ -35,7 +35,7 @@ export async function openReviewAdminModal(params) {
 
     function renderAdminReviews(reviews, container) {
         if (reviews.length === 0) {
-            container.innerHTML = `<p class="empty">Brak recenzji dla tej plaży.</p>`;
+            container.innerHTML = `<p class="empty">No reviews for this beach.</p>`;
             return;
         }
         container.innerHTML = reviews.map(r => `
@@ -64,7 +64,7 @@ export async function openReviewAdminModal(params) {
 
         const tabBtn = e.target.closest("[data-tab]");
         if (tabBtn) {
-            console.log(`Przełączono na zakładkę: ${tabBtn.dataset.tab}`);
+            console.log(`Switched to tab: ${tabBtn.dataset.tab}`);
             await tabManaging(tabBtn.dataset.tab);
             return;
         }
@@ -76,7 +76,7 @@ export async function openReviewAdminModal(params) {
 
     async function deleteReview(deleteBtn) {
         const reviewId = deleteBtn.dataset.id;
-        if (!confirm("Czy jako Administrator na pewno chcesz usunąć tę recenzję?")) return;
+        if (!confirm("Are you sure you want to delete this review as an Administrator?")) return;
 
         try {
             const res = await authFetch(`/admin/reviews/${reviewId}`, { method: "DELETE" });
@@ -84,10 +84,10 @@ export async function openReviewAdminModal(params) {
                 deleteBtn.closest(".admin-review-item").remove();
                 onRefresh?.(); 
             } else {
-                alert("Błąd podczas usuwania");
+                alert("Error while deleting");
             }
         } catch (err) {
-            console.error("Błąd sieci:", err);
+            console.error("Network error:", err);
         }
     }
 
@@ -99,10 +99,10 @@ export async function openReviewAdminModal(params) {
             if (res.ok) {
                 dismissBtn.closest(".admin-review-item").remove();
             } else {
-                alert("Błąd podczas odrzucania zgłoszenia");
+                alert("Error while dismissing the report");
             }
         } catch (err) {
-            console.error("Błąd sieci:", err);
+            console.error("Network error:", err);
         }
     }
 
@@ -138,7 +138,7 @@ export async function openReviewAdminModal(params) {
             const beachesHtml = data.popular_beaches.map(b => `
                 <li class="stat-beach-item">
                     <strong>${b.name}</strong> 
-                    <span>⭐ ${b.average_rating} (${b.reviews_count} opinii)</span>
+                    <span>⭐ ${b.average_rating} (${b.reviews_count} reviews)</span>
                 </li>
             `).join("");
 
@@ -180,7 +180,7 @@ export async function openReviewAdminModal(params) {
                         </div>
                         <div class="stat-section">
                             <h4>Top Reviewed Beaches</h4>
-                            <ul class="stat-beaches-list">${beachesHtml || "<li>Brak danych</li>"}</ul>
+                            <ul class="stat-beaches-list">${beachesHtml || "<li>No data available</li>"}</ul>
                         </div>
                     </div>
                 </div>
@@ -196,7 +196,7 @@ export async function openReviewAdminModal(params) {
             renderReviewsStats(data);
         } catch (err) {
             console.error("Rendering review statistics: ", err);
-            contentContainer.innerHTML = `<p class="error">Nie udało się załadować statystyk.</p>`;
+            contentContainer.innerHTML = `<p class="error">Failed to load statistics.</p>`;
         }
     }
 
@@ -215,23 +215,23 @@ export async function openReviewAdminModal(params) {
 
         function renderReviewItem(item) {
             const el = document.createElement("div");
-            el.className = "admin-review-item review-item";
+            el.className = "review-item admin-virtual-item"; 
             el.setAttribute("data-id", item.id);
             el.innerHTML = `
-                <div class="review-info">
-                    <div class="review-meta">
-                        <span class="review-author">👤 ${item.email}</span>
-                        <span class="review-stars">${"⭐".repeat(item.rating)}</span>
+                <div class="review-item-header">
+                    <strong>${item.email}</strong>
+                    <div class="review-actions-meta">
+                        <span class="review-rating-badge">⭐ ${item.rating}</span>
+                        <button class="review-action delete-admin-review-btn" data-id="${item.id}">🗑️ Remove</button>
                     </div>
-                    <p class="review-text">${item.content || "<i>Brak treści pisemnej</i>"}</p>
                 </div>
-                <button class="delete-admin-review-btn" data-id="${item.id}">🗑️ Remove</button>
+                <div class="review-item-body">
+                    <p title="${item.content || ''}">${item.content || '<i>No written content</i>'}</p>
+                </div>
             `;
             return el;
         }
-
         try {
-            // Pobierasz już tylko dane z API, bo biblioteka czeka już w oknie przeglądarki
             const res = await authFetch(`/admin/reviews?limit=1000&offset=0`);
             if (!res.ok) throw new Error("Status " + res.status);
             const result = await res.json();
@@ -241,30 +241,28 @@ export async function openReviewAdminModal(params) {
             const reviews = result.data || [];
 
             if (reviews.length === 0) {
-                listContainer.innerHTML = `<p class="empty">Brak recenzji w bazie danych.</p>`;
+                listContainer.innerHTML = `<p class="empty">No reviews in database.</p>`;
                 return;
             }
 
-            // Sprawdzamy czy globalny obiekt istnieje na wypadek problemów z sieciami CDN
             if (!window.VirtualScroller) {
                 throw new Error("VirtualScroller global script is not loaded");
             }
 
-            // Inicjalizacja z obiektu globalnego window
             new window.VirtualScroller(listContainer, reviews, renderReviewItem, {
                 scrollableContainer: scrollableContainer
             });
 
         } catch (err) {
             console.error("Error loading reviews: ", err);
-            contentContainer.innerHTML = `<p class="error">Błąd ładowania danych lub komponentu przewijania.</p>`;
+            contentContainer.innerHTML = `<p class="error">Error loading data.</p>`;
         }
     }
 
     async function tabReported() {
         function renderReviewsReported(data) {
             if (data.length === 0) {
-                contentContainer.innerHTML = `<h3>Reported Reviews</h3><p class="empty">Brak zgłoszonych recenzji.</p>`;
+                contentContainer.innerHTML = `<h3>Reported Reviews</h3><p class="empty">No reported reviews.</p>`;
                 return;
             }
             contentContainer.innerHTML = `
@@ -279,7 +277,7 @@ export async function openReviewAdminModal(params) {
                                         <span class="review-stars">${"⭐".repeat(r.rating)}</span>
                                         <span class="review-reason" style="color:#d9534f; font-weight:bold; margin-left:10px; background:#f9eded; padding:2px 6px; border-radius:4px;">⚠️ ${r.reason}</span>
                                     </div>
-                                    <p class="review-text">${r.content || "<i>Brak treści pisemnej</i>"}</p>
+                                    <p class="review-text">${r.content || "<i></i>"}</p>
                                 </div>
                                 <div class="admin-actions-vault" style="display:flex; gap:10px;">
                                     <button class="dismiss-admin-report-btn" data-id="${r.id}" style="background-color: #5cb85c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">✅ Keep & Dismiss</button>
@@ -302,7 +300,7 @@ export async function openReviewAdminModal(params) {
 
         } catch (err) {
             console.error("Rendering reported reviews: ", err);
-            contentContainer.innerHTML = `<p class="error">Błąd ładowania danych.</p>`;
+            contentContainer.innerHTML = `<p class="error">Error loading data.</p>`;
         }
     }
 
@@ -310,4 +308,4 @@ export async function openReviewAdminModal(params) {
     modalWrapper.addEventListener("click", modalClickEvents);
 
     tabStatistics();
-}
+};
