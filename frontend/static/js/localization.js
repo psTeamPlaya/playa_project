@@ -1,48 +1,25 @@
-/**
- * ============================================
- * API & CACHE CONFIGURATION
- * Easily adjust API endpoint and behavior here
- * ============================================
- */
 const API_CONFIG = {
     photonUrl: "https://photon.komoot.io/api/",
-    maxResults: 5,            // Number of results fetched from API
-    cacheLimit: 5,            // Max number of cached queries
-    cacheTTL: 5 * 60 * 1000   // Cache validity (5 minutes)
+    maxResults: 5,            
+    cacheLimit: 5,            
+    cacheTTL: 5 * 60 * 1000   
 };
 
-/**
- * Cache Map structure:
- * key -> { data: [...], timestamp: number }
- */
 const searchCache = new Map();
 
-/**
- * DOM Elements
- */
 const locationInput = document.getElementById("locationInput");
 const btnGeolocalizar = document.getElementById("btnGeolocalizar");
 const suggestionsEl = document.getElementById("suggestions");
 
-/**
- * ============================================
- * CACHE LOGIC (LRU + TTL)
- * ============================================
- */
+export let selectedCoords = null;
 
-/**
- * Save query results to cache.
- * Maintains LRU (Least Recently Used) behavior.
- */
 function saveToCache(query, results) {
     const key = query.trim().toLowerCase();
 
-    // If key already exists → refresh position
     if (searchCache.has(key)) {
         searchCache.delete(key);
     }
 
-    // Remove oldest entry if limit exceeded
     if (searchCache.size >= API_CONFIG.cacheLimit) {
         const oldestKey = searchCache.keys().next().value;
         searchCache.delete(oldestKey);
@@ -54,44 +31,37 @@ function saveToCache(query, results) {
     });
 }
 
-/**
- * Retrieve data from cache.
- * Returns null if not found or expired.
- */
+function setLocationInURL(coords, name) {
+    const url = new URL(window.location);
+    url.searchParams.set('lon', coords[0]);
+    url.searchParams.set('lat', coords[1]);
+    url.searchParams.set('location_name', name);
+    window.history.pushState({}, '', url);
+    selectedCoords = coords;
+}
+
 function getFromCache(query) {
     const key = query.trim().toLowerCase();
     const entry = searchCache.get(key);
 
     if (!entry) return null;
 
-    // Check TTL expiration
     if (Date.now() - entry.timestamp > API_CONFIG.cacheTTL) {
         searchCache.delete(key);
         return null;
     }
 
-    // Refresh entry position (LRU)
     searchCache.delete(key);
     searchCache.set(key, entry);
 
     return entry.data;
 }
 
-/**
- * ============================================
- * SEARCH LOGIC (Debounce + Race Condition Safe)
- * ============================================
- */
-
 let debounceTimer;
 let lastQuery = "";
 
-/**
- * Fetch location suggestions from API
- */
 async function fetchLocations(query) {
     const url = `${API_CONFIG.photonUrl}?q=${encodeURIComponent(query)}&limit=${API_CONFIG.maxResults}`;
-
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -102,9 +72,6 @@ async function fetchLocations(query) {
     return json.features;
 }
 
-/**
- * Handle user input with debounce
- */
 locationInput.addEventListener("input", (e) => {
     const val = e.target.value.trim();
 
@@ -130,22 +97,12 @@ locationInput.addEventListener("input", (e) => {
             }
         }
 
-        // Prevent outdated results (race condition)
         if (val !== lastQuery) return;
 
         renderSuggestions(results);
     }, 400);
 });
 
-/**
- * ============================================
- * UI RENDERING (SAFE - NO innerHTML)
- * ============================================
- */
-
-/**
- * Render suggestion list safely using DOM API
- */
 function renderSuggestions(features) {
     suggestionsEl.innerHTML = "";
 
@@ -157,7 +114,6 @@ function renderSuggestions(features) {
     features.forEach(feature => {
         const p = feature.properties;
         const coords = feature.geometry.coordinates;
-
         const displayName = `${p.name}${p.city ? ", " + p.city : ""} (${p.country || ""})`;
 
         const item = document.createElement("div");
@@ -174,25 +130,13 @@ function renderSuggestions(features) {
     suggestionsEl.style.display = "block";
 }
 
-/**
- * Handle selection of a suggestion
- */
 function selectLocation(name, coords) {
     locationInput.value = name;
     suggestionsEl.style.display = "none";
 
     saveToHistory(name);
-
-    console.log("Selected location:", name, coords);
-    selectedCoords = coords;
-    // You can store coords globally here if needed
+    setLocationInURL(coords, name);
 }
-
-/**
- * ============================================
- * GEOLOCATION HANDLING
- * ============================================
- */
 
 btnGeolocalizar.addEventListener("click", async () => {
     if (!navigator.geolocation) {
@@ -203,11 +147,9 @@ btnGeolocalizar.addEventListener("click", async () => {
     navigator.geolocation.getCurrentPosition(
         async (pos) => {
             const { latitude, longitude } = pos.coords;
-
             const name = await reverseGeocode(latitude, longitude);
 
             locationInput.value = name;
-
             selectLocation(name, [longitude, latitude]);
         },
         (err) => {
@@ -217,49 +159,25 @@ btnGeolocalizar.addEventListener("click", async () => {
     );
 });
 
-/**
- * ============================================
- * SEARCH HISTORY (sessionStorage)
- * ============================================
- */
-
-/**
- * Save location to history (max 10 entries)
- */
 function saveToHistory(city) {
     let history = JSON.parse(sessionStorage.getItem("locHistory") || "[]");
-
-    // Remove duplicates and add new item at the beginning
     history = [city, ...history.filter(c => c !== city)].slice(0, 10);
-
     sessionStorage.setItem("locHistory", JSON.stringify(history));
-
 }
-
-/**
- * ============================================
- * MAP + REVERSE GEOCODING (FIXED)
- * Works for any location (map click + geolocation)
- * ============================================
- */
 
 let map;
 let marker = null;
-export let selectedCoords = null;
 
 const mapModal = document.getElementById("mapModal");
 const btnMapa = document.getElementById("btnMapa");
 const closeMap = document.getElementById("closeMap");
 const confirmLocation = document.getElementById("confirmLocation");
 
-/**
- * Open map modal
- */
 btnMapa.addEventListener("click", () => {
     mapModal.classList.remove("hidden");
 
     if (!map) {
-        map = L.map("map").setView([28.1235, -15.4363], 10); // Default: Gran Canaria
+        map = L.map("map").setView([28.1235, -15.4363], 10);
         const mapContainer = map.getContainer();
         mapContainer.classList.add("location-picker-map");
 
@@ -275,13 +193,9 @@ btnMapa.addEventListener("click", () => {
             mapContainer.classList.remove("is-dragging");
         });
 
-        /**
-         * Click on map → select location
-         */
         map.on("click", (e) => {
             const { lat, lng } = e.latlng;
-
-            selectedCoords = [lat, lng];
+            selectedCoords = [lng, lat];
 
             if (marker) {
                 marker.setLatLng(e.latlng);
@@ -294,18 +208,12 @@ btnMapa.addEventListener("click", () => {
     setTimeout(() => map.invalidateSize(), 100);
 });
 
-/**
- * Close modal
- */
 if (closeMap) {
     closeMap.addEventListener("click", () => {
         mapModal.classList.add("hidden");
     });
 }
 
-/**
- * Reverse geocoding using Nominatim
- */
 async function reverseGeocode(lat, lon) {
     try {
         const res = await fetch(
@@ -315,10 +223,7 @@ async function reverseGeocode(lat, lon) {
         if (!res.ok) throw new Error("Reverse geocoding failed");
 
         const data = await res.json();
-
-        // Build readable name
         const addr = data.address || {};
-
         const parts = [
             addr.road,
             addr.city || addr.town || addr.village,
@@ -336,40 +241,43 @@ async function reverseGeocode(lat, lon) {
     }
 }
 
-/**
- * Confirm location from map
- */
 confirmLocation.addEventListener("click", async () => {
     if (!selectedCoords) return;
 
-    const [lat, lon] = selectedCoords;
-
+    const [lon, lat] = selectedCoords;
     const name = await reverseGeocode(lat, lon);
 
-    // IMPORTANT: keep coords format consistent [lon, lat] (GeoJSON style)
     selectLocation(name, [lon, lat]);
-
     mapModal.classList.add("hidden");
 });
-
-// ============================================
-// UBICACIÓN POR DEFECTO AL CARGAR
-// ============================================
 
 const DEFAULT_LOCATION = {
     name: "Las Palmas de Gran Canaria",
     coords: [-15.4163, 28.0997]
 };
 
-function cargarUbicacionPorDefecto() {
-    if (locationInput.value.trim()) return;
+function getLocalizationCoord() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const lon = urlParams.get('lon');
+    const lat = urlParams.get('lat');
+    return [lon, lat];
+}
 
-    if (selectedCoords) return;
+function cargarUbicacionPorDefecto() {
+    const [lon, lat] = getLocalizationCoord();
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get('location_name');
+
+    if (lon && lat && name) {
+        selectedCoords = [Number(lon), Number(lat)];
+        locationInput.value = name;
+        return;
+    }
+
+    if (locationInput.value.trim() || selectedCoords) return;
 
     locationInput.value = DEFAULT_LOCATION.name;
-    selectedCoords = DEFAULT_LOCATION.coords;
-
-    console.log("Ubicación por defecto cargada:", DEFAULT_LOCATION.name);
+    setLocationInURL(DEFAULT_LOCATION.coords, DEFAULT_LOCATION.name);
 }
 
 cargarUbicacionPorDefecto();
