@@ -56,6 +56,12 @@ export async function openReviewAdminModal(params) {
             return;
         }
 
+        const dismissBtn = e.target.closest(".dismiss-admin-report-btn");
+        if (dismissBtn) {
+            await dismissReport(dismissBtn);
+            return;
+        }
+
         const tabBtn = e.target.closest("[data-tab]");
         if (tabBtn) {
             console.log(`Przełączono na zakładkę: ${tabBtn.dataset.tab}`);
@@ -79,6 +85,21 @@ export async function openReviewAdminModal(params) {
                 onRefresh?.(); 
             } else {
                 alert("Błąd podczas usuwania");
+            }
+        } catch (err) {
+            console.error("Błąd sieci:", err);
+        }
+    }
+
+    async function dismissReport(dismissBtn) {
+        const reviewId = dismissBtn.dataset.id;
+        
+        try {
+            const res = await authFetch(`/admin/reviews/${reviewId}/dismiss`, { method: "POST" });
+            if (res.ok) {
+                dismissBtn.closest(".admin-review-item").remove();
+            } else {
+                alert("Błąd podczas odrzucania zgłoszenia");
             }
         } catch (err) {
             console.error("Błąd sieci:", err);
@@ -256,11 +277,14 @@ export async function openReviewAdminModal(params) {
                                     <div class="review-meta">
                                         <span class="review-author">👤 ${r.email}</span>
                                         <span class="review-stars">${"⭐".repeat(r.rating)}</span>
-                                        <span class="review-reason" style="color:red; font-weight:bold; margin-left:10px;">⚠️ ${r.reason}</span>
+                                        <span class="review-reason" style="color:#d9534f; font-weight:bold; margin-left:10px; background:#f9eded; padding:2px 6px; border-radius:4px;">⚠️ ${r.reason}</span>
                                     </div>
                                     <p class="review-text">${r.content || "<i>Brak treści pisemnej</i>"}</p>
                                 </div>
-                                <button class="delete-admin-review-btn" data-id="${r.id}">🗑️ Remove</button>
+                                <div class="admin-actions-vault" style="display:flex; gap:10px;">
+                                    <button class="dismiss-admin-report-btn" data-id="${r.id}" style="background-color: #5cb85c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">✅ Keep & Dismiss</button>
+                                    <button class="delete-admin-review-btn" data-id="${r.id}" style="background-color: #d9534f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">🗑️ Remove</button>
+                                </div>
                             </div>
                         `).join("")}
                     </div>

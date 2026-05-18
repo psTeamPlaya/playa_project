@@ -1,3 +1,4 @@
+import redis
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional, List, Dict, Any
 from backend.db import get_db
@@ -11,7 +12,9 @@ from backend.models.user import User
 
 router = APIRouter(prefix="/reviews", tags=["Admin Reviews"])
 
-@router.get("")  # Obsłuży: /api/admin/reviews
+r_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
+
+@router.get("") 
 async def get_reviews_for_admin(
     limit: int = 20,
     offset: int = 0,
@@ -45,14 +48,15 @@ async def get_reviews_for_admin(
 
 
 @router.delete("/{review_id}") 
-async def delete_review(
-    review_id: int,
-    db: Session = Depends(get_db),    
-):
+async def delete_review(review_id: int, db: Session = Depends(get_db)):
     deleted_rows = db.query(Review).filter(Review.id == review_id).delete()
     if not deleted_rows:
         raise HTTPException(status_code=404, detail="Review not found")
     db.commit()
+    
+    r_client.delete(f"report:{review_id}")
+    r_client.srem("reported_reviews", review_id)
+    
     return {"message": "Review deleted by admin"}
 
 
@@ -108,7 +112,26 @@ async def get_reviews_statistics(db: Session = Depends(get_db)):
     }
 
 @router.get("/reported")
-async def get_reviews_reported(
-    db: Session = Depends(get_db),
-):
-    return None
+async def get_reviews_reported():
+    reported_ids = r_client.smembers("reported_reviews")
+    
+    reported_list = []
+    for r_id in reported_ids:
+        report_data = r_client.hgetall(f"report:{r_id}")
+        if report_data:
+            reported_list.append({
+                "id": int(report_data["id"]),
+                "email": report_data["email"],
+                "rating": int(report_data["rating"]),
+                "content": report_data["content"],
+                "reason": report_data["reason"]
+            })
+            
+    reported_list.sort(key=lambda x: x["id"], reverse=True)
+    return reported_list
+
+@router.post("/{review_id}/dismiss")
+async def dismiss_report(review_id: int):
+    r_client.delete(f"report:{review_id}")
+    r_client.srem("reported_reviews", review_id)
+    return {"message": "Report dismissed successfully"}

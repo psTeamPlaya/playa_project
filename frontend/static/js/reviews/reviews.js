@@ -83,13 +83,18 @@ function renderReviews(reviews) {
     }
 
     list.innerHTML = reviews.map(r => {
-
         const isOwner = user && user.email === r.email;
-        const isAdmin = user && user.role === "admin";
+        
+        const reportButton = !isOwner && user 
+            ? `<button class="report-review-btn" data-id="${r.id}">⚠️ Report</button>` 
+            : '';
 
         return `
             <div class="review-item" data-id="${r.id}">
-                <strong>${r.email}</strong>
+                <div class="review-header">
+                    <strong>${r.email}</strong>
+                    ${reportButton}
+                </div>
                 <p>${r.content}</p>
                 <small>⭐ ${r.rating}</small>
             </div>
@@ -148,4 +153,33 @@ document.addEventListener("DOMContentLoaded", () => {
 document.getElementById("closeReviewsModal").addEventListener("click", () => {
     document.getElementById("reviewsModal").hidden = true;
     currentBeachForReviews = null;
+});
+
+document.getElementById("reviewsList").addEventListener("click", async (event) => {
+    const reportBtn = event.target.closest(".report-review-btn");
+    if (!reportBtn) return;
+
+    const reviewId = reportBtn.dataset.id;
+
+    const reason = prompt("Por favor, introduce el motivo del reporte (np. Spam, ofensivo, etc.):");
+    
+    if (reason === null || reason.trim() === "") return;
+
+    try {
+        const res = await authFetch(`/reviews/${reviewId}/report?reason=${encodeURIComponent(reason)}`, {
+            method: "POST"
+        });
+
+        if (res.ok) {
+            alert("Reseña reportada con éxito. Un administrador la revisará.");
+            reportBtn.textContent = "✅ Reported";
+            reportBtn.disabled = true;
+            reportBtn.style.opacity = "0.5";
+        } else {
+            alert("Error al reportar la reseña.");
+        }
+    } catch (err) {
+        console.error("Error:", err);
+        alert("Error de red al intentar reportar.");
+    }
 });

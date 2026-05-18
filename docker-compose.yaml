@@ -1,0 +1,10 @@
+# plik docker-compose.yml
+version: '3.8'
+services:
+  redis_reports:
+    image: redis:8.6-alpine
+    container_name: redis_reports_container
+    ports:
+      - "127.0.0.1:6379:6379" # Dostępny TYLKO dla Twojego komputera, bezpieczny
+    command: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
+    restart: always

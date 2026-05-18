@@ -1,3 +1,4 @@
+import redis
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -9,6 +10,8 @@ from backend.auth.auth import get_current_user
 from backend.models.user import User
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
+
+r_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
 @router.post("/", response_model=ReviewOut)
 def create_review(
@@ -82,4 +85,29 @@ def update_review(
     db.commit()
     db.refresh(review)
     return review
+
+@router.post("/{review_id}/report")
+async def report_review(
+    review_id: int,
+    reason: str,
+    db: Session = Depends(get_db)
+):
+    review = db.query(Review).join(User, Review.user_id == User.id).filter(Review.id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+        
+    r_client.sadd("reported_reviews", review_id)
+    
+    report_key = f"report:{review_id}"
+    r_client.hset(report_key, mapping={
+        "id": str(review.id),
+        "email": review.user.email,
+        "rating": str(review.rating),
+        "content": review.content or "",
+        "reason": reason
+    })
+
+    r_client.expire(report_key, 2592000)
+    
+    return {"message": "Review reported successfully"}
 
