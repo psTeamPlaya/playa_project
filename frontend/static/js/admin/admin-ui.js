@@ -126,6 +126,12 @@ export function initAdminUI({
     const DEFAULT_MAP_COORDS = [28.1235, -15.4363];
     const DEFAULT_MAP_ZOOM = 10;
     const DETAIL_MAP_ZOOM = 15;
+    const adminTabButtons = Array.from(
+        beachManagementModal?.querySelectorAll("[data-admin-tab-target]") || []
+    );
+    const adminTabPanels = Array.from(
+        beachManagementModal?.querySelectorAll("[data-admin-tab-panel]") || []
+    );
     const ACTIVITY_ALIASES = {
         "tomar sol": "tomar_sol",
         "nadar": "nadar",
@@ -143,6 +149,35 @@ export function initAdminUI({
         "kite surf": "kitesurf",
         "piscina natural": "piscina_natural",
     };
+
+    function setActiveAdminTab(tabName = "beaches") {
+        adminTabButtons.forEach((button) => {
+            const isActive = button.dataset.adminTabTarget === tabName;
+            button.classList.toggle("is-active", isActive);
+            button.setAttribute("aria-selected", isActive ? "true" : "false");
+            button.tabIndex = isActive ? 0 : -1;
+        });
+
+        adminTabPanels.forEach((panel) => {
+            const isActive = panel.dataset.adminTabPanel === tabName;
+            panel.classList.toggle("is-active", isActive);
+            panel.hidden = !isActive;
+        });
+    }
+
+    function focusAdminTabByOffset(currentButton, offset) {
+        if (!currentButton || adminTabButtons.length === 0) return;
+
+        const currentIndex = adminTabButtons.indexOf(currentButton);
+        if (currentIndex < 0) return;
+
+        const nextIndex = (currentIndex + offset + adminTabButtons.length) % adminTabButtons.length;
+        const nextButton = adminTabButtons[nextIndex];
+        nextButton?.focus();
+        if (nextButton?.dataset.adminTabTarget) {
+            setActiveAdminTab(nextButton.dataset.adminTabTarget);
+        }
+    }
 
     function updateAdminVisibility(user) {
         adminPreferencesGroup?.classList.toggle("hidden", !user?.is_admin);
@@ -614,6 +649,7 @@ export function initAdminUI({
     async function openBeachesModal() {
         onClosePreferences?.();
         openModal(beachManagementModal);
+        setActiveAdminTab("beaches");
         try {
             ensureBeachMap();
             await reloadAdminCatalogData();
@@ -772,6 +808,43 @@ export function initAdminUI({
 
     closeUserManagementModal?.addEventListener("click", () => closeModal(userManagementModal));
     closeBeachManagementModal?.addEventListener("click", () => closeModal(beachManagementModal));
+
+    adminTabButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            if (!button.dataset.adminTabTarget) return;
+            setActiveAdminTab(button.dataset.adminTabTarget);
+        });
+
+        button.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                event.preventDefault();
+                focusAdminTabByOffset(button, 1);
+                return;
+            }
+            if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                event.preventDefault();
+                focusAdminTabByOffset(button, -1);
+                return;
+            }
+            if (event.key === "Home") {
+                event.preventDefault();
+                const firstButton = adminTabButtons[0];
+                firstButton?.focus();
+                if (firstButton?.dataset.adminTabTarget) {
+                    setActiveAdminTab(firstButton.dataset.adminTabTarget);
+                }
+                return;
+            }
+            if (event.key === "End") {
+                event.preventDefault();
+                const lastButton = adminTabButtons[adminTabButtons.length - 1];
+                lastButton?.focus();
+                if (lastButton?.dataset.adminTabTarget) {
+                    setActiveAdminTab(lastButton.dataset.adminTabTarget);
+                }
+            }
+        });
+    });
 
     userManagementModal?.addEventListener("click", (event) => {
         if (event.target === userManagementModal) {

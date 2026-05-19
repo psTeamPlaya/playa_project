@@ -28,7 +28,7 @@
       "zona_deportiva": true,
       "escuela_surf": true,
       "escuela_windsurf": false,
-      "pet_friendly": true
+      "pet_friendly": false
     },
     "imagen": "las_canteras.jpg",
     "accesibilidad": "alta"
@@ -58,7 +58,7 @@
       "zona_deportiva": false,
       "escuela_surf": true,
       "escuela_windsurf": false,
-      "pet_friendly": true
+      "pet_friendly": false
     },
     "imagen": "maspalomas.jpg",
     "accesibilidad": "alta"
@@ -950,7 +950,7 @@
     "latitud": 27.796448,
     "longitud": -15.730168,
     "tipo": "arena",
-    "descripcion": "Playa del suroeste de Gran Canaria, próxima a Playa del Cura y Amadores, adecuada para descanso, baño con mar tranquilo y paseo por la costa.",
+    "descripcion": "Playa del suroeste de Gran Canaria, próxima a Playa del Cura y Amadores. Admite mascotas legalmente en una zona delimitada y sin restricción horaria; también es adecuada para descanso, baño con mar tranquilo y paseo por la costa.",
     "actividades_ideales": [
       {
         "actividad": "caminar",
@@ -1048,7 +1048,7 @@
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false,
-      "pet_friendly": true
+      "pet_friendly": false
     },
     "imagen": "arguineguin.jpg",
     "accesibilidad": "alta"
@@ -1347,6 +1347,494 @@
       "pet_friendly": false
     },
     "imagen": "banaderos.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 43,
+    "nombre": "Playa de Los Frailes",
+    "ubicacion": "Mogán",
+    "latitud": 27.801,
+    "longitud": -15.737,
+    "tipo": "arena",
+    "descripcion": "Playa pet friendly de Mogán en la que la presencia de mascotas está permitida legalmente en toda la playa y a cualquier hora.",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "recomendable solo con mar calmado"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": true
+    },
+    "imagen": "playa_de_los_frailes.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 44,
+    "nombre": "Playa de Aguamarina",
+    "ubicacion": "Mogán",
+    "latitud": 27.7666,
+    "longitud": -15.6884,
+    "tipo": "arena",
+    "descripcion": "Playa del litoral de Mogán con zona específica para mascotas, permitida legalmente sin restricción horaria dentro del espacio delimitado.",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada con mar tranquilo"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": true
+    },
+    "imagen": "aguamarina.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 45,
+    "nombre": "Playa El Perchel",
+    "ubicacion": "Mogán",
+    "latitud": 27.7579,
+    "longitud": -15.6804,
+    "tipo": "arena",
+    "descripcion": "Playa de Arguineguín con espacio delimitado para mascotas. El acceso con perros está permitido legalmente de 7:00 a 10:00 y de 18:00 a 21:00.",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada con mar tranquilo"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": true,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": true
+    },
+    "imagen": "el_perchel.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 46,
+    "nombre": "Playa La Lajilla",
+    "ubicacion": "Mogán",
+    "latitud": 27.76166,
+    "longitud": -15.68452,
+    "tipo": "arena",
+    "descripcion": "Pequeña cala de Arguineguín donde se permite legalmente la presencia de mascotas de 7:00 a 10:00 y de 18:00 a 21:00, sin zona física delimitada.",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada con mar tranquilo"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": true
+    },
+    "imagen": "la_lajilla.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 47,
+    "nombre": "Playa de Los Cuervitos",
+    "ubicacion": "Agüimes",
+    "latitud": 27.87986,
+    "longitud": -15.39042,
+    "tipo": "arena",
+    "descripcion": "Playa de arena oscura y bajo nivel de ocupación en la costa de Agüimes, apta para perros y recomendable especialmente con marea baja.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su entorno costero"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en días tranquilos"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": true
+    },
+    "imagen": "los_cuervitos.jpg",
+    "accesibilidad": "baja"
+  },
+  {
+    "id": 48,
+    "nombre": "Playa de Los Tres Peos",
+    "ubicacion": "Agüimes",
+    "latitud": 27.8785,
+    "longitud": -15.391,
+    "tipo": "arena",
+    "descripcion": "Playa de arena oscura de Agüimes apta para perros. Es una zona ventosa y con corrientes, por lo que conviene extremar la precaución y visitarla con marea baja.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su entorno natural"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones favorables"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": true
+    },
+    "imagen": "los_tres_peos.jpg",
+    "accesibilidad": "baja"
+  },
+  {
+    "id": 49,
+    "nombre": "Playa de Bocabarranco / Jinámar",
+    "ubicacion": "Las Palmas de Gran Canaria / Telde",
+    "latitud": 28.03079,
+    "longitud": -15.39724,
+    "tipo": "arena",
+    "descripcion": "Playa compartida por Las Palmas de Gran Canaria y Telde, habilitada como zona para perros. Se permite su uso con mascotas todo el año salvo fines de semana y festivos del 1 de julio al 30 de septiembre entre las 13:00 y las 17:00.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada con marea baja"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones favorables"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": true
+    },
+    "imagen": "bocabarranco_jinamar.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 50,
+    "nombre": "Cala Las Salinas",
+    "ubicacion": "Arucas",
+    "latitud": 28.1492,
+    "longitud": -15.5316,
+    "tipo": "piedra",
+    "descripcion": "Zona de baño canina en la costa de Arucas, próxima a El Puertillo. No es una playa de arena, pero dispone de charcos y zonas donde las mascotas pueden refrescarse.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada en charcos con mar tranquilo"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en zonas rocosas próximas"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": true
+    },
+    "imagen": "cala_las_salinas.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 51,
+    "nombre": "Montaña Arena",
+    "ubicacion": "San Bartolomé de Tirajana",
+    "latitud": 27.7617,
+    "longitud": -15.6346,
+    "tipo": "arena",
+    "descripcion": "Playa natural donde la presencia de mascotas no consta como legalmente autorizada; según la fuente consultada, podrían sancionar por acudir con perro.",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      },
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su entorno natural"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "montana_arena.jpg",
+    "accesibilidad": "baja"
+  },
+  {
+    "id": 52,
+    "nombre": "Playa del Pirata",
+    "ubicacion": "San Bartolomé de Tirajana",
+    "latitud": 27.7771,
+    "longitud": -15.5355,
+    "tipo": "arena",
+    "descripcion": "Playa del sur de Gran Canaria donde la presencia de mascotas no consta como legalmente autorizada; según la fuente consultada, podrían sancionar por acudir con perro.",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada con mar tranquilo"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "playa_del_pirata.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 53,
+    "nombre": "San Borondón",
+    "ubicacion": "Telde",
+    "latitud": 27.9971,
+    "longitud": -15.3731,
+    "tipo": "arena",
+    "descripcion": "Playa de Telde donde la presencia de mascotas no consta como legalmente autorizada; según la fuente consultada, podrían sancionar por acudir con perro.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por el entorno costero"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "san_borondon.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 54,
+    "nombre": "La Restinga",
+    "ubicacion": "Telde",
+    "latitud": 28.0272,
+    "longitud": -15.3961,
+    "tipo": "piedra",
+    "descripcion": "Zona costera de Telde donde la presencia de mascotas no consta como legalmente autorizada; según la fuente consultada, podrían sancionar por acudir con perro.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por el entorno litoral"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones favorables"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "la_restinga_telde.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 55,
+    "nombre": "Bahía de Formas",
+    "ubicacion": "Santa Lucía de Tirajana",
+    "latitud": 27.8423,
+    "longitud": -15.4332,
+    "tipo": "piedra",
+    "descripcion": "Bahía del sureste de Gran Canaria donde la presencia de mascotas no consta como legalmente autorizada; según la fuente consultada, podrían sancionar por acudir con perro.",
+    "actividades_ideales": [
+      {
+        "actividad": "windsurf",
+        "condicion": "adecuada con viento favorable"
+      },
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por el litoral"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "bahia_de_formas.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 56,
+    "nombre": "Tiritaña",
+    "ubicacion": "Mogán",
+    "latitud": 27.8057,
+    "longitud": -15.7398,
+    "tipo": "arena",
+    "descripcion": "Cala natural de Mogán donde la presencia de mascotas no consta como legalmente autorizada; según la fuente consultada, podrían sancionar por acudir con perro.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su acceso y entorno natural"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "solo recomendable con mar calmado"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "tiritana.jpg",
+    "accesibilidad": "baja"
+  },
+  {
+    "id": 57,
+    "nombre": "Playa del Risco",
+    "ubicacion": "Agaete",
+    "latitud": 28.0604,
+    "longitud": -15.713,
+    "tipo": "piedra",
+    "descripcion": "Playa natural de Agaete donde la presencia de mascotas no consta como legalmente autorizada; según la fuente consultada, podrían sancionar por acudir con perro.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su entorno natural"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en días tranquilos"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "solo recomendable con mar calmado"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "playa_del_risco.jpg",
+    "accesibilidad": "baja"
+  },
+  {
+    "id": 58,
+    "nombre": "Bocabarranco (Gáldar)",
+    "ubicacion": "Gáldar",
+    "latitud": 28.1588,
+    "longitud": -15.6664,
+    "tipo": "piedra",
+    "descripcion": "Zona costera de Gáldar que no debe confundirse con Bocabarranco/Jinámar. La presencia de mascotas no consta como legalmente autorizada; según la fuente consultada, podrían sancionar por acudir con perro.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por el entorno costero"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones favorables"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "bocabarranco_galdar.jpg",
     "accesibilidad": "media"
   }
 ]
