@@ -1609,6 +1609,32 @@ button {
     gap: 0.75rem;
 }
 
+.admin-search-box {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.admin-search-box label {
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+.admin-search-box input {
+    height: 3rem;
+    padding: 0 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #ffffff;
+    font-family: 'Atma';
+    font-size: 1rem;
+}
+
+.admin-search-box input:focus {
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.12);
+    outline: none;
+}
+
 .admin-create-button {
     background: #f3f7fa;
     border: 1px solid var(--border);

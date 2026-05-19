@@ -78,6 +78,7 @@ export function initAdminUI({
     closeBeachManagementModal,
     beachManagementList,
     beachManagementFeedback,
+    beachSearchInput,
     beachManagementForm,
     newBeachBtn,
     resetBeachFormBtn,
@@ -117,6 +118,7 @@ export function initAdminUI({
         serviceItems: [],
         beaches: [],
         selectedBeachId: null,
+        beachSearchTerm: "",
         map: null,
         mapMarker: null,
         activityWeightSourceKey: "",
@@ -186,6 +188,14 @@ export function initAdminUI({
     function parseCoordinate(value) {
         const parsed = Number(value);
         return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function normalizeSearchText(value = "") {
+        return String(value)
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim()
+            .toLowerCase();
     }
 
     function normalizeActivityName(name = "") {
@@ -555,7 +565,20 @@ export function initAdminUI({
             return;
         }
 
-        beachManagementList.innerHTML = state.beaches.map((beach) => `
+        const normalizedSearchTerm = normalizeSearchText(state.beachSearchTerm);
+        const filteredBeaches = normalizedSearchTerm.length >= 3
+            ? state.beaches.filter((beach) => {
+                const searchableText = normalizeSearchText(`${beach.name} ${beach.location || ""}`);
+                return searchableText.includes(normalizedSearchTerm);
+            })
+            : state.beaches;
+
+        if (!filteredBeaches.length) {
+            beachManagementList.innerHTML = '<div class="empty-state">No hay playas que coincidan con la búsqueda.</div>';
+            return;
+        }
+
+        beachManagementList.innerHTML = filteredBeaches.map((beach) => `
             <button
                 class="admin-list-card admin-beach-card ${state.selectedBeachId === beach.id ? "is-selected" : ""}"
                 data-beach-id="${beach.id}"
@@ -650,6 +673,10 @@ export function initAdminUI({
         onClosePreferences?.();
         openModal(beachManagementModal);
         setActiveAdminTab("beaches");
+        state.beachSearchTerm = "";
+        if (beachSearchInput) {
+            beachSearchInput.value = "";
+        }
         try {
             ensureBeachMap();
             await reloadAdminCatalogData();
@@ -881,6 +908,10 @@ export function initAdminUI({
         if (!button) return;
         const beach = state.beaches.find((item) => String(item.id) === button.dataset.beachId);
         fillBeachForm(beach || null);
+    });
+    beachSearchInput?.addEventListener("input", () => {
+        state.beachSearchTerm = beachSearchInput.value || "";
+        renderBeachList();
     });
 
     beachManagementForm?.addEventListener("submit", submitBeachForm);
