@@ -49,6 +49,10 @@ function translatePage() {
 
     el.placeholder = t(key);
   });
+
+  document.querySelectorAll("[data-i18n-aria]").forEach(el => {
+    el.setAttribute("aria-label", t(el.dataset.i18nAria));
+  });
 }
 
 export async function initLanguage() {
