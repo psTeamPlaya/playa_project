@@ -1870,7 +1870,7 @@ button {
 .reviews-modal {
   max-height: 90vh;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   background: white;
@@ -1910,4 +1910,23 @@ button {
     display: none !important;
 }
 
-
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  color: #999;
+  font-size: 0.9rem;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+.auth-google-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}

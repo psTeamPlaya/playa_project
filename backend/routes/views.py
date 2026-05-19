@@ -3,6 +3,7 @@ from pathlib import Path
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from backend.config import settings
 
 router = APIRouter()
 
@@ -16,7 +17,7 @@ async def home(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={}
+        context={"google_client_id": settings.GOOGLE_CLIENT_ID}
     )
 
 @router.get("/login", response_class=HTMLResponse)
@@ -24,7 +25,7 @@ async def login_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="login.html",
-        context={}
+        context={"google_client_id": settings.GOOGLE_CLIENT_ID}
     )
 
 @router.get("/register", response_class=HTMLResponse)
@@ -32,5 +33,5 @@ async def register_page(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="register.html",
-        context={}
+        context={"google_client_id": settings.GOOGLE_CLIENT_ID}
     )

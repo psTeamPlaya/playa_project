@@ -46,12 +46,9 @@ export function initSessionUI({
                 const prefResponse = await authFetch("/api/users/me/filters");
                 if (prefResponse.ok) {
                     const filtrosNube = await prefResponse.json();
-                    console.log("🔍 Filtros recibidos del servidor:", filtrosNube);
                     localStorage.setItem("preferences.userFiltersConfig", JSON.stringify(filtrosNube));
 
-                    /*const esUsuarioNuevo = Object.keys(filtrosNube).length === 0;*/
                     const tieneFiltros = filtrosNube && Object.keys(filtrosNube).length > 0;
-                    console.log("❓ ¿Tiene filtros guardados?:", tieneFiltros);
 
                     if (!tieneFiltros) {
                         iniciarAsistente(async (configFinal) => {

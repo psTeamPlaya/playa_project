@@ -3,11 +3,12 @@ from sqlalchemy.orm import Session
 from backend.db import get_db
 from backend.models.user import User
 from backend.schemas.user import UserCreate, UserLogin
-from backend.auth.auth import get_current_user, hash_password, verify_password, create_token
+from backend.auth.auth import get_current_user, hash_password, verify_password, create_token, verify_google_token
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 import os
 import asyncio
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -39,6 +40,8 @@ async def send_welcome_email(email: str):
     except Exception as e:
         print(f" Error enviando correo: {e}")
 
+class GoogleTokenRequest(BaseModel):
+    credential: str
 
 @router.post("/register")
 async def register(user: UserCreate, db: Session = Depends(get_db)):
@@ -76,3 +79,10 @@ def me(current_user=Depends(get_current_user)):
         "email": current_user.email,
         "is_admin": current_user.is_admin,
     }
+
+@router.post("/google")
+def google_login(body: GoogleTokenRequest, db: Session = Depends(get_db)):
+    from backend.config import settings
+    print(f"DEBUG: El ID de cliente cargado es: {settings.GOOGLE_CLIENT_ID}")
+
+    return verify_google_token(body.credential, db)
