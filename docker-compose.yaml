@@ -8,3 +8,12 @@ services:
       - "127.0.0.1:6379:6379" # Dostępny TYLKO dla Twojego komputera, bezpieczny
     command: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
     restart: always
+
+  ai_worker:
+    build:
+      context: ./ai_worker
+      dockerfile: DockerFile.ai_worker
+    container_name: ai_worker_container
+    depends_on:
+      - redis_reports
+    restart: always
