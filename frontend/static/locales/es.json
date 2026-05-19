@@ -10,6 +10,9 @@
     "weather": "Clima",
     "alerts": "Alertas"
   },
+  "common": {
+    "reset": "reset"
+  },
   "search": {
     "beach_type": "Tipo de playa",
     "types": {
@@ -21,6 +24,8 @@
     "reset_filters": "Reset filtros estáticos",
     "disable_dynamic_filters": "Desactivar filtros dinámicos",
     "enable_dynamic_filters": "Activar filtros dinámicos",
+    "deactivate_filter": "Desactivar filtro",
+    "activate_filter": "Activar filtro",
     "services": {
       "title": "Servicios",
       "restaurant": "Restaurante",
@@ -33,6 +38,18 @@
       "sport_zone": "Zona deportiva",
       "pet_friendly": "Pet-friendly",
       "spa": "Balneario"
+    },
+    "weather": {
+      "cloudiness": "Nubosidad",
+      "wind": "Viento (km/h)",
+      "wind_min": "Viento mínimo",
+      "wind_max": "Viento máximo",
+      "temp": "Temp. (°C)",
+      "temp_min": "Temperatura ambiente minima",
+      "temp_max": "Temperatura ambiente máxima",
+      "waves": "Olas (m)",
+      "waves_min": "Oleaje mínimo",
+      "waves_max": "Oleaje máximo"
     }
   },
   "placeholders": {

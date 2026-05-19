@@ -131,7 +131,7 @@ export function actualizarFiltroDinamicoUI(filtro) {
     const toggleLabel = filtro.disabledCheck?.closest(".filter-toggle-button");
     const toggleText = toggleLabel?.querySelector(".filter-toggle-text");
     if (toggleText) {
-        toggleText.textContent = desactivado ? "Activar filtro" : "Desactivar filtro";
+        toggleText.textContent = desactivado ? t("search.activate_filter") : t("search.deactivate_filter");
     }
     if (toggleLabel) {
         toggleLabel.classList.toggle("is-active", desactivado);
