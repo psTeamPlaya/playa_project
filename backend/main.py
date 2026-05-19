@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 from sqlalchemy import inspect, text
 from datetime import date, timedelta
 from sqlalchemy import func
-
 import backend.models  # NO BORRAR
 from backend.config import settings
 from backend.routes import (
@@ -90,7 +89,7 @@ app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 @app.middleware("http")
 async def add_coop_header(request, call_next):
     response = await call_next(request)
-    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"
     response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"
     return response
 

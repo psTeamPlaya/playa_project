@@ -11,11 +11,14 @@ from backend.models.user import User
 from backend.config import settings
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+import os
+from dotenv import load_dotenv
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 _BCRYPT_SHA256_PREFIX = "bcrypt_sha256$"
 
+load_dotenv()
 
 def _normalize_password(password: str) -> bytes:
     digest = hashlib.sha256(password.encode("utf-8")).digest()
@@ -65,10 +68,13 @@ def is_logged_in(request: Request) -> bool:
 
 def verify_google_token(credential: str, db) -> dict:
     try:
+        client_id = os.getenv("GOOGLE_CLIENT_ID", "")
+        print(f"DEBUG client_id usado: '{client_id}'")
+
         id_info = id_token.verify_oauth2_token(
             credential,
             google_requests.Request(),
-            settings.GOOGLE_CLIENT_ID,
+            client_id,
         )
 
         email = id_info.get("email")
@@ -87,5 +93,5 @@ def verify_google_token(credential: str, db) -> dict:
         return {"access_token": access_token}
 
     except Exception as e:
-        print(f"Error real de Google: {e}") # Mira esto en tu terminal
+        print(f"Error real de Google: {type(e).__name__}: {e}") # Mira esto en tu terminal
         raise HTTPException(status_code=401, detail="Token de Google inválido")
