@@ -205,6 +205,13 @@ const ACTIVITY_ICON_MAP = {
     kitesurf: "\u{1FA81}",
     paddle_surf: "\u{1F6F6}",
 };
+const ACTIVITY_IMAGE_MAP = {
+    bodyboard: "/static/img/bodyboard.png",
+    kitesurf: "/static/img/kitesurf.png",
+    paddle_surf: "/static/img/paddle-surf.png",
+    voley_playa: "/static/img/voleyplaya.png",
+    windsurf: "/static/img/windsurf.png",
+};
 
 const staticFilterElements = {
     filterSandBeach,
@@ -360,6 +367,15 @@ function getActivityIcon(activityName = "") {
     return ACTIVITY_ICON_MAP[activityName] || "\u{1F3D6}\uFE0F";
 }
 
+function getActivityIconMarkup(activityName = "") {
+    const iconImage = ACTIVITY_IMAGE_MAP[activityName];
+    if (iconImage) {
+        return `<img class="activity-icon-image" src="${iconImage}" alt="" aria-hidden="true">`;
+    }
+
+    return getActivityIcon(activityName);
+}
+
 function renderActivityCards(activities = []) {
     if (!activitiesGrid) {
         return;
@@ -376,7 +392,7 @@ function renderActivityCards(activities = []) {
 
     activitiesGrid.innerHTML = activities.map((activity) => `
         <div class="activity-card" data-activity="${activity.name}">
-            <span class="activity-icon">${getActivityIcon(activity.name)}</span>
+            <span class="activity-icon">${getActivityIconMarkup(activity.name)}</span>
             <span class="activity-name">${activity.label}</span>
         </div>
     `).join("");
