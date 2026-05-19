@@ -9,6 +9,8 @@ from fastapi.security import OAuth2PasswordBearer
 from backend.db import get_db
 from backend.models.user import User
 from backend.config import settings
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -42,7 +44,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
     user_id = int(payload["sub"])
     return db.query(User).get(user_id)
 
-
 def require_admin(current_user: User = Depends(get_current_user)):
     if not current_user or not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Admin access required")
@@ -60,3 +61,31 @@ def is_logged_in(request: Request) -> bool:
         return True
     except JWTError:
         return False
+
+
+def verify_google_token(credential: str, db) -> dict:
+    try:
+        id_info = id_token.verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID,
+        )
+
+        email = id_info.get("email")
+        # 1. Buscar si el usuario ya existe
+        user = db.query(User).filter(User.email == email).first()
+
+        if not user:
+            # 2. Si no existe, crear uno nuevo sin contraseña (o con una aleatoria)
+            user = User(email=email, hashed_password="google_auth_user", is_admin=False)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        # 3. Generar token de nuestra app para el usuario (sea nuevo o viejo)
+        access_token = create_token(user.id)
+        return {"access_token": access_token}
+
+    except Exception as e:
+        print(f"Error real de Google: {e}") # Mira esto en tu terminal
+        raise HTTPException(status_code=401, detail="Token de Google inválido")

@@ -15,6 +15,7 @@ export function initAuthModal({
     toggleAuthModeBtn
 }) {
     let authMode = "login";
+    let onAuthSuccessCallback = null;
 
     function mostrarMensajeAuth(mensaje, tipo = "error") {
         if (!loginErrorMessageEl) return;
@@ -53,14 +54,17 @@ export function initAuthModal({
         }
     }
 
-    function abrirModalLogin() {
+    function abrirModalLogin(callback) {
         if (!loginModalEl) return;
+        if (callback) onAuthSuccessCallback = callback;
         authMode = "login";
         aplicarModoAuth();
         loginModalEl.hidden = false;
         mostrarMensajeAuth("", "error");
         loginModalForm?.reset();
         setTimeout(() => loginEmailInput?.focus(), 0);
+
+        initGoogleSignIn();
     }
 
     function cerrarModalLogin() {
@@ -118,6 +122,30 @@ export function initAuthModal({
         }
     }
 
+     window.handleGoogleLogin = async (response) => {
+        mostrarMensajeAuth("Accediendo con Google...", "success");
+        try {
+            const res = await fetch("/auth/google", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential: response.credential })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || "Error al iniciar sesión con Google");
+            }
+
+            const data = await res.json();
+            localStorage.setItem("token", data.access_token);
+            await onAuthSuccessCallback?.(data);
+            cerrarModalLogin();
+        } catch (error) {
+            console.error(error);
+            mostrarMensajeAuth(error.message || "No se pudo iniciar sesión con Google.");
+        }
+    };
+
     if (closeLoginModalBtn) {
         closeLoginModalBtn.addEventListener("click", cerrarModalLogin);
     }
@@ -141,9 +169,36 @@ export function initAuthModal({
         });
     }
 
+    let googleInitialized = false;
+
+    function initGoogleSignIn() {
+        if (googleInitialized) return;
+        const btnContainer = document.getElementById("googleSignInBtn");
+        const clientId = btnContainer?.dataset.clientId;
+        if (!clientId || clientId.includes("{{")) return;
+        if (window.google?.accounts?.id) {
+            window.google.accounts.id.initialize({
+                client_id: clientId,
+                callback: window.handleGoogleLogin,
+                auto_select: false
+            });
+            window.google.accounts.id.renderButton(btnContainer, {
+                type: "standard",
+                size: "large",
+                theme: "outline",
+                text: "signin_with",
+                locale: "es",
+                width: "250"   /*ESTO PODRÍAMOS CAMBIARLO*/
+            });
+            googleInitialized = true;
+        }
+    }
+
+    initGoogleSignIn()
     return {
         abrirModalLogin,
         cerrarModalLogin,
-        handleSubmit
+        handleSubmit,
+        initGoogleSignIn
     };
 }

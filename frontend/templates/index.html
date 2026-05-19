@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer-when-downgrade">
   <title>Mi día de Playa</title>
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
   <link rel="stylesheet" href="/static/css/styles.css?v=admin-catalog-20260507">
@@ -390,7 +391,7 @@
   <div class="modal-backdrop" id="loginModal" hidden>
     <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
       <button class="modal-close" id="closeLoginModal" type="button" aria-label="Cerrar">×</button>
-      <h2 id="loginModalTitle">Iniciar sesion</h2>
+      <h2 id="loginModalTitle">Iniciar sesión</h2>
 
       <form id="loginModalForm">
         <div class="field auth-field">
@@ -410,6 +411,15 @@
 
         <button class="btn-primary auth-submit" id="authSubmitBtn" type="submit">Entrar a mi cuenta</button>
       </form>
+
+      <div class="auth-divider">
+        <span>o</span>
+      </div>
+
+      <div id="googleSignInBtn"
+        data-client-id="833555363742-69076ol0c0l4gb2rdv679t5rr2vl9c2o.apps.googleusercontent.com"
+        class="auth-google-btn-wrapper">
+      </div>
 
       <div class="auth-error" id="loginErrorMessage"></div>
 
@@ -612,6 +622,7 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script type="module" src="/static/js/main.js?v=admin-catalog-20260507"></script>
   <script type="module" src="/static/js/favorites/favorites.js?v=admin-catalog-20260507"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </body>
 </html>
 
