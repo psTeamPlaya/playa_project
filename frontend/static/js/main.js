@@ -131,6 +131,7 @@ const beachManagementModal = document.getElementById("beachManagementModal");
 const closeBeachManagementModal = document.getElementById("closeBeachManagementModal");
 const beachManagementList = document.getElementById("beachManagementList");
 const beachManagementFeedback = document.getElementById("beachManagementFeedback");
+const beachSearchInput = document.getElementById("beachSearchInput");
 const beachManagementForm = document.getElementById("beachManagementForm");
 const newBeachBtn = document.getElementById("newBeachBtn");
 const resetBeachFormBtn = document.getElementById("resetBeachFormBtn");
@@ -731,6 +732,7 @@ function initControllers() {
         closeBeachManagementModal,
         beachManagementList,
         beachManagementFeedback,
+        beachSearchInput,
         beachManagementForm,
         newBeachBtn,
         resetBeachFormBtn,
