@@ -81,12 +81,14 @@ export async function openReviewAdminModal(params) {
         try {
             const res = await authFetch(`/admin/reviews/${reviewId}`, { method: "DELETE" });
             if (res.ok) {
-                deleteBtn.closest(".admin-review-item").remove();
+                await tabManaging("all", true);
                 onRefresh?.(); 
-            } else {
+            } 
+            else {
                 alert("Error while deleting");
             }
-        } catch (err) {
+        } 
+        catch (err) {
             console.error("Network error:", err);
         }
     }
@@ -113,8 +115,8 @@ export async function openReviewAdminModal(params) {
     let isLoadingMore = false;
     let hasMore = true;
 
-    async function tabManaging(tab) {
-        if (activeTab === tab) return;
+    async function tabManaging(tab, force=false) {
+        if (activeTab === tab && !force) return;
         activeTab = tab;
 
         navigation.querySelectorAll("[data-tab]").forEach(btn => {
