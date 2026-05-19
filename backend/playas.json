@@ -946,33 +946,33 @@
   {
     "id": 32,
     "nombre": "Playa de Tauro",
-    "ubicacion": "Mogán",
-    "latitud": 27.7953,
-    "longitud": -15.7366,
+    "ubicacion": "Mogán, Canarias, España",
+    "latitud": 27.796448,
+    "longitud": -15.730168,
     "tipo": "arena",
     "descripcion": "Playa del suroeste de Gran Canaria, próxima a Playa del Cura y Amadores, adecuada para descanso, baño con mar tranquilo y paseo por la costa.",
     "actividades_ideales": [
       {
-        "actividad": "tomar_sol",
-        "condicion": "ideal en condiciones generales"
+        "actividad": "caminar",
+        "condicion": "adecuada por su entorno litoral"
       },
       {
         "actividad": "nadar",
         "condicion": "adecuada con mar calmado"
       },
       {
-        "actividad": "caminar",
-        "condicion": "adecuada por su entorno litoral"
+        "actividad": "tomar_sol",
+        "condicion": "ideal en condiciones generales"
       }
     ],
     "servicios": {
       "restaurantes": true,
       "comida_para_llevar": true,
-      "balneario": false,
+      "balnearios": false,
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false,
-      "pet_friendly": false
+      "pet_friendly": true
     },
     "imagen": "tauro.jpg",
     "accesibilidad": "media"
@@ -1025,30 +1025,30 @@
     "descripcion": "Playa urbana situada junto al núcleo pesquero de Arguineguín, con ambiente local, servicios próximos y buenas condiciones para paseo y baño tranquilo.",
     "actividades_ideales": [
       {
+        "actividad": "caminar",
+        "condicion": "ideal por su paseo marítimo y ambiente local"
+      },
+      {
         "actividad": "nadar",
         "condicion": "adecuada con mar tranquilo"
       },
       {
-        "actividad": "tomar_sol",
-        "condicion": "adecuada en condiciones generales"
-      },
-      {
-        "actividad": "pasear",
-        "condicion": "ideal por su paseo marítimo y ambiente local"
-      },
-      {
         "actividad": "pescar",
         "condicion": "adecuada en zonas permitidas y con precaución"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
       }
     ],
     "servicios": {
       "restaurantes": true,
       "comida_para_llevar": true,
-      "balneario": false,
+      "balnearios": false,
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false,
-      "pet_friendly": false
+      "pet_friendly": true
     },
     "imagen": "arguineguin.jpg",
     "accesibilidad": "alta"

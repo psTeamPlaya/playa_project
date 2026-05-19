@@ -421,6 +421,14 @@ body.is-authenticated .app-shell {
     margin-bottom: 0.5rem;
 }
 
+.activity-icon-image {
+    width: 2rem;
+    height: 2rem;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
 .activity-name {
     font-weight: bold;
     font-size: 1.3rem;
