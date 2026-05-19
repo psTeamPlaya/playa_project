@@ -274,3 +274,129 @@
     flex-direction: column;
     gap: 10px;
 }
+
+/* ============================================
+   REVIEWS PHOTO MODAL (ANTI-SPOOFING / CLIP)
+   ============================================ */
+
+#reviewPhotoModal.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: fadeInPhotoModal 0.2s ease-out;
+}
+
+#reviewPhotoContent.modal-backdrop {
+    background: #ffffff;
+    width: 90vw;
+    max-width: 450px;
+    border-radius: 16px;
+    padding: 30px 24px 24px 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    position: relative;
+    box-sizing: border-box;
+    animation: slideUpPhotoModal 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#closeReviewPhotoModal.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #888;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+#closeReviewPhotoModal.modal-close:hover {
+    color: #333;
+    transform: scale(1.1);
+}
+
+.review-photo-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    width: 100%;
+}
+
+#reviewPhotoZone.photo {
+    width: 100%;
+    height: 250px;
+    background-color: #f8f9fa;
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 20px;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    user-select: none;
+}
+
+#reviewPhotoZone.photo:hover {
+    background-color: #f1f3f5;
+    border-color: #007bff;
+    color: #007bff;
+}
+
+#reviewPhotoActionBtn {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #ddd;
+    background-color: #ffffff;
+    color: #333;
+}
+
+#reviewPhotoActionBtn:hover:not(:disabled) {
+    background-color: #f8f9fa;
+    border-color: #bbb;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+#reviewPhotoActionBtn:disabled {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #adb5bd;
+    cursor: not-allowed;
+}
+
+#reviewPhotoZone.photo:not(:empty) {
+    border-style: solid;
+    border-color: #e0e0e0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+}
+
+/* ============================================
+   ANIMACJE WEJŚCIA
+   ============================================ */
+@keyframes fadeInPhotoModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUpPhotoModal {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
