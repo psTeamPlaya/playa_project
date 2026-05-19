@@ -179,6 +179,7 @@ export function initAuthModal({
         if (window.google?.accounts?.id) {
             window.google.accounts.id.initialize({
                 client_id: clientId,
+                ux_mode: "popup",
                 callback: window.handleGoogleLogin,
                 auto_select: false
             });

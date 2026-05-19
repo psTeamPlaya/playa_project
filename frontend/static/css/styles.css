@@ -1930,3 +1930,9 @@ button {
   justify-content: center;
   margin-bottom: 8px;
 }
+
+.auth-modal {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
