@@ -1,16 +1,112 @@
 {
   "titles": {
     "app_title": "My Day at the Beach",
+    "preferences": "Preferences",
+    "favorite_beaches": "My Favorite Beaches",
+    "downloading_favs": "Downloading favorite beaches...",
+    "filters": "Filters",
+    "my_filters": "My Filters",
+    "configure_alerts": "Configure alerts",
     "beaches": "Beaches",
     "weather": "Weather",
-    "alerts": "Alerts"
+    "alerts": "Alerts",
+    "beach_type": "Beach type",
+    "results": "Recommended beaches",
+    "see_map": "View map",
+    "in_map_title": "Recommended beaches map",
+    "in_map_description": "Check the ranking and score of each beach directly on the map."
   },
-  "preferences": "Preferences",
-  "favorite_beaches": "My Favorite Beaches",
-  "filters": "Filters",
-  "beach_type": "Beach type",
-  "sand": "Sand",
-  "stone": "Stone",
-  "natural_pool": "Natural pool",
-  "search_beaches": "Search recommended beaches"
+  "common": {
+    "reset": "Reset",
+    "date": "Date",
+    "time": "Time",
+    "submit": "Submit",
+    "cancel": "Cancel"
+  },
+  "search": {
+    "search_beaches": "Search recommended beaches",
+    "reset_filters": "Reset static filters",
+    "disable_dynamic_filters": "Disable dynamic filters",
+    "enable_dynamic_filters": "Enable dynamic filters",
+    "deactivate_filter": "Deactivate filter",
+    "activate_filter": "Activate filter",
+    "quantity": "Quantity",
+    "location": {
+      "title": "City / Location",
+      "my_location": "My location",
+      "choose_location": "Choose a location",
+      "range": "Search range:",
+      "select": "Select location"
+    },
+    "questions": {
+      "actividad": "1. What would you like to do on your day at the beach?",
+      "when": "2. When would you like to go to the beach?",
+      "where": "3. Choose your location"
+    },
+    "empty_results": "There are currently no beach recommendations."
+  },
+  "activities": {
+    "sunbathing": "Sunbathing",
+    "swimming": "Swimming",
+    "surfing": "Surfing",
+    "wind_surfing": "Windsurfing",
+    "kitesurfing": "Kitesurfing",
+    "snorkeling": "Snorkeling",
+    "walking": "Walking",
+    "fishing": "Fishing",
+    "kayaking": "Kayaking"
+  },
+  "weather": {
+    "cloudiness": "Cloudiness",
+    "cloud_min": "Minimum cloudiness",
+    "cloud_max": "Maximum cloudiness",
+    "wind": "Wind (km/h)",
+    "wind_min": "Minimum wind",
+    "wind_max": "Maximum wind",
+    "temp": "Temp. (°C)",
+    "temp_min": "Minimum air temperature",
+    "temp_max": "Maximum air temperature",
+    "waves": "Waves (m)",
+    "waves_min": "Minimum wave height",
+    "waves_max": "Maximum wave height"
+  },
+  "services": {
+    "title": "Services",
+    "restaurant": "Restaurant",
+    "take_away_food": "Takeaway food",
+    "showers": "Showers",
+    "toilets": "Toilets",
+    "parking": "Parking",
+    "lifeguard": "Lifeguard",
+    "accessibility": "Accessibility",
+    "sport_zone": "Sports area",
+    "pet_friendly": "Pet-friendly",
+    "spa": "Spa"
+  },
+  "beach_types": {
+    "sand": "Sand",
+    "stone": "Stone",
+    "natural_pool": "Natural pool"
+  },
+  "placeholders": {
+    "city": "Eg. Las Palmas",
+    "email": "your@email.com or admin"
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "register": "Register",
+    "email": "Email or username",
+    "password": "Password",
+    "confirm_password": "Confirm password",
+    "enter": "Access my account",
+    "no_account_question": "No account?"
+  },
+  "admin": {
+    "management": {
+      "users": "User management",
+      "beaches": "Beach management",
+      "reviews": "Review management"
+    }
+  }
 }
