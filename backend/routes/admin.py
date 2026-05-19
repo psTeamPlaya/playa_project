@@ -49,7 +49,7 @@ ACTIVITY_ALIASES = {
     "piscina natural": "piscina_natural",
 }
 
-EXCLUDED_ADMIN_ACTIVITIES = {"piscina_natural"}
+EXCLUDED_ADMIN_ACTIVITIES = {"piscina_natural", "playa_para_mascotas"}
 
 
 class AdminBeachPayload(BaseModel):

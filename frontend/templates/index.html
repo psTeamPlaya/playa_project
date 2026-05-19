@@ -835,246 +835,296 @@
       <button class="modal-close" id="closeBeachManagementModal" type="button" aria-label="Cerrar">&times;</button>
       <div class="admin-modal-header">
 
-        <h2 id="beachManagementModalTitle">Gestión de playas</h2>
-        <p>Añade nuevas playas o modifica las existentes con sus actividades y servicios.</p>
+        <h2 id="beachManagementModalTitle">Administración de playas</h2>
+        <p>Organiza playas, actividades y servicios desde un único panel.</p>
       </div>
 
-      <div class="admin-modal-layout">
+      <div class="admin-tabs" role="tablist" aria-label="Secciones de administración">
+        <button
+          class="admin-tab-button is-active"
+          id="adminTabButtonBeaches"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          aria-controls="adminTabPanelBeaches"
+          data-admin-tab-target="beaches"
+        >
+          Gestión de playas
+        </button>
+        <button
+          class="admin-tab-button"
+          id="adminTabButtonActivities"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="adminTabPanelActivities"
+          data-admin-tab-target="activities"
+          tabindex="-1"
+        >
+          Gestión de actividades
+        </button>
+        <button
+          class="admin-tab-button"
+          id="adminTabButtonServices"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="adminTabPanelServices"
+          data-admin-tab-target="services"
+          tabindex="-1"
+        >
+          Gestión de servicios
+        </button>
+      </div>
 
-        <aside class="admin-sidebar">
+      <section
+        class="admin-tab-panel is-active"
+        id="adminTabPanelBeaches"
+        role="tabpanel"
+        aria-labelledby="adminTabButtonBeaches"
+        data-admin-tab-panel="beaches"
+      >
+        <div class="admin-modal-layout">
 
-          <button class="btn-secondary admin-create-button" id="newBeachBtn" type="button">Nueva playa</button>
+          <aside class="admin-sidebar">
 
-          <div class="admin-list admin-beach-list" id="beachManagementList"></div>
+            <button class="btn-secondary admin-create-button" id="newBeachBtn" type="button">Nueva playa</button>
 
-        </aside>
+            <div class="admin-list admin-beach-list" id="beachManagementList"></div>
 
-        <section class="admin-form-panel">
+          </aside>
 
-          <form id="beachManagementForm" class="admin-form">
+          <section class="admin-form-panel">
 
-            <input id="beachId" type="hidden">
+            <form id="beachManagementForm" class="admin-form">
 
-            <div class="admin-form-grid">
+              <input id="beachId" type="hidden">
 
-              <div class="field auth-field">
+              <div class="admin-form-grid">
 
-                <label for="beachName">Nombre</label>
+                <div class="field auth-field">
 
-                <input id="beachName" type="text" required>
+                  <label for="beachName">Nombre</label>
 
-              </div>
-
-              <div class="field auth-field">
-
-                <label for="beachLocation">Ubicación</label>
-
-                <input id="beachLocation" type="text">
-
-              </div>
-
-              <div class="field auth-field">
-
-                <label for="beachType">Tipo</label>
-
-                <select id="beachType">
-
-                  <option value="arena">Arena</option>
-
-                  <option value="piedra">Piedra</option>
-
-                  <option value="piscina_natural">Piscina natural</option>
-
-                </select>
-
-              </div>
-
-              <div class="field auth-field">
-
-                <label for="beachAccessibility">Accesibilidad</label>
-
-                <select id="beachAccessibility">
-
-                  <option value="alta">Alta</option>
-
-                  <option value="media">Media</option>
-
-                  <option value="baja">Baja</option>
-
-                </select>
-
-              </div>
-
-              <div class="field auth-field">
-
-                <label for="beachLatitude">Latitud</label>
-
-                <input id="beachLatitude" type="number" step="0.000001" required>
-
-              </div>
-
-              <div class="field auth-field">
-
-                <label for="beachLongitude">Longitud</label>
-
-                <input id="beachLongitude" type="number" step="0.000001" required>
-
-              </div>
-
-              <div class="field auth-field admin-full-width">
-
-                <div class="admin-map-toolbar">
-
-                  <label for="beachMap">Ubicación en mapa</label>
-
-                  <button class="btn-secondary admin-map-button" id="beachPickOnMapBtn" type="button">
-
-                    Elegir en mapa
-
-                  </button>
+                  <input id="beachName" type="text" required>
 
                 </div>
 
-                <p class="admin-map-help">
+                <div class="field auth-field">
 
-                  Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.
+                  <label for="beachLocation">Ubicación</label>
 
-                </p>
-
-                <div id="beachMap" class="admin-beach-map" aria-label="Mapa para seleccionar ubicación de la playa"></div>
-              </div>
-
-              <div class="field auth-field admin-full-width">
-
-                <label for="beachImage">Imagen</label>
-
-                <input id="beachImage" type="text" placeholder="nombre_imagen.jpg">
-
-              </div>
-
-              <div class="field auth-field admin-full-width">
-
-                <label for="beachDescription">Descripción</label>
-
-                <textarea id="beachDescription" rows="4"></textarea>
-
-              </div>
-
-            </div>
-
-
-
-            <div class="admin-section">
-
-              <h3>Servicios</h3>
-
-              <div class="admin-chip-grid" id="beachServicesOptions"></div>
-
-            </div>
-
-
-
-            <div class="admin-section">
-
-              <h3>Actividades</h3>
-
-              <div class="admin-chip-grid" id="beachActivitiesOptions"></div>
-
-            </div>
-
-
-
-            <div class="actions admin-form-actions">
-
-              <button class="btn-secondary" id="resetBeachFormBtn" type="button">Limpiar</button>
-
-              <button class="btn-primary" type="submit">Guardar playa</button>
-
-            </div>
-
-            <div class="admin-feedback" id="beachManagementFeedback"></div>
-
-          </form>
-
-
-
-          <section class="admin-section admin-catalog-section">
-
-            <div class="admin-catalog-layout">
-
-              <article class="admin-catalog-card">
-
-                <div class="admin-catalog-header">
-
-                  <h3>Catálogo de actividades</h3>
-
-                  <p>Crea o elimina actividades disponibles para asignarlas a las playas.</p>
+                  <input id="beachLocation" type="text">
 
                 </div>
 
-                <form class="admin-inline-form" id="activityCatalogForm">
+                <div class="field auth-field">
 
-                  <input id="activityCatalogName" type="text" placeholder="Ej: paddle surf" required>
+                  <label for="beachType">Tipo</label>
 
-                  <button class="btn-secondary" id="cancelActivityEditBtn" type="button" hidden>Cancelar</button>
+                  <select id="beachType">
 
-                  <button class="btn-secondary" type="submit">Añadir</button>
+                    <option value="arena">Arena</option>
 
-                </form>
+                    <option value="piedra">Piedra</option>
 
-                <div class="admin-weights-panel" id="activityWeightsPanel">
+                    <option value="piscina_natural">Piscina natural</option>
 
-                  <div class="admin-weights-header">
+                  </select>
 
-                    <h4>Pesos de la actividad</h4>
+                </div>
 
-                    <p>Define la importancia relativa de cada variable. No hace falta que sumen 1: se normalizan automáticamente.</p>
+                <div class="field auth-field">
+
+                  <label for="beachAccessibility">Accesibilidad</label>
+
+                  <select id="beachAccessibility">
+
+                    <option value="alta">Alta</option>
+
+                    <option value="media">Media</option>
+
+                    <option value="baja">Baja</option>
+
+                  </select>
+
+                </div>
+
+                <div class="field auth-field">
+
+                  <label for="beachLatitude">Latitud</label>
+
+                  <input id="beachLatitude" type="number" step="0.000001" required>
+
+                </div>
+
+                <div class="field auth-field">
+
+                  <label for="beachLongitude">Longitud</label>
+
+                  <input id="beachLongitude" type="number" step="0.000001" required>
+
+                </div>
+
+                <div class="field auth-field admin-full-width">
+
+                  <div class="admin-map-toolbar">
+
+                    <label for="beachMap">Ubicación en mapa</label>
+
+                    <button class="btn-secondary admin-map-button" id="beachPickOnMapBtn" type="button">
+
+                      Elegir en mapa
+
+                    </button>
 
                   </div>
 
-                  <div class="admin-weights-grid" id="activityWeightsGrid"></div>
+                  <p class="admin-map-help">
+
+                    Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.
+
+                  </p>
+
+                  <div id="beachMap" class="admin-beach-map" aria-label="Mapa para seleccionar ubicación de la playa"></div>
+                </div>
+
+                <div class="field auth-field admin-full-width">
+
+                  <label for="beachImage">Imagen</label>
+
+                  <input id="beachImage" type="text" placeholder="nombre_imagen.jpg">
 
                 </div>
 
-                <div class="admin-feedback" id="activityCatalogFeedback"></div>
+                <div class="field auth-field admin-full-width">
 
-                <div class="admin-list" id="activityCatalogList"></div>
+                  <label for="beachDescription">Descripción</label>
 
-              </article>
-
-
-
-              <article class="admin-catalog-card">
-
-                <div class="admin-catalog-header">
-
-                  <h3>Catálogo de servicios</h3>
-
-                  <p>Gestiona los servicios globales que luego podrás marcar en cada playa.</p>
+                  <textarea id="beachDescription" rows="4"></textarea>
 
                 </div>
 
-                <form class="admin-inline-form" id="serviceCatalogForm">
+              </div>
 
-                  <input id="serviceCatalogName" type="text" placeholder="Ej: hamacas" required>
+              <div class="admin-section">
 
-                  <button class="btn-secondary" type="submit">Añadir</button>
+                <h3>Servicios</h3>
 
-                </form>
+                <div class="admin-chip-grid" id="beachServicesOptions"></div>
 
-                <div class="admin-feedback" id="serviceCatalogFeedback"></div>
+              </div>
 
-                <div class="admin-list" id="serviceCatalogList"></div>
+              <div class="admin-section">
 
-              </article>
+                <h3>Actividades</h3>
 
-            </div>
+                <div class="admin-chip-grid" id="beachActivitiesOptions"></div>
+
+              </div>
+
+              <div class="actions admin-form-actions">
+
+                <button class="btn-secondary" id="resetBeachFormBtn" type="button">Limpiar</button>
+
+                <button class="btn-primary" type="submit">Guardar playa</button>
+
+              </div>
+
+              <div class="admin-feedback" id="beachManagementFeedback"></div>
+
+            </form>
 
           </section>
 
-        </section>
+        </div>
+      </section>
 
-      </div>
+      <section
+        class="admin-tab-panel"
+        id="adminTabPanelActivities"
+        role="tabpanel"
+        aria-labelledby="adminTabButtonActivities"
+        data-admin-tab-panel="activities"
+        hidden
+      >
+        <section class="admin-catalog-panel">
+          <article class="admin-catalog-card admin-catalog-card-single">
+
+            <div class="admin-catalog-header">
+
+              <h3>Catálogo de actividades</h3>
+
+              <p>Crea o elimina actividades disponibles para asignarlas a las playas.</p>
+
+            </div>
+
+            <form class="admin-inline-form" id="activityCatalogForm">
+
+              <input id="activityCatalogName" type="text" placeholder="Ej: paddle surf" required>
+
+              <button class="btn-secondary" id="cancelActivityEditBtn" type="button" hidden>Cancelar</button>
+
+              <button class="btn-secondary" type="submit">Añadir</button>
+
+            </form>
+
+            <div class="admin-weights-panel" id="activityWeightsPanel">
+
+              <div class="admin-weights-header">
+
+                <h4>Pesos de la actividad</h4>
+
+                <p>Define la importancia relativa de cada variable. No hace falta que sumen 1: se normalizan automáticamente.</p>
+
+              </div>
+
+              <div class="admin-weights-grid" id="activityWeightsGrid"></div>
+
+            </div>
+
+            <div class="admin-feedback" id="activityCatalogFeedback"></div>
+
+            <div class="admin-list" id="activityCatalogList"></div>
+
+          </article>
+        </section>
+      </section>
+
+      <section
+        class="admin-tab-panel"
+        id="adminTabPanelServices"
+        role="tabpanel"
+        aria-labelledby="adminTabButtonServices"
+        data-admin-tab-panel="services"
+        hidden
+      >
+        <section class="admin-catalog-panel">
+          <article class="admin-catalog-card admin-catalog-card-single">
+
+            <div class="admin-catalog-header">
+
+              <h3>Catálogo de servicios</h3>
+
+              <p>Gestiona los servicios globales que luego podrás marcar en cada playa.</p>
+
+            </div>
+
+            <form class="admin-inline-form" id="serviceCatalogForm">
+
+              <input id="serviceCatalogName" type="text" placeholder="Ej: hamacas" required>
+
+              <button class="btn-secondary" type="submit">Añadir</button>
+
+            </form>
+
+            <div class="admin-feedback" id="serviceCatalogFeedback"></div>
+
+            <div class="admin-list" id="serviceCatalogList"></div>
+
+          </article>
+        </section>
+      </section>
 
     </div>
 
