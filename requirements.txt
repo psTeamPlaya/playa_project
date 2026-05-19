@@ -8,3 +8,5 @@ python-dotenv
 jinja2
 requests
 fastapi-mail>=1.6.2
+responses
+pytest
