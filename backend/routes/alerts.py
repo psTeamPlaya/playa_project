@@ -9,6 +9,7 @@ from backend.user_alerts import (
     create_alert_for_user,
     delete_alert_for_user,
     list_alerts_for_user,
+    send_alert_email_for_user,
     update_alert_for_user,
 )
 
@@ -50,3 +51,12 @@ def delete_user_alert(
     db: Session = Depends(get_db),
 ):
     return delete_alert_for_user(alert_id, current_user.id, db)
+
+
+@router.post("/{alert_id}/send-email")
+def send_user_alert_email(
+    alert_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return send_alert_email_for_user(alert_id, current_user, db)

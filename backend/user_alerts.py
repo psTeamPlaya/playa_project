@@ -1,9 +1,10 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from backend.alerts_service import build_alert_filters, serialize_user_alert
+from backend.alerts_service import build_alert_filters, send_user_alert_notification, serialize_user_alert
 from backend.catalog_utils import collect_available_activities, normalize_activity_name
 from backend.engine_recomendation import cargar_playas
+from backend.models.user import User
 from backend.models.user_alert import UserAlert
 from backend.schemas.alert import UserAlertCreate
 
@@ -126,3 +127,31 @@ def delete_alert_for_user(
     db.delete(alert)
     db.commit()
     return {"ok": True}
+
+
+def send_alert_email_for_user(
+    alert_id: int,
+    user: User,
+    db: Session,
+) -> dict:
+    alert = (
+        db.query(UserAlert)
+        .filter(UserAlert.id == alert_id, UserAlert.user_id == user.id)
+        .first()
+    )
+    if alert is None:
+        raise HTTPException(status_code=404, detail="Alerta no encontrada")
+
+    try:
+        match = send_user_alert_notification(db, alert, user, force=True)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    db.commit()
+    db.refresh(alert)
+    return {
+        "ok": True,
+        "message": "Email enviado correctamente.",
+        "match_datetime": match["datetime"],
+        "alert": serialize_user_alert(alert),
+    }

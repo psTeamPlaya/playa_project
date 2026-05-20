@@ -33,6 +33,7 @@ create_user_alert = ALERTS_ROUTE_MODULE.create_user_alert
 list_user_alerts = ALERTS_ROUTE_MODULE.list_user_alerts
 update_user_alert = ALERTS_ROUTE_MODULE.update_user_alert
 delete_user_alert = ALERTS_ROUTE_MODULE.delete_user_alert
+send_user_alert_email = ALERTS_ROUTE_MODULE.send_user_alert_email
 create_admin_user_alert = ADMIN_ROUTE_MODULE.create_admin_user_alert
 list_admin_user_alerts = ADMIN_ROUTE_MODULE.list_admin_user_alerts
 update_admin_user_alert = ADMIN_ROUTE_MODULE.update_admin_user_alert
@@ -517,6 +518,77 @@ def test_process_user_alerts_cycle_sends_email_once_for_same_match(monkeypatch):
     assert persisted_alert.last_notified_match == match_dt
 
 
+def test_process_user_alerts_cycle_limits_automatic_emails_to_one_per_week(monkeypatch):
+    db = make_test_session()
+    user = create_user(db)
+    match_dt = datetime.utcnow().replace(minute=0, second=0, microsecond=0) + timedelta(hours=2)
+
+    filters = build_alert_filters({"min_velocidad_viento": 10}, beach_id=1)
+    filters["last_notification_sent_at_ts"] = (datetime.now() - timedelta(days=1)).timestamp()
+
+    alert = UserAlert(
+        user_id=user.id,
+        activity_name="surf",
+        filters=filters,
+        latitude=28.1,
+        longitude=-15.4,
+        radio_km=1,
+        location_label="Las Canteras Â· Las Palmas",
+        is_active=True,
+    )
+    db.add(alert)
+    db.add(
+        BeachCondition(
+            beach_id=1,
+            datetime=match_dt,
+            air_temp=24,
+            wind_speed=14,
+            wave_height=1.5,
+            water_temp=22,
+            cloud_cover=10,
+            rain_probability=0,
+            tide=0.0,
+            uv_index=6,
+        )
+    )
+    db.commit()
+    alert_id = alert.id
+
+    sent_emails = []
+
+    def fake_send_alert_email_sync(**payload):
+        sent_emails.append(payload)
+
+    async def run_inline(func, *args, **kwargs):
+        return func(*args, **kwargs)
+
+    monkeypatch.setattr(ALERTS_SERVICE_MODULE, "SessionLocal", lambda: db)
+    monkeypatch.setattr(ALERTS_SERVICE_MODULE, "_run_in_thread", run_inline)
+    monkeypatch.setattr(ALERTS_SERVICE_MODULE, "upsert_beach_conditions", lambda _db: None)
+    monkeypatch.setattr(ALERTS_SERVICE_MODULE, "_send_alert_email_sync", fake_send_alert_email_sync)
+    monkeypatch.setattr(
+        ALERTS_SERVICE_MODULE,
+        "cargar_playas",
+        lambda: [
+            {
+                "id": 1,
+                "nombre": "Las Canteras",
+                "latitud": 28.12,
+                "longitud": -15.43,
+                "tipo": "arena",
+                "servicios": {},
+                "actividades_ideales": [normalize_activity_name("surf")],
+            }
+        ],
+    )
+
+    asyncio.run(process_user_alerts_cycle())
+
+    persisted_alert = db.query(UserAlert).filter(UserAlert.id == alert_id).one()
+    assert sent_emails == []
+    assert persisted_alert.last_notified_match is None
+
+
 def test_process_user_alerts_cycle_sends_email_to_nestor_henriquez(monkeypatch):
     db = make_test_session()
     user = create_user(db, email="nestor.henriquez@gmail.com")
@@ -581,6 +653,63 @@ def test_process_user_alerts_cycle_sends_email_to_nestor_henriquez(monkeypatch):
 
     assert len(sent_emails) == 1
     assert sent_emails[0]["email"] == "nestor.henriquez@gmail.com"
+
+
+def test_user_can_send_alert_email_manually_even_if_already_sent_this_week(monkeypatch):
+    db = make_test_session()
+    user = create_user(db)
+    match_dt = datetime.utcnow().replace(minute=0, second=0, microsecond=0) + timedelta(hours=2)
+
+    filters = build_alert_filters({"min_velocidad_viento": 10}, beach_id=1)
+    filters["last_notification_sent_at_ts"] = (datetime.now() - timedelta(days=1)).timestamp()
+
+    alert = UserAlert(
+        user_id=user.id,
+        activity_name="surf",
+        filters=filters,
+        latitude=28.1,
+        longitude=-15.4,
+        radio_km=1,
+        location_label="Las Canteras Â· Las Palmas",
+        is_active=True,
+    )
+    db.add(alert)
+    db.add(
+        BeachCondition(
+            beach_id=1,
+            datetime=match_dt,
+            air_temp=24,
+            wind_speed=14,
+            wave_height=1.5,
+            water_temp=22,
+            cloud_cover=10,
+            rain_probability=0,
+            tide=0.0,
+            uv_index=6,
+        )
+    )
+    db.commit()
+
+    sent_emails = []
+
+    def fake_send_user_alert_notification(db, alert, user, *, now=None, force=False):
+        sent_emails.append({
+            "email": user.email,
+            "force": force,
+        })
+        alert.last_notified_match = match_dt
+        return {"datetime": match_dt, "beach_name": "Las Canteras"}
+
+    monkeypatch.setattr(ALERTS_HELPERS_MODULE, "send_user_alert_notification", fake_send_user_alert_notification)
+
+    response = send_user_alert_email(alert.id, current_user=user, db=db)
+
+    persisted_alert = db.query(UserAlert).filter(UserAlert.id == alert.id).one()
+    assert response["ok"] is True
+    assert len(sent_emails) == 1
+    assert sent_emails[0]["email"] == user.email
+    assert sent_emails[0]["force"] is True
+    assert persisted_alert.last_notified_match == match_dt
 
 
 def test_admin_can_crud_alerts_for_selected_user(monkeypatch):

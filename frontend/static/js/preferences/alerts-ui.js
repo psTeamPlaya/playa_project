@@ -405,6 +405,9 @@ export function initAlertsUI({
                     </small>
                 </div>
                 <div class="alerts-list-card-actions">
+                    <button class="btn-secondary alert-send-email-btn" type="button" data-alert-id="${alert.id}">
+                        Enviar email
+                    </button>
                     <button class="btn-secondary alert-edit-btn" type="button" data-alert-id="${alert.id}">
                         Editar
                     </button>
@@ -497,6 +500,18 @@ export function initAlertsUI({
         }
     }
 
+    async function sendAlertEmail(alertId) {
+        try {
+            await fetchJson(`/api/users/me/alerts/${alertId}/send-email`, {
+                method: "POST",
+            });
+            setFeedback("Email enviado correctamente.", false);
+            await loadAlerts();
+        } catch (error) {
+            setFeedback(error.message, true);
+        }
+    }
+
     async function editAlert(alertId) {
         const selectedAlert = lastLoadedAlerts.find((alert) => Number(alert.id) === Number(alertId));
         if (!selectedAlert) {
@@ -530,6 +545,11 @@ export function initAlertsUI({
     });
     alertsForm?.addEventListener("submit", saveAlert);
     alertsList?.addEventListener("click", async (event) => {
+        const sendEmailButton = event.target.closest(".alert-send-email-btn");
+        if (sendEmailButton) {
+            await sendAlertEmail(sendEmailButton.dataset.alertId);
+            return;
+        }
 
         const editButton = event.target.closest(".alert-edit-btn");
         if (editButton) {
