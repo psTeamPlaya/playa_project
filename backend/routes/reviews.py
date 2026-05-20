@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from backend.db import get_db
+from backend.db import get_db, redis_session
 from backend.models.review import Review
 from backend.schemas.review import ReviewCreate, ReviewUpdate, ReviewOut
 from backend.auth.auth import get_current_user
@@ -11,7 +11,7 @@ from backend.models.user import User
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
-r_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
+r_client = redis_session
 
 @router.post("/", response_model=ReviewOut)
 def create_review(

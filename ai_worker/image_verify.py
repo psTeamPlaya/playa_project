@@ -7,6 +7,8 @@ import numpy as np
 from PIL import Image
 import onnxruntime as ort
 from transformers import AutoTokenizer
+import time
+
 
 
 # ==========================================
@@ -33,7 +35,7 @@ REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 
 print(f"Connecting to Redis at: {REDIS_HOST}:{REDIS_PORT}", flush=True)
-redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
+redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=False)
 
 print("AI Worker ready. Zero redundant libraries in memory!", flush=True)
 
@@ -100,9 +102,10 @@ while True:
         task = json.loads(task_data.decode("utf-8"))
         
         beach_id = task["beach_id"]
-        
+        photo_hash = task["photo_hash"]
         # Decode the image from Base64 format back to bytes
-        photo_bytes = base64.b64decode(task["photo_base64"])
+
+        photo_bytes = redis_client.get(f"photo_storage:{photo_hash}")
 
         # 3.1. Image Features (ONNX)
         input_image = preprocess_image_for_clip(photo_bytes)
@@ -119,16 +122,19 @@ while True:
             print("[Success]: Photo verified.", flush=True)
             
             beach_key = f"beach_photos:{beach_id}"
-
+            print(task["timestamp"], flush=True)
+            raw_timestamp = task.get("timestamp", int(time.time()))
+            photo_base64 = base64.b64encode(photo_bytes).decode("utf-8")
             photo_data = {
-                "timestamp": task.get("timestamp"),
-                "photo": task["photo_base64"]
+                "timestamp": int(raw_timestamp),
+                "photo": photo_base64,
+                "photo_hash": photo_hash
             }
-
-            redis_client.sadd(beach_key, json.dumps(photo_data))
-
-            # Disapear after 
-            redis_client.expire(beach_key, 3600*3)
+            print(int(raw_timestamp))
+            expire_at = int(time.time()) 
+            
+            redis_client.zadd(beach_key, {json.dumps(photo_data): expire_at})
+            redis_client.expire(beach_key, 10800)
         else:
             print("[Rejected]: Spoofing detected (computer screen/room interior).", flush=True)
         
