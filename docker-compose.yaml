@@ -1,0 +1,40 @@
+# plik docker-compose.yml
+version: '3.8'
+services:
+  redis_reports:
+    image: redis:8.6-alpine
+    container_name: redis_reports_container
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
+    restart: always
+
+  ai_worker:
+    build:
+      context: ./ai_worker
+      dockerfile: DockerFile.ai_worker
+    container_name: ai_worker_container
+    environment:
+      - REDIS_HOST=redis_reports
+      - REDIS_PORT=6379
+    depends_on:
+      - redis_reports
+    restart: always
+
+  beach_day_main_app:
+    build:
+      context: .
+      dockerfile: DockerFile.main_app
+    container_name: beach_day_main_app_container
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis_reports
+      - REDIS_PORT=6379
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+    depends_on:
+      - redis_reports
+    restart: always
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload

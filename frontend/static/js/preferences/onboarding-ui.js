@@ -71,6 +71,7 @@ export function iniciarAsistente(onFinish) {
     const modal = document.getElementById('onboarding-modal');
     const container = document.getElementById('onboarding-step-container');
     const progress = document.getElementById('onboarding-progress');
+    const btnSkipAll = document.getElementById('btn-skip-all');
 
     if (!modal || !container || !progress) {
         console.error("❌ ERROR: No se encontraron los elementos del onboarding en el HTML.");
@@ -82,6 +83,16 @@ export function iniciarAsistente(onFinish) {
     modal.hidden = false;
 
     modal.scrollTop = 0;
+
+    
+    const finalizar = () => {
+        PASOS.forEach(p => {
+            if (respuestas[p.id] === undefined) respuestas[p.id] = null;
+        });
+        modal.hidden = true;
+        onFinish(respuestas);
+    };
+    btnSkipAll.onclick = () => finalizar();
 
     const render = () => {
         const paso = PASOS[indiceActual];
@@ -95,22 +106,33 @@ export function iniciarAsistente(onFinish) {
                     <button class="onboarding-btn" type="button" data-index="${i}">${opt.texto}</button>
                 `).join('')}
             </div>
+            <button class="onboarding-skip-btn" type="button" style="margin-top: 15px; background: none; border: none; cursor: pointer; color: #888;">
+                Omitir esta pregunta
+            </button>
         `;
 
         container.querySelectorAll('.onboarding-btn').forEach(btn => {
             btn.onclick = () => {
                 const optIndex = btn.dataset.index;
                 respuestas[paso.id] = paso.opciones[optIndex].val;
-
-                if (indiceActual < PASOS.length - 1) {
-                    indiceActual++;
-                    render();
-                } else {
-                    modal.hidden = true;
-                    onFinish(respuestas);
-                }
+                avanzar();
             };
         });
+
+        container.querySelector('.onboarding-skip-btn').onclick = () => {
+            respuestas[paso.id] = null;
+            avanzar();
+        };
+    };
+
+    const avanzar = () => {
+        if (indiceActual < PASOS.length - 1) {
+            indiceActual++;
+            render();
+        } else {
+            modal.hidden = true;
+            onFinish(respuestas);
+        }
     };
 
     render();
