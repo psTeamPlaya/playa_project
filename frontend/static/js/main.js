@@ -33,15 +33,21 @@ import { initResultsMap } from "./results/results-map.js";
 import { initReviewsModule }  from "./reviews/reviews.js";
 import { initReviewPhotoModal } from "./review-photo/review-photo.js";
 
-import { initLanguage, setLanguage } from "/static/js/languages/i18n.js";
+import { initLanguage, setLanguage, t } from "/static/js/languages/i18n.js";
 
 initLanguage();
 
+function getFlagEmoji(countryCode = "") {
+    return Array.from(countryCode.toUpperCase())
+        .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
+        .join("");
+}
+
 
 const languageFlags = {
-    es: "🇪🇸",
-    en: "🇬🇧",
-    cs: "🇨🇿",
+    es: getFlagEmoji("ES"),
+    en: getFlagEmoji("GB"),
+    cs: getFlagEmoji("CZ"),
 };
 
 const activityCards = document.querySelectorAll(".activity-card");
@@ -238,6 +244,20 @@ const ACTIVITY_IMAGE_MAP = {
     voley_playa: "/static/img/voleyplaya.png",
     windsurf: "/static/img/windsurf.png",
 };
+const ACTIVITY_I18N_MAP = {
+    tomar_sol: "activities.sunbathing",
+    nadar: "activities.swimming",
+    surf: "activities.surfing",
+    windsurf: "activities.wind_surfing",
+    kitesurf: "activities.kitesurfing",
+    bucear: "activities.snorkeling",
+    caminar: "activities.walking",
+    pescar: "activities.fishing",
+    kayak: "activities.kayaking",
+    paddle_surf: "activities.paddle_surfing",
+    bodyboard: "activities.bodyboarding",
+    voley_playa: "activities.beach_volleyball",
+};
 
 const staticFilterElements = {
     filterSandBeach,
@@ -263,25 +283,28 @@ const staticFilterInputs = [
 
 function updateLanguageFlag(lang) {
     currentLanguageFlag.textContent =
-        languageFlags[lang] || "🌍";
+        languageFlags[lang] || "🌐";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    // const languageMenuBtn = document.getElementById("languageMenuBtn");
-    // const languageDropdown = document.getElementById("languageDropdown");
-    const currentLanguageFlag = document.getElementById("currentLanguageFlag");
-    const btn = document.getElementById("languageMenuBtn");
-    const dropdown = document.getElementById("languageDropdown");
-
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle("open");
+function updateLanguageOptionFlags() {
+    document.querySelectorAll(".language-option").forEach((button) => {
+        const flagEl = button.querySelector(".language-option-flag");
+        if (!flagEl) return;
+        flagEl.textContent = languageFlags[button.dataset.lang] || "🌐";
     });
+}
 
-    document.addEventListener("click", () => {
-        dropdown.classList.remove("open");
-    });
-});
+function openLanguageDropdown() {
+    if (!languageDropdown) return;
+    languageDropdown.hidden = false;
+    languageDropdown.classList.add("open");
+}
+
+function closeLanguageDropdown() {
+    if (!languageDropdown) return;
+    languageDropdown.classList.remove("open");
+    languageDropdown.hidden = true;
+}
 
 document.querySelectorAll(".language-option").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -291,31 +314,31 @@ document.querySelectorAll(".language-option").forEach(btn => {
 
         updateLanguageFlag(lang);
 
-        languageDropdown.hidden = true;
+        closeLanguageDropdown();
     });
 });
 
 document.addEventListener("click", (e) => {
-    if (!e.target.closest(".language-menu")) {
-        languageDropdown.hidden = true;
+    if (!e.target.closest(".languages")) {
+        closeLanguageDropdown();
     }
 });
 
 updateLanguageFlag(
     localStorage.getItem("lang") || "en"
 );
+updateLanguageOptionFlags();
 
 if (languageMenuBtn && languageDropdown) {
-    languageDropdown.hidden = true;
+    closeLanguageDropdown();
 
-    languageMenuBtn.addEventListener("click", () => {
-        languageDropdown.hidden = !languageDropdown.classList.contains("open");
-    });
-
-    document.addEventListener("click", () => {
-        if (!languageDropdown.classList.contains("open")) {
-            languageDropdown.hidden = true;
+    languageMenuBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (languageDropdown.classList.contains("open")) {
+            closeLanguageDropdown();
+            return;
         }
+        openLanguageDropdown();
     });
 }
 
@@ -462,6 +485,17 @@ function getActivityIconMarkup(activityName = "") {
     return getActivityIcon(activityName);
 }
 
+function getActivityDisplayLabel(activity = {}) {
+    const activityName = activity?.name || "";
+    const translationKey = ACTIVITY_I18N_MAP[activityName];
+
+    if (translationKey) {
+        return t(translationKey);
+    }
+
+    return activity?.label || activityName.replaceAll("_", " ");
+}
+
 function renderActivityCards(activities = []) {
     if (!activitiesGrid) {
         return;
@@ -470,7 +504,7 @@ function renderActivityCards(activities = []) {
     if (!Array.isArray(activities) || activities.length === 0) {
         activitiesGrid.innerHTML = `
             <div class="empty-state">
-                No hay actividades disponibles en este momento.
+                ${t("search.no_activities")}
             </div>
         `;
         return;
@@ -479,7 +513,7 @@ function renderActivityCards(activities = []) {
     activitiesGrid.innerHTML = activities.map((activity) => `
         <div class="activity-card" data-activity="${activity.name}">
             <span class="activity-icon">${getActivityIconMarkup(activity.name)}</span>
-            <span class="activity-name">${activity.label}</span>
+            <span class="activity-name">${getActivityDisplayLabel(activity)}</span>
         </div>
     `).join("");
 }
@@ -503,10 +537,10 @@ async function loadActivities() {
         console.error("Error cargando actividades:", error);
         activitiesGrid.innerHTML = `
             <div class="empty-state">
-                No se pudieron cargar las actividades.
+                ${t("search.errors.activities_load")}
             </div>
         `;
-        statusEl.textContent = "No se pudieron cargar las actividades disponibles.";
+        statusEl.textContent = t("search.errors.activities_load_status");
         return [];
     }
 }
@@ -635,8 +669,22 @@ function renderRecommendationResults(data, { shouldScroll = false } = {}) {
     }
     const horaInicio = data.hora_inicio || data.hora || "";
     const horaFin = data.hora_fin || data.hora || "";
-    const rangoTexto = horaInicio && horaFin ? ` entre las ${horaInicio} y las ${horaFin}` : "";
-    statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}${rangoTexto}.`;
+    const activityLabel = getActivityDisplayLabel({ name: actividadSeleccionada });
+
+    if (horaInicio && horaFin) {
+        statusEl.textContent = t("search.status.found_interval", {
+            count: data.resultados.length,
+            activity: activityLabel,
+            start: horaInicio,
+            end: horaFin
+        });
+        return;
+    }
+
+    statusEl.textContent = t("search.status.found", {
+        count: data.resultados.length,
+        activity: activityLabel
+    });
 }
 
 function reaplicarResultadosCacheados() {
@@ -921,31 +969,31 @@ async function buscarRecomendaciones() {
     ocultarAvisoSolar();
 
     if (!actividadSeleccionada) {
-        statusEl.textContent = "Debes seleccionar una actividad.";
+        statusEl.textContent = t("search.errors.activity_required");
         return;
     }
     if (!fecha) {
-        statusEl.textContent = "Debes seleccionar una fecha.";
+        statusEl.textContent = t("search.errors.date_required");
         return;
     }
     if (!horaInicio || !horaFin) {
-        statusEl.textContent = "Debes seleccionar una hora de inicio y una hora de fin.";
+        statusEl.textContent = t("search.errors.time_range_required");
         return;
     }
     if (fecha < formatearFechaLocal(new Date())) {
-        statusEl.textContent = "No puedes seleccionar una fecha pasada.";
+        statusEl.textContent = t("search.errors.past_date");
         return;
     }
     if (dateTimeController?.esFechaHoy(fecha) && dateTimeController?.esHoraPasadaParaHoy(horaInicio)) {
-        statusEl.textContent = "No puedes seleccionar una hora de inicio pasada para el d\u00eda de hoy.";
+        statusEl.textContent = t("search.errors.past_start_time");
         guardarHorarioRecordado();
         return;
     }
     if (horaFin <= horaInicio) {
-        statusEl.textContent = "La hora de fin debe ser posterior a la hora de inicio.";
+        statusEl.textContent = t("search.errors.end_before_start");
         return;
     }
-    statusEl.textContent = "Buscando recomendaciones...";
+    statusEl.textContent = t("search.status.searching");
     try {
         const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
         const rango = radioSeleccionado ? radioSeleccionado.value : "50";
@@ -962,7 +1010,7 @@ async function buscarRecomendaciones() {
         });
 
         if (!recommendationResult.ok && recommendationResult.reason === "missing-location") {
-            statusEl.textContent = "Introduce informacion de localizacion.";
+            statusEl.textContent = t("search.errors.missing_location");
             return;
         }
 
@@ -989,11 +1037,11 @@ async function buscarRecomendaciones() {
     catch (error) {
         console.error(error);
         resetRecommendationContext();
-        statusEl.textContent = "Ha ocurrido un error al consultar la API.";
+        statusEl.textContent = t("search.errors.api_error");
         resultsMapController?.setResults([]);
         resultsContainer.innerHTML = `
           <div class="empty-state">
-            No se pudieron cargar los resultados.
+            ${t("search.errors.results_load")}
           </div>
         `;
     }

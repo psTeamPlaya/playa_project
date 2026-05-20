@@ -2,10 +2,10 @@
   "titles": {
     "app_title": "My Day at the Beach",
     "preferences": "Preferences",
-    "favorite_beaches": "My Favorite Beaches",
+    "favorite_beaches": "My favorite beaches",
     "downloading_favs": "Downloading favorite beaches...",
     "filters": "Filters",
-    "my_filters": "My Filters",
+    "my_filters": "My filters",
     "configure_alerts": "Configure alerts",
     "beaches": "Beaches",
     "weather": "Weather",
@@ -14,27 +14,41 @@
     "results": "Recommended beaches",
     "see_map": "View map",
     "in_map_title": "Recommended beaches map",
-    "in_map_description": "Check the ranking and score of each beach directly on the map."
+    "in_map_description": "Check each beach's ranking and score directly on the map.",
+    "language": "Language"
   },
   "common": {
     "reset": "Reset",
     "date": "Date",
     "time": "Time",
     "submit": "Submit",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "mobile": {
+    "title": "Menu",
+    "subtitle": "Access and filters",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu"
   },
   "search": {
     "search_beaches": "Search recommended beaches",
     "reset_filters": "Reset static filters",
     "disable_dynamic_filters": "Disable dynamic filters",
     "enable_dynamic_filters": "Enable dynamic filters",
-    "deactivate_filter": "Deactivate filter",
-    "activate_filter": "Activate filter",
+    "deactivate_filter": "Disable filter",
+    "activate_filter": "Enable filter",
     "quantity": "Quantity",
+    "quantity_label": "Number of recommendations",
+    "quantity_aria": "Number of recommended beaches",
+    "loading_activities": "Loading available activities...",
+    "no_activities": "There are no activities available right now.",
+    "start_time": "Start time",
+    "end_time": "End time",
     "location": {
       "title": "City / Location",
-      "my_location": "My location",
-      "choose_location": "Choose a location",
+      "my_location": "📍 My location",
+      "choose_location": "🗺️ Choose a location",
       "range": "Search range:",
       "select": "Select location"
     },
@@ -42,6 +56,24 @@
       "actividad": "1. What would you like to do on your day at the beach?",
       "when": "2. When would you like to go to the beach?",
       "where": "3. Choose your location"
+    },
+    "status": {
+      "searching": "Searching for recommendations...",
+      "found": "{count} recommendations have been found for {activity}.",
+      "found_interval": "{count} recommendations have been found for {activity} between {start} and {end}."
+    },
+    "errors": {
+      "activity_required": "You must select an activity.",
+      "date_required": "You must select a date.",
+      "time_range_required": "You must select a start time and an end time.",
+      "past_date": "You cannot select a past date.",
+      "past_start_time": "You cannot select a start time in the past for today.",
+      "end_before_start": "The end time must be later than the start time.",
+      "missing_location": "Please provide location information.",
+      "api_error": "An error occurred while querying the API.",
+      "results_load": "The results could not be loaded.",
+      "activities_load": "The activities could not be loaded.",
+      "activities_load_status": "The available activities could not be loaded."
     },
     "empty_results": "There are currently no beach recommendations."
   },
@@ -54,7 +86,10 @@
     "snorkeling": "Snorkeling",
     "walking": "Walking",
     "fishing": "Fishing",
-    "kayaking": "Kayaking"
+    "kayaking": "Kayaking",
+    "paddle_surfing": "Paddle surfing",
+    "bodyboarding": "Bodyboarding",
+    "beach_volleyball": "Beach volleyball"
   },
   "weather": {
     "cloudiness": "Cloudiness",
@@ -81,7 +116,9 @@
     "accessibility": "Accessibility",
     "sport_zone": "Sports area",
     "pet_friendly": "Pet-friendly",
-    "spa": "Spa"
+    "spa": "Spa",
+    "surf_school": "Surf school",
+    "windsurf_school": "Windsurf school"
   },
   "beach_types": {
     "sand": "Sand",
@@ -100,7 +137,54 @@
     "password": "Password",
     "confirm_password": "Confirm password",
     "enter": "Access my account",
-    "no_account_question": "No account?"
+    "no_account_question": "No account?",
+    "create_account": "Create account",
+    "already_have_account": "Already have an account?",
+    "signing_in": "Signing in...",
+    "signing_in_google": "Signing in with Google...",
+    "creating_account": "Creating account...",
+    "account_created": "Account created. You can now sign in.",
+    "errors": {
+      "email_password_required": "You must provide an email and password.",
+      "passwords_mismatch": "Passwords do not match.",
+      "generic": "The operation could not be completed.",
+      "google_login": "Google sign-in could not be completed."
+    }
+  },
+  "favorites": {
+    "loading": "Loading favorite beaches...",
+    "fetch_error": "Favorite beaches could not be retrieved.",
+    "load_error": "Your favorite beaches could not be loaded.",
+    "empty": "You have not saved any favorite beaches yet.",
+    "remove": "Remove from favorites",
+    "login_required": "Log in to view your favorite beaches.",
+    "remove_error": "The beach could not be removed from favorites."
+  },
+  "results": {
+    "score": "Score",
+    "recommendation_explanation": "Recommendation explanation",
+    "interval": "Time slot",
+    "tide": "Tide",
+    "beach_type": "Type",
+    "avg_air_temp": "Avg. air temp.",
+    "avg_wave": "Avg. wave height",
+    "avg_wind": "Avg. wind speed",
+    "avg_water_temp": "Avg. water temp.",
+    "avg_cloud": "Avg. cloudiness",
+    "avg_rain": "Avg. rain probability",
+    "view_beach_photos": "View beach photos"
+  },
+  "map": {
+    "location_unavailable": "Location unavailable",
+    "ranking": "Ranking",
+    "close": "Close map",
+    "close_recommendations": "Close recommended beaches map",
+    "select_location": "Select location"
+  },
+  "tide": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
   },
   "admin": {
     "management": {
