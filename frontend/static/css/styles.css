@@ -1215,7 +1215,12 @@ button {
     font-size: xxx-large;
     line-height: 1;
     vertical-align: -0.15em;
+    position: absolute;
+    top: 11px;
+    right: 11px;
 }
+
+::before {}
 
 .preferences-panel {
     position: absolute;
