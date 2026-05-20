@@ -39,11 +39,24 @@ ALLOWED_ALERT_FILTER_KEYS = {
     "min_altura_oleaje",
     "max_altura_oleaje",
     "dia_semana",
+    "dias_semana",
     "hora_inicio",
     "hora_fin",
 }
 INTERNAL_ALERT_FILTER_KEYS = {"target_beach_id"}
-SCHEDULE_ALERT_FILTER_KEYS = {"dia_semana", "hora_inicio", "hora_fin"}
+SCHEDULE_ALERT_FILTER_KEYS = {"dia_semana", "dias_semana", "hora_inicio", "hora_fin"}
+
+
+def _normalize_weekdays_value(value: Any) -> list[int]:
+    raw_values = value if isinstance(value, (list, tuple, set)) else [value]
+    normalized: list[int] = []
+    for item in raw_values:
+        if isinstance(item, bool) or not isinstance(item, (int, float)) or int(item) != item:
+            continue
+        parsed_item = int(item)
+        if 0 <= parsed_item <= 6 and parsed_item not in normalized:
+            normalized.append(parsed_item)
+    return sorted(normalized)
 
 
 def sanitize_alert_filters(
@@ -55,6 +68,15 @@ def sanitize_alert_filters(
         return {}
 
     sanitized: dict[str, Any] = {}
+
+    weekdays = None
+    if "dias_semana" in filters:
+        weekdays = _normalize_weekdays_value(filters.get("dias_semana"))
+    elif "dia_semana" in filters:
+        weekdays = _normalize_weekdays_value(filters.get("dia_semana"))
+    if weekdays:
+        sanitized["dias_semana"] = weekdays
+
     for key, value in filters.items():
         if value is None:
             continue
@@ -65,11 +87,11 @@ def sanitize_alert_filters(
         if key not in ALLOWED_ALERT_FILTER_KEYS:
             continue
         if key in SCHEDULE_ALERT_FILTER_KEYS:
-            if isinstance(value, bool) or not isinstance(value, (int, float)):
+            if key in {"dia_semana", "dias_semana"}:
+                continue
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or int(value) != value:
                 continue
             parsed_value = int(value)
-            if key == "dia_semana" and 0 <= parsed_value <= 6:
-                sanitized[key] = parsed_value
             if key in {"hora_inicio", "hora_fin"} and 0 <= parsed_value <= 23:
                 sanitized[key] = parsed_value
             continue
@@ -85,12 +107,16 @@ def validate_alert_filters(filters: dict[str, Any] | None) -> None:
     if not isinstance(filters, dict):
         return
 
-    weekday = filters.get("dia_semana")
-    if weekday is not None:
-        if isinstance(weekday, bool) or not isinstance(weekday, (int, float)) or int(weekday) != weekday:
-            raise ValueError("El d\u00eda de la semana de la alerta no es v\u00e1lido.")
-        if int(weekday) < 0 or int(weekday) > 6:
-            raise ValueError("El d\u00eda de la semana de la alerta no es v\u00e1lido.")
+    weekdays_value = filters.get("dias_semana", filters.get("dia_semana"))
+    if weekdays_value is not None:
+        raw_values = weekdays_value if isinstance(weekdays_value, (list, tuple, set)) else [weekdays_value]
+        if not raw_values:
+            raise ValueError("Debes seleccionar al menos un d\u00eda de la semana o dejar todos sin marcar.")
+        for weekday in raw_values:
+            if isinstance(weekday, bool) or not isinstance(weekday, (int, float)) or int(weekday) != weekday:
+                raise ValueError("Los d\u00edas de la semana de la alerta no son v\u00e1lidos.")
+            if int(weekday) < 0 or int(weekday) > 6:
+                raise ValueError("Los d\u00edas de la semana de la alerta no son v\u00e1lidos.")
 
     start_hour = filters.get("hora_inicio")
     end_hour = filters.get("hora_fin")
@@ -159,8 +185,8 @@ def _condition_to_dict(condition: BeachCondition) -> dict[str, Any]:
 
 
 def _matches_schedule_filters(match_datetime: datetime, filters: dict[str, Any]) -> bool:
-    weekday = filters.get("dia_semana")
-    if weekday is not None and match_datetime.weekday() != int(weekday):
+    weekdays = filters.get("dias_semana")
+    if weekdays and match_datetime.weekday() not in {int(weekday) for weekday in weekdays}:
         return False
 
     start_hour = filters.get("hora_inicio")

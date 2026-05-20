@@ -1216,20 +1216,39 @@
 
         <div class="alerts-conditions">
           <h3>Condiciones</h3>
-          <div class="alerts-form-grid">
-            <label class="field">
-              <span>Día de la semana</span>
-              <select id="alertDayOfWeek">
-                <option value="">Cualquier día</option>
-                <option value="0">Lunes</option>
-                <option value="1">Martes</option>
-                <option value="2">Miércoles</option>
-                <option value="3">Jueves</option>
-                <option value="4">Viernes</option>
-                <option value="5">Sábado</option>
-                <option value="6">Domingo</option>
-              </select>
+          <fieldset class="alerts-weekdays">
+            <legend>Días de comprobación</legend>
+            <label class="alerts-weekday-option">
+              <input type="checkbox" name="alertWeekdays" value="0">
+              <span>Lun</span>
             </label>
+            <label class="alerts-weekday-option">
+              <input type="checkbox" name="alertWeekdays" value="1">
+              <span>Mar</span>
+            </label>
+            <label class="alerts-weekday-option">
+              <input type="checkbox" name="alertWeekdays" value="2">
+              <span>Mié</span>
+            </label>
+            <label class="alerts-weekday-option">
+              <input type="checkbox" name="alertWeekdays" value="3">
+              <span>Jue</span>
+            </label>
+            <label class="alerts-weekday-option">
+              <input type="checkbox" name="alertWeekdays" value="4">
+              <span>Vie</span>
+            </label>
+            <label class="alerts-weekday-option">
+              <input type="checkbox" name="alertWeekdays" value="5">
+              <span>Sáb</span>
+            </label>
+            <label class="alerts-weekday-option">
+              <input type="checkbox" name="alertWeekdays" value="6">
+              <span>Dom</span>
+            </label>
+          </fieldset>
+
+          <div class="alerts-form-grid alerts-form-grid-compact">
 
             <label class="field">
               <span>Hora inicio (0-23)</span>
@@ -1240,6 +1259,7 @@
               <span>Hora fin (0-23)</span>
               <input id="alertEndHour" type="number" step="1" min="0" max="23" placeholder="Ej: 17">
             </label>
+
             <label class="field">
               <span>Temperatura mín. (ºC)</span>
               <input id="alertMinTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 22">

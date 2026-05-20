@@ -11,6 +11,7 @@ const FILTER_FIELDS = [
     ["max_altura_oleaje", "Oleaje máx.", "m"],
 ];
 const WEEKDAY_LABELS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const WEEKDAY_SHORT_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 function escapeHtml(value = "") {
     return String(value)
@@ -38,13 +39,29 @@ function parseOptionalNumber(value) {
     return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeWeekdays(filters = {}) {
+    const weekdays = filters.dias_semana ?? filters.dia_semana;
+    if (weekdays === undefined || weekdays === null || weekdays === "") {
+        return [];
+    }
+
+    const rawValues = Array.isArray(weekdays) ? weekdays : [weekdays];
+    return rawValues
+        .map((value) => Number(value))
+        .filter((value, index, values) => Number.isInteger(value) && value >= 0 && value <= 6 && values.indexOf(value) === index)
+        .sort((left, right) => left - right);
+}
+
 function formatAlertSchedule(filters = {}) {
     const parts = [];
 
-    if (filters.dia_semana !== undefined && filters.dia_semana !== null && filters.dia_semana !== "") {
-        const weekdayLabel = WEEKDAY_LABELS[Number(filters.dia_semana)];
-        if (weekdayLabel) {
-            parts.push(`Día: ${weekdayLabel}`);
+    const weekdays = normalizeWeekdays(filters);
+    if (weekdays.length > 0) {
+        const weekdayLabels = weekdays
+            .map((weekday) => WEEKDAY_SHORT_LABELS[weekday])
+            .filter(Boolean);
+        if (weekdayLabels.length > 0) {
+            parts.push(`Días: ${weekdayLabels.join(", ")}`);
         }
     }
 
@@ -74,7 +91,7 @@ export function initAlertsUI({
     saveCurrentAlertBtn,
     alertsActivitySelect,
     alertsBeachSelect,
-    alertDayOfWeekSelect,
+    alertWeekdayCheckboxes,
     alertStartHourInput,
     alertEndHourInput,
     alertMinTemperatureInput,
@@ -236,8 +253,15 @@ export function initAlertsUI({
     }
 
     function buildFiltersPayload() {
+        const selectedWeekdays = Array.isArray(alertWeekdayCheckboxes)
+            ? alertWeekdayCheckboxes
+                .filter((checkbox) => checkbox?.checked)
+                .map((checkbox) => Number(checkbox.value))
+                .filter((value) => Number.isInteger(value))
+            : [];
+
         const filters = {
-            dia_semana: parseOptionalNumber(alertDayOfWeekSelect?.value),
+            dias_semana: selectedWeekdays.length > 0 ? selectedWeekdays : null,
             hora_inicio: parseOptionalNumber(alertStartHourInput?.value),
             hora_fin: parseOptionalNumber(alertEndHourInput?.value),
             min_temperatura_ambiente: parseOptionalNumber(alertMinTemperatureInput?.value),
@@ -294,8 +318,14 @@ export function initAlertsUI({
         if (alertsBeachSelect) {
             alertsBeachSelect.value = String(alert.beach_id || "");
         }
-        if (alertDayOfWeekSelect) {
-            alertDayOfWeekSelect.value = alert.filters?.dia_semana ?? "";
+        const selectedWeekdays = new Set(normalizeWeekdays(alert.filters));
+        if (Array.isArray(alertWeekdayCheckboxes)) {
+            alertWeekdayCheckboxes.forEach((checkbox) => {
+                if (!checkbox) {
+                    return;
+                }
+                checkbox.checked = selectedWeekdays.has(Number(checkbox.value));
+            });
         }
         if (alertStartHourInput) {
             alertStartHourInput.value = alert.filters?.hora_inicio ?? "";

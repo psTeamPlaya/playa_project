@@ -172,7 +172,7 @@ const cancelAlertEditBtn = document.getElementById("cancelAlertEditBtn");
 const saveCurrentAlertBtn = document.getElementById("saveCurrentAlertBtn");
 const alertsActivitySelect = document.getElementById("alertsActivitySelect");
 const alertsBeachSelect = document.getElementById("alertsBeachSelect");
-const alertDayOfWeekSelect = document.getElementById("alertDayOfWeek");
+const alertWeekdayCheckboxes = Array.from(document.querySelectorAll('input[name="alertWeekdays"]'));
 const alertStartHourInput = document.getElementById("alertStartHour");
 const alertEndHourInput = document.getElementById("alertEndHour");
 const alertMinTemperatureInput = document.getElementById("alertMinTemperature");
@@ -675,7 +675,7 @@ function initControllers() {
         saveCurrentAlertBtn,
         alertsActivitySelect,
         alertsBeachSelect,
-        alertDayOfWeekSelect,
+        alertWeekdayCheckboxes,
         alertStartHourInput,
         alertEndHourInput,
         alertMinTemperatureInput,
