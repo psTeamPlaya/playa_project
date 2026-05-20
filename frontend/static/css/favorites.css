@@ -284,3 +284,8 @@ body {
     content: "• ";
     color: white;
 }
+
+
+.favorites-results-grid .desplegable {
+    overflow: visible
+}
