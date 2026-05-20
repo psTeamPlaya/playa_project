@@ -554,7 +554,17 @@
 
       <div class="actions search-actions">
 
-        <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
+        <div style="flex: 1;"></div>
+
+          <button class="btn-primary" id="buscarBtn">
+              <i class="bi bi-search"></i> Buscar playas
+          </button>
+        
+          <div style="flex: 1; display: flex; justify-content: flex-end;">
+              <button class="btn-secondary" id="openPhotoModalBtn">
+                  <i class="bi bi-camera"></i>
+              </button>
+          </div>
 
       </div>
 
@@ -1251,11 +1261,14 @@
 
     </div>
 
-  </div>    
+  </div>   
+  
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <script src="https://unpkg.com/virtual-scroller@1.16.4/bundle/virtual-scroller-dom.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
 
   <script type="module" src="/static/js/main.js?v=admin-catalog-20260507"></script>
 

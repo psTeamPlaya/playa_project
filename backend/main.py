@@ -13,7 +13,7 @@ from backend.routes import (
     api_router, views_router, auth_router, users_router,
     services_router, activities_router, beaches_router, variables_router,
     beach_conditions_router, favourites_router, alerts_router, admin_router,
-    reviews_router
+    reviews_router, review_photo_router
 )
 
 from backend.engine_recomendation import (
@@ -135,7 +135,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 routers = [
     api_router, views_router, auth_router, users_router, services_router,
     activities_router, beaches_router, variables_router, beach_conditions_router, favourites_router,
-    alerts_router, admin_router, reviews_router
+    alerts_router, admin_router, reviews_router, review_photo_router
 ]
 
 for router in routers: 

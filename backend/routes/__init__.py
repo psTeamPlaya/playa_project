@@ -11,3 +11,4 @@ from .favorites import router as favourites_router
 from .alerts import router as alerts_router
 from .admin import router as admin_router
 from .reviews import router as reviews_router
+from .review_photo import router as review_photo_router
