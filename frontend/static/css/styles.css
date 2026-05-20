@@ -1459,8 +1459,10 @@ button {
 }
 
 .alerts-existing-header {
-    display: grid;
-    gap: 0.2rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.9rem;
 }
 
 .alerts-existing-header h3 {
@@ -1474,12 +1476,20 @@ button {
     font-size: 0.95rem;
 }
 
+.alerts-existing-header .btn-secondary {
+    flex-shrink: 0;
+}
+
 .alerts-form {
     display: grid;
     gap: 1rem;
     margin-bottom: 1rem;
     padding-top: 1rem;
     border-top: 1px solid var(--border);
+}
+
+.alerts-form[hidden] {
+    display: none !important;
 }
 
 .alerts-form-grid {
@@ -1536,8 +1546,9 @@ button {
 .alerts-list {
     display: grid;
     gap: 0.75rem;
-    max-height: 280px;
-    overflow: auto;
+    max-height: min(46vh, 360px);
+    overflow-y: auto;
+    padding-right: 6px;
 }
 
 .alerts-list-card {
@@ -1566,7 +1577,52 @@ button {
     align-self: flex-start;
 }
 
+.alerts-editor {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 1100;
+    width: min(calc(100% - 2rem), 700px);
+    max-height: min(88vh, 990px);
+    overflow-y: auto;
+    margin: 0;
+    padding: 1.2rem;
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--border);
+    border-top: 0;
+    border-radius: 22px;
+    background: #ffffff;
+    box-shadow: 0 22px 60px rgba(15, 23, 42, 0.24);
+}
+
+.alerts-editor-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.alerts-editor-header h3 {
+    margin: 0 0 0.2rem;
+    font-size: 1.35rem;
+}
+
+.alerts-editor-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
 @media (max-width: 640px) {
+    .alerts-existing-header,
+    .alerts-editor-header {
+        display: grid;
+    }
+
+    .alerts-existing-header .btn-secondary {
+        width: 100%;
+    }
+
     .alerts-form-grid {
         grid-template-columns: 1fr;
     }
@@ -1707,7 +1763,7 @@ button {
 
 .admin-user-layout {
     display: grid;
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.2fr) minmax(0, 0.85fr);
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
     gap: 1rem;
     min-height: 0;
 }

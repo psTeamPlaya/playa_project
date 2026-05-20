@@ -1,6 +1,5 @@
 import { authFetch } from "../api/auth-fetch.js";
 
-
 const FILTER_FIELDS = [
     ["min_temperatura_ambiente", "Temperatura mín.", "ºC"],
     ["max_temperatura_ambiente", "Temperatura máx.", "ºC"],
@@ -42,6 +41,11 @@ export function initAlertsUI({
     openAlertsModalBtn,
     alertsModal,
     closeAlertsModalBtn,
+    openAlertsEditorBtn,
+    closeAlertsEditorBtn,
+    alertsEditorBackdrop,
+    alertsEditorTitle,
+    alertsEditorCopy,
     alertsForm,
     alertsEditingIdInput,
     cancelAlertEditBtn,
@@ -64,6 +68,7 @@ export function initAlertsUI({
     let activityOptions = [];
     let beachOptions = [];
     let catalogsLoaded = false;
+    let lastLoadedAlerts = [];
 
     function setFeedback(message = "", isError = false) {
         if (!alertsFeedback) {
@@ -73,12 +78,6 @@ export function initAlertsUI({
         alertsFeedback.textContent = message;
         alertsFeedback.classList.toggle("error", Boolean(message && isError));
         alertsFeedback.classList.toggle("success", Boolean(message && !isError));
-    }
-
-    function closeModal() {
-        if (alertsModal) {
-            alertsModal.hidden = true;
-        }
     }
 
     async function fetchJson(url, options = {}) {
@@ -94,8 +93,48 @@ export function initAlertsUI({
         return Number(alertsEditingIdInput?.value || 0) || null;
     }
 
-    function isEditing() {
-        return Boolean(getEditingId());
+    function isEditorOpen() {
+        return alertsForm ? !alertsForm.hidden : false;
+    }
+
+    function updateEditorCopy(isEditing) {
+        if (alertsEditorTitle) {
+            alertsEditorTitle.textContent = isEditing ? "Editar alerta" : "Nueva alerta";
+        }
+        if (alertsEditorCopy) {
+            alertsEditorCopy.textContent = isEditing
+                ? "Actualiza la actividad, la playa o las condiciones de esta alerta."
+                : "Configura la actividad, la playa y las condiciones a vigilar.";
+        }
+    }
+
+    function closeEditor({ reset = false, preservePreferredActivity = true } = {}) {
+        if (alertsForm) {
+            alertsForm.hidden = true;
+        }
+        if (alertsEditorBackdrop) {
+            alertsEditorBackdrop.hidden = true;
+        }
+        if (reset) {
+            resetForm({ preservePreferredActivity });
+        }
+    }
+
+    function openEditor({ isEditing = false } = {}) {
+        updateEditorCopy(isEditing);
+        if (alertsEditorBackdrop) {
+            alertsEditorBackdrop.hidden = false;
+        }
+        if (alertsForm) {
+            alertsForm.hidden = false;
+        }
+    }
+
+    function closeModal() {
+        closeEditor({ reset: true, preservePreferredActivity: false });
+        if (alertsModal) {
+            alertsModal.hidden = true;
+        }
     }
 
     function resetForm({ preservePreferredActivity = true } = {}) {
@@ -248,6 +287,7 @@ export function initAlertsUI({
             saveCurrentAlertBtn.textContent = "Guardar cambios";
         }
         setFeedback(`Editando alerta para ${alert.beach_label || alert.activity_label}.`, false);
+        openEditor({ isEditing: true });
     }
 
     function renderAlerts(alerts = []) {
@@ -258,7 +298,7 @@ export function initAlertsUI({
         if (!Array.isArray(alerts) || alerts.length === 0) {
             alertsList.innerHTML = `
                 <div class="empty-state">
-                    No tienes alertas guardadas.
+                    <p>No tienes alertas guardadas.</p>
                 </div>
             `;
             return;
@@ -290,8 +330,15 @@ export function initAlertsUI({
 
     async function loadAlerts() {
         const alerts = await fetchJson("/api/users/me/alerts");
-        renderAlerts(alerts);
-        return alerts;
+        lastLoadedAlerts = Array.isArray(alerts) ? alerts : [];
+        renderAlerts(lastLoadedAlerts);
+        return lastLoadedAlerts;
+    }
+
+    function openCreateEditor() {
+        resetForm();
+        setFeedback("");
+        openEditor({ isEditing: false });
     }
 
     async function openModal() {
@@ -302,6 +349,7 @@ export function initAlertsUI({
 
         await ensureCatalogsLoaded();
         resetForm();
+        closeEditor();
         setFeedback("");
         if (alertsModal) {
             alertsModal.hidden = false;
@@ -338,8 +386,8 @@ export function initAlertsUI({
                     filters,
                 }),
             });
+            closeEditor({ reset: true });
             setFeedback(editingId ? "Alerta actualizada correctamente." : "Alerta guardada correctamente.", false);
-            resetForm();
             await loadAlerts();
         } catch (error) {
             setFeedback(error.message, true);
@@ -352,7 +400,7 @@ export function initAlertsUI({
                 method: "DELETE",
             });
             if (getEditingId() === Number(alertId)) {
-                resetForm({ preservePreferredActivity: false });
+                closeEditor({ reset: true, preservePreferredActivity: false });
             }
             setFeedback("Alerta eliminada.", false);
             await loadAlerts();
@@ -362,23 +410,39 @@ export function initAlertsUI({
     }
 
     async function editAlert(alertId) {
-        const alerts = await loadAlerts();
-        const selectedAlert = alerts.find((alert) => Number(alert.id) === Number(alertId));
+        const selectedAlert = lastLoadedAlerts.find((alert) => Number(alert.id) === Number(alertId));
         if (!selectedAlert) {
-            setFeedback("No se pudo cargar la alerta para editarla.", true);
+            const alerts = await loadAlerts();
+            const reloadedAlert = alerts.find((alert) => Number(alert.id) === Number(alertId));
+            if (!reloadedAlert) {
+                setFeedback("No se pudo cargar la alerta para editarla.", true);
+                return;
+            }
+            populateFormForEdit(reloadedAlert);
             return;
         }
+
         populateFormForEdit(selectedAlert);
     }
 
     openAlertsModalBtn?.addEventListener("click", openModal);
     closeAlertsModalBtn?.addEventListener("click", closeModal);
+    openAlertsEditorBtn?.addEventListener("click", openCreateEditor);
+    closeAlertsEditorBtn?.addEventListener("click", () => {
+        closeEditor({ reset: true });
+        setFeedback("");
+    });
+    alertsEditorBackdrop?.addEventListener("click", () => {
+        closeEditor({ reset: true });
+        setFeedback("");
+    });
     cancelAlertEditBtn?.addEventListener("click", () => {
-        resetForm();
+        closeEditor({ reset: true });
         setFeedback("");
     });
     alertsForm?.addEventListener("submit", saveAlert);
     alertsList?.addEventListener("click", async (event) => {
+
         const editButton = event.target.closest(".alert-edit-btn");
         if (editButton) {
             await editAlert(editButton.dataset.alertId);
@@ -398,5 +462,6 @@ export function initAlertsUI({
             populateActivitySelect();
             populateBeachSelect();
         },
+        isEditorOpen,
     };
 }

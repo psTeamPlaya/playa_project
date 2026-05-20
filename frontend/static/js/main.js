@@ -1,5 +1,5 @@
 import { authFetch } from "./api/auth-fetch.js";
-import { initAdminUI } from "./admin/admin-ui.js?v=20260520-2";
+import { initAdminUI } from "./admin/admin-ui.js?v=20260520-5";
 import { fetchRecommendations } from "./api/recommendations-api.js";
 import { initAuthModal } from "./auth/auth-modal.js";
 import { initSessionUI } from "./auth/session-ui.js";
@@ -15,7 +15,7 @@ import {
 } from "./filters/static-filters.js";
 import { selectedCoords } from "./localization.js";
 import { initPreferencesUI } from "./preferences/preferences-ui.js";
-import { initAlertsUI } from "./preferences/alerts-ui.js?v=20260520-2";
+import { initAlertsUI } from "./preferences/alerts-ui.js?v=20260520-5";
 import {
     obtenerActividadInicial as getInitialActivity,
     obtenerHorarioInicial as getInitialSchedule,
@@ -127,23 +127,6 @@ const closeUserManagementModal = document.getElementById("closeUserManagementMod
 const userManagementList = document.getElementById("userManagementList");
 const userManagementFeedback = document.getElementById("userManagementFeedback");
 const userManagementHistory = document.getElementById("userManagementHistory");
-const userAlertTargetInfo = document.getElementById("userAlertTargetInfo");
-const userAlertManagementList = document.getElementById("userAlertManagementList");
-const userAlertManagementFeedback = document.getElementById("userAlertManagementFeedback");
-const userAlertManagementForm = document.getElementById("userAlertManagementForm");
-const userAlertEditingIdInput = document.getElementById("userAlertEditingId");
-const userAlertCancelEditBtn = document.getElementById("userAlertCancelEditBtn");
-const userAlertSaveBtn = document.getElementById("userAlertSaveBtn");
-const userAlertActivitySelect = document.getElementById("userAlertActivitySelect");
-const userAlertBeachSelect = document.getElementById("userAlertBeachSelect");
-const userAlertMinTemperatureInput = document.getElementById("userAlertMinTemperature");
-const userAlertMaxTemperatureInput = document.getElementById("userAlertMaxTemperature");
-const userAlertMinWindInput = document.getElementById("userAlertMinWind");
-const userAlertMaxWindInput = document.getElementById("userAlertMaxWind");
-const userAlertMinCloudInput = document.getElementById("userAlertMinCloud");
-const userAlertMaxCloudInput = document.getElementById("userAlertMaxCloud");
-const userAlertMinWaveInput = document.getElementById("userAlertMinWave");
-const userAlertMaxWaveInput = document.getElementById("userAlertMaxWave");
 const beachManagementModal = document.getElementById("beachManagementModal");
 const closeBeachManagementModal = document.getElementById("closeBeachManagementModal");
 const beachManagementList = document.getElementById("beachManagementList");
@@ -178,6 +161,11 @@ const serviceCatalogFeedback = document.getElementById("serviceCatalogFeedback")
 const serviceCatalogList = document.getElementById("serviceCatalogList");
 const alertsModal = document.getElementById("alertsModal");
 const closeAlertsModal = document.getElementById("closeAlertsModal");
+const openAlertsEditorBtn = document.getElementById("openAlertsEditorBtn");
+const closeAlertsEditorBtn = document.getElementById("closeAlertsEditorBtn");
+const alertsEditorBackdrop = document.getElementById("alertsEditorBackdrop");
+const alertsEditorTitle = document.getElementById("alertsEditorTitle");
+const alertsEditorCopy = document.getElementById("alertsEditorCopy");
 const alertsForm = document.getElementById("alertsForm");
 const alertsEditingIdInput = document.getElementById("alertsEditingId");
 const cancelAlertEditBtn = document.getElementById("cancelAlertEditBtn");
@@ -673,6 +661,11 @@ function initControllers() {
         openAlertsModalBtn,
         alertsModal,
         closeAlertsModalBtn: closeAlertsModal,
+        openAlertsEditorBtn,
+        closeAlertsEditorBtn,
+        alertsEditorBackdrop,
+        alertsEditorTitle,
+        alertsEditorCopy,
         alertsForm,
         alertsEditingIdInput,
         cancelAlertEditBtn,
@@ -745,23 +738,6 @@ function initControllers() {
         userManagementList,
         userManagementFeedback,
         userManagementHistory,
-        userAlertTargetInfo,
-        userAlertManagementList,
-        userAlertManagementFeedback,
-        userAlertManagementForm,
-        userAlertEditingIdInput,
-        userAlertCancelEditBtn,
-        userAlertSaveBtn,
-        userAlertActivitySelect,
-        userAlertBeachSelect,
-        userAlertMinTemperatureInput,
-        userAlertMaxTemperatureInput,
-        userAlertMinWindInput,
-        userAlertMaxWindInput,
-        userAlertMinCloudInput,
-        userAlertMaxCloudInput,
-        userAlertMinWaveInput,
-        userAlertMaxWaveInput,
         beachManagementModal,
         closeBeachManagementModal,
         beachManagementList,
