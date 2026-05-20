@@ -3,11 +3,8 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from functools import lru_cache
-import json
+import requests
 from typing import Any
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
-from urllib.request import urlopen
 
 WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 MARINE_URL = "https://marine-api.open-meteo.com/v1/marine"
@@ -18,6 +15,7 @@ WEATHER_HOURLY_VARIABLES = (
     "cloud_cover",
     "precipitation_probability",
 )
+
 MARINE_HOURLY_VARIABLES = (
     "wave_height",
     "sea_surface_temperature",
@@ -28,28 +26,103 @@ MARINE_HOURLY_VARIABLES = (
 class OpenMeteoError(RuntimeError):
     pass
 
-def _fetch_json(url: str, params: dict[str, Any], timeout_seconds: int) -> dict[str, Any]:
+
+def _fetch_json(
+    url: str,
+    params: dict[str, Any],
+    timeout_seconds: int,
+) -> dict[str, Any]:
     try:
-        query_string = urlencode(params)
-        with urlopen(f"{url}?{query_string}", timeout=timeout_seconds) as response:
-            return json.load(response)
-    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as exc:
-        raise OpenMeteoError(f"Open-Meteo request failed: {exc}") from exc
+        response = requests.get(
+            url,
+            params=params,
+            timeout=timeout_seconds,
+        )
+
+        response.raise_for_status()
+
+        return response.json()
+
+    except (
+        requests.HTTPError,
+        requests.ConnectionError,
+        requests.Timeout,
+        requests.RequestException,
+        ValueError,
+    ) as exc:
+        raise OpenMeteoError(
+            f"Open-Meteo request failed: {exc}"
+        ) from exc
 
 
-def _build_coordinate_params(playas: tuple[tuple[float, float], ...]) -> dict[str, str]:
+def _build_coordinate_params(
+    playas: tuple[tuple[float, float], ...]
+) -> dict[str, str]:
     return {
         "latitude": ",".join(str(latitud) for latitud, _ in playas),
         "longitude": ",".join(str(longitud) for _, longitud in playas),
     }
 
 
-def _normalize_batch_response(data: Any) -> tuple[dict[str, Any], ...]:
+def _normalize_batch_response(
+    data: Any,
+) -> tuple[dict[str, Any], ...]:
+
     if isinstance(data, list):
         return tuple(data)
+
     if isinstance(data, dict):
         return (data,)
-    raise OpenMeteoError("Open-Meteo returned an unexpected payload.")
+
+    raise OpenMeteoError(
+        "Open-Meteo returned an unexpected payload."
+    )
+
+
+def _find_hourly_values(
+    data: dict[str, Any],
+    timestamp: str,
+    variable_names: tuple[str, ...],
+) -> dict[str, Any] | None:
+
+    hourly = data.get("hourly") or {}
+
+    times = hourly.get("time") or []
+
+    try:
+        index = times.index(timestamp)
+
+    except ValueError:
+        return None
+
+    values: dict[str, Any] = {}
+
+    for variable in variable_names:
+        serie = hourly.get(variable)
+
+        values[variable] = (
+            serie[index]
+            if serie is not None
+            else None
+        )
+
+    return values
+
+
+def _infer_marea(
+    sea_level_height_msl: float | None
+) -> str:
+
+    if sea_level_height_msl is None:
+        return "media"
+
+    if sea_level_height_msl <= -0.10:
+        return "baja"
+
+    if sea_level_height_msl >= 0.10:
+        return "alta"
+
+    return "media"
 
 
 def _fetch_single_location_payload(
@@ -57,12 +130,25 @@ def _fetch_single_location_payload(
     marine_payload: dict[str, Any],
     timestamp: str,
 ) -> dict[str, Any] | None:
-    weather_values = _find_hourly_values(weather_payload, timestamp, WEATHER_HOURLY_VARIABLES)
-    marine_values = _find_hourly_values(marine_payload, timestamp, MARINE_HOURLY_VARIABLES)
+
+    weather_values = _find_hourly_values(
+        weather_payload,
+        timestamp,
+        WEATHER_HOURLY_VARIABLES,
+    )
+
+    marine_values = _find_hourly_values(
+        marine_payload,
+        timestamp,
+        MARINE_HOURLY_VARIABLES,
+    )
+
     if weather_values is None or marine_values is None:
         return None
 
-    sea_level_height_msl = marine_values["sea_level_height_msl"]
+    sea_level_height_msl = (
+        marine_values["sea_level_height_msl"]
+    )
 
     return {
         "temperatura_ambiente": weather_values["temperature_2m"],
@@ -82,7 +168,10 @@ def obtener_condicion_open_meteo(
     fecha: str,
     hora: str,
 ) -> dict[str, Any]:
-    dt = datetime.fromisoformat(f"{fecha}T{hora}")
+
+    dt = datetime.fromisoformat(
+        f"{fecha}T{hora}"
+    )
 
     return {
         "beach_id": playa["id"],
@@ -99,9 +188,12 @@ def _build_weather_query_params(
     timestamp: str,
     timezone: str,
 ) -> dict[str, Any]:
+
     return {
         **_build_coordinate_params(playas),
-        "hourly": ",".join(WEATHER_HOURLY_VARIABLES),
+        "hourly": ",".join(
+            WEATHER_HOURLY_VARIABLES
+        ),
         "timezone": timezone,
         "start_hour": timestamp,
         "end_hour": timestamp,
@@ -113,9 +205,12 @@ def _build_marine_query_params(
     timestamp: str,
     timezone: str,
 ) -> dict[str, Any]:
+
     return {
         **_build_coordinate_params(playas),
-        "hourly": ",".join(MARINE_HOURLY_VARIABLES),
+        "hourly": ",".join(
+            MARINE_HOURLY_VARIABLES
+        ),
         "timezone": timezone,
         "start_hour": timestamp,
         "end_hour": timestamp,
@@ -129,10 +224,15 @@ def _fetch_weather_batch(
     timezone: str,
     timeout_seconds: int,
 ) -> tuple[dict[str, Any], ...]:
+
     return _normalize_batch_response(
         _fetch_json(
             WEATHER_URL,
-            _build_weather_query_params(playas, timestamp, timezone),
+            _build_weather_query_params(
+                playas,
+                timestamp,
+                timezone,
+            ),
             timeout_seconds,
         )
     )
@@ -145,43 +245,18 @@ def _fetch_marine_batch(
     timezone: str,
     timeout_seconds: int,
 ) -> tuple[dict[str, Any], ...]:
+
     return _normalize_batch_response(
         _fetch_json(
             MARINE_URL,
-            _build_marine_query_params(playas, timestamp, timezone),
+            _build_marine_query_params(
+                playas,
+                timestamp,
+                timezone,
+            ),
             timeout_seconds,
         )
     )
-
-
-def _find_hourly_values(
-    data: dict[str, Any],
-    timestamp: str,
-    variable_names: tuple[str, ...],
-) -> dict[str, Any] | None:
-    hourly = data.get("hourly") or {}
-    times = hourly.get("time") or []
-
-    try:
-        index = times.index(timestamp)
-    except ValueError:
-        return None
-
-    values: dict[str, Any] = {}
-    for variable in variable_names:
-        serie = hourly.get(variable)
-        values[variable] = serie[index] if serie is not None else None
-    return values
-
-
-def _infer_marea(sea_level_height_msl: float | None) -> str:
-    if sea_level_height_msl is None:
-        return "media"
-    if sea_level_height_msl <= -0.10:
-        return "baja"
-    if sea_level_height_msl >= 0.10:
-        return "alta"
-    return "media"
 
 
 def obtener_condiciones_open_meteo(
@@ -191,16 +266,22 @@ def obtener_condiciones_open_meteo(
     timezone: str,
     timeout_seconds: int,
 ) -> list[dict[str, Any]]:
+
     if not playas:
         return []
 
     timestamp = f"{fecha}T{hora}"
+
     coordenadas = tuple(
-        (float(playa["latitud"]), float(playa["longitud"]))
+        (
+            float(playa["latitud"]),
+            float(playa["longitud"]),
+        )
         for playa in playas
     )
 
     with ThreadPoolExecutor(max_workers=2) as executor:
+
         weather_future = executor.submit(
             _fetch_weather_batch,
             coordenadas,
@@ -208,6 +289,7 @@ def obtener_condiciones_open_meteo(
             timezone,
             timeout_seconds,
         )
+
         marine_future = executor.submit(
             _fetch_marine_batch,
             coordenadas,
@@ -217,19 +299,50 @@ def obtener_condiciones_open_meteo(
         )
 
         weather_payloads = weather_future.result()
+
         marine_payloads = marine_future.result()
 
-    if len(weather_payloads) != len(playas) or len(marine_payloads) != len(playas):
-        raise OpenMeteoError("Open-Meteo returned an unexpected number of locations.")
+    if (
+        len(weather_payloads) != len(playas)
+        or len(marine_payloads) != len(playas)
+    ):
+        raise OpenMeteoError(
+            "Open-Meteo returned an unexpected number of locations."
+        )
 
     condiciones: list[dict[str, Any]] = []
-    for playa, weather_payload, marine_payload in zip(playas, weather_payloads, marine_payloads):
-        condicion = _fetch_single_location_payload(weather_payload, marine_payload, timestamp)
+
+    for (
+        playa,
+        weather_payload,
+        marine_payload,
+    ) in zip(
+        playas,
+        weather_payloads,
+        marine_payloads,
+    ):
+
+        condicion = _fetch_single_location_payload(
+            weather_payload,
+            marine_payload,
+            timestamp,
+        )
+
         if condicion is None:
             continue
-        condiciones.append(obtener_condicion_open_meteo(playa, condicion, fecha, hora))
+
+        condiciones.append(
+            obtener_condicion_open_meteo(
+                playa,
+                condicion,
+                fecha,
+                hora,
+            )
+        )
 
     if condiciones:
         return condiciones
 
-    raise OpenMeteoError("Open-Meteo returned no hourly data for the requested date/time.")
+    raise OpenMeteoError(
+        "Open-Meteo returned no hourly data for the requested date/time."
+    )
