@@ -15,6 +15,7 @@ import {
 } from "./filters/static-filters.js";
 import { selectedCoords } from "./localization.js";
 import { initPreferencesUI } from "./preferences/preferences-ui.js";
+import { initAlertsUI } from "./preferences/alerts-ui.js";
 import {
     obtenerActividadInicial as getInitialActivity,
     obtenerHorarioInicial as getInitialSchedule,
@@ -29,6 +30,8 @@ import {
 } from "./search/date-time.js";
 import { initQuantity } from "./search/quantity.js";
 import { initResultsMap } from "./results/results-map.js";
+import { initReviewsModule }  from "./reviews/reviews.js";
+import { initReviewPhotoModal } from "./review-photo/review-photo.js";
 
 import { initLanguage, setLanguage } from "/static/js/languages/i18n.js";
 
@@ -42,6 +45,7 @@ const languageFlags = {
 };
 
 const activityCards = document.querySelectorAll(".activity-card");
+const activitiesGrid = document.getElementById("activitiesGrid");
 const fechaInput = document.getElementById("fecha");
 
 const fechaShell = document.getElementById("fechaShell");
@@ -51,6 +55,7 @@ const buscarBtn = document.getElementById("buscarBtn");
 const floatingBuscarBtn = document.getElementById("floatingBuscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
+const sourceMetricsContainer = document.getElementById("sourceMetricsContainer");
 const favoritesResultsContainer = document.getElementById("favoritesResultsContainer");
 const recommendedBeachesSection = document.getElementById("recommendedBeachesSection");
 const hourWheel = document.getElementById("hourWheel");
@@ -75,9 +80,9 @@ const adminPreferencesGroup = document.getElementById("adminPreferencesGroup");
 const openUserManagementBtn = document.getElementById("openUserManagementBtn");
 const openBeachManagementBtn = document.getElementById("openBeachManagementBtn");
 const openReviewManagementBtn = document.getElementById("openReviewManagementBtn");
+const openAlertsModalBtn = document.getElementById("openAlertsModalBtn");
 const rememberActivityPreference = document.getElementById("rememberActivityPreference");
 const rememberSchedulePreference = document.getElementById("rememberSchedulePreference");
-const expandResultsPreference = document.getElementById("expandResultsPreference");
 const appHeader = document.getElementById("appHeader");
 const filtersSidebar = document.getElementById("filtersSidebar");
 const disableStaticFilters = document.getElementById("disableStaticFilters");
@@ -147,12 +152,33 @@ const beachServicesOptions = document.getElementById("beachServicesOptions");
 const beachActivitiesOptions = document.getElementById("beachActivitiesOptions");
 const activityCatalogForm = document.getElementById("activityCatalogForm");
 const activityCatalogNameInput = document.getElementById("activityCatalogName");
+const cancelActivityEditBtn = document.getElementById("cancelActivityEditBtn");
+const activityWeightsPanel = document.getElementById("activityWeightsPanel");
+const activityWeightsGrid = document.getElementById("activityWeightsGrid");
 const activityCatalogFeedback = document.getElementById("activityCatalogFeedback");
 const activityCatalogList = document.getElementById("activityCatalogList");
 const serviceCatalogForm = document.getElementById("serviceCatalogForm");
 const serviceCatalogNameInput = document.getElementById("serviceCatalogName");
 const serviceCatalogFeedback = document.getElementById("serviceCatalogFeedback");
 const serviceCatalogList = document.getElementById("serviceCatalogList");
+const alertsModal = document.getElementById("alertsModal");
+const closeAlertsModal = document.getElementById("closeAlertsModal");
+const alertsForm = document.getElementById("alertsForm");
+const alertsEditingIdInput = document.getElementById("alertsEditingId");
+const cancelAlertEditBtn = document.getElementById("cancelAlertEditBtn");
+const saveCurrentAlertBtn = document.getElementById("saveCurrentAlertBtn");
+const alertsActivitySelect = document.getElementById("alertsActivitySelect");
+const alertsBeachSelect = document.getElementById("alertsBeachSelect");
+const alertMinTemperatureInput = document.getElementById("alertMinTemperature");
+const alertMaxTemperatureInput = document.getElementById("alertMaxTemperature");
+const alertMinWindInput = document.getElementById("alertMinWind");
+const alertMaxWindInput = document.getElementById("alertMaxWind");
+const alertMinCloudInput = document.getElementById("alertMinCloud");
+const alertMaxCloudInput = document.getElementById("alertMaxCloud");
+const alertMinWaveInput = document.getElementById("alertMinWave");
+const alertMaxWaveInput = document.getElementById("alertMaxWave");
+const alertsFeedback = document.getElementById("alertsFeedback");
+const alertsList = document.getElementById("alertsList");
 
 let actividadSeleccionada = "";
 let dateTimeController;
@@ -163,10 +189,23 @@ let authModalController;
 let sessionUIController;
 let adminUIController;
 let resultsMapController;
+let alertsUIController;
 let lastRecommendationContext = null;
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
+const ACTIVITY_ICON_MAP = {
+    tomar_sol: "\u2600\uFE0F",
+    nadar: "\u{1F3CA}",
+    surf: "\u{1F3C4}",
+    windsurf: "\u{1F32C}\uFE0F",
+    bucear: "\u{1F93F}",
+    caminar: "\u{1F6B6}",
+    pescar: "\u{1F3A3}",
+    kayak: "\u{1F6F6}",
+    kitesurf: "\u{1FA81}",
+    paddle_surf: "\u{1F6F6}",
+};
 
 const staticFilterElements = {
     filterSandBeach,
@@ -238,12 +277,70 @@ updateLanguageFlag(
 
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
+    clearSourceMetrics();
     statusEl.textContent = "";
     ocultarAvisoSolar();
 }
 
 function resetRecommendationContext() {
     lastRecommendationContext = null;
+}
+
+function clearSourceMetrics() {
+    if (!sourceMetricsContainer) {
+        return;
+    }
+
+    sourceMetricsContainer.hidden = true;
+    sourceMetricsContainer.innerHTML = "";
+}
+
+function formatElapsedMs(value) {
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? `${numericValue.toFixed(2)} ms` : "N/D";
+}
+
+function renderSourceMetricCard(label, metric = {}) {
+    const isAvailable = Boolean(metric.available);
+    const statusClassName = isAvailable ? "is-available" : "is-unavailable";
+    const statusText = isAvailable ? "Disponible" : "Sin datos";
+    const records = Number.isFinite(Number(metric.records)) ? Number(metric.records) : 0;
+    const detailText = metric.error
+        ? metric.error
+        : (isAvailable ? `${records} registros encontrados` : "No hay registros para esa fecha y hora");
+
+    return `
+        <article class="source-metric-card">
+            <div class="source-metric-top">
+                <h3>${label}</h3>
+                <span class="source-metric-status ${statusClassName}">${statusText}</span>
+            </div>
+            <div class="source-metric-time">${formatElapsedMs(metric.elapsed_ms)}</div>
+            <p class="source-metric-detail">${detailText}</p>
+        </article>
+    `;
+}
+
+function renderSourceMetrics(metrics) {
+    if (!sourceMetricsContainer) {
+        return;
+    }
+
+    if (!metrics?.db) {
+        clearSourceMetrics();
+        return;
+    }
+
+    sourceMetricsContainer.innerHTML = `
+        <div class="source-metrics-header">
+            <h3>Métrica de consulta</h3>
+            <p>Tiempo medido para recuperar condiciones desde la base de datos.</p>
+        </div>
+        <div class="source-metrics-grid">
+            ${renderSourceMetricCard("Base de datos", metrics.db)}
+        </div>
+    `;
+    sourceMetricsContainer.hidden = false;
 }
 
 function getCurrentSearchSignature() {
@@ -253,7 +350,7 @@ function getCurrentSearchSignature() {
         actividad: actividadSeleccionada,
         fecha: fechaInput?.value || "",
         hora: dateTimeController?.getHoraSeleccionada() || "",
-        rango: radioSeleccionado ? radioSeleccionado.value : "5",
+        rango: radioSeleccionado ? radioSeleccionado.value : "50",
         coords: selectedCoords ? [...selectedCoords] : null
     };
 }
@@ -293,6 +390,63 @@ function guardarActividadRecordada() {
         rememberActivityPreference,
         actividadSeleccionada
     });
+}
+
+function getActivityCards() {
+    return Array.from(document.querySelectorAll(".activity-card"));
+}
+
+function getActivityIcon(activityName = "") {
+    return ACTIVITY_ICON_MAP[activityName] || "\u{1F3D6}\uFE0F";
+}
+
+function renderActivityCards(activities = []) {
+    if (!activitiesGrid) {
+        return;
+    }
+
+    if (!Array.isArray(activities) || activities.length === 0) {
+        activitiesGrid.innerHTML = `
+            <div class="empty-state">
+                No hay actividades disponibles en este momento.
+            </div>
+        `;
+        return;
+    }
+
+    activitiesGrid.innerHTML = activities.map((activity) => `
+        <div class="activity-card" data-activity="${activity.name}">
+            <span class="activity-icon">${getActivityIcon(activity.name)}</span>
+            <span class="activity-name">${activity.label}</span>
+        </div>
+    `).join("");
+}
+
+async function loadActivities() {
+    if (!activitiesGrid) {
+        return [];
+    }
+
+    try {
+        const response = await fetch("/activities/");
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const activities = await response.json();
+        renderActivityCards(activities);
+        return Array.isArray(activities) ? activities : [];
+    }
+    catch (error) {
+        console.error("Error cargando actividades:", error);
+        activitiesGrid.innerHTML = `
+            <div class="empty-state">
+                No se pudieron cargar las actividades.
+            </div>
+        `;
+        statusEl.textContent = "No se pudieron cargar las actividades disponibles.";
+        return [];
+    }
 }
 
 function guardarHorarioRecordado() {
@@ -399,6 +553,7 @@ function cumpleFiltros(playa, filtros) {
 }
 
 function renderRecommendationResults(data, { shouldScroll = false } = {}) {
+    renderSourceMetrics(data.comparativa_consulta);
     pintarResultados(data.resultados);
     resultsMapController?.setResults(data.resultados);
     if (shouldScroll) {
@@ -508,23 +663,50 @@ function initControllers() {
         authActionBtn,
         rememberActivityPreference,
         rememberSchedulePreference,
-        expandResultsPreference,
         onRememberActivityChange: guardarActividadRecordada,
         onRememberScheduleChange: guardarHorarioRecordado
     });
 
+    alertsUIController = initAlertsUI({
+        openAlertsModalBtn,
+        alertsModal,
+        closeAlertsModalBtn: closeAlertsModal,
+        alertsForm,
+        alertsEditingIdInput,
+        cancelAlertEditBtn,
+        saveCurrentAlertBtn,
+        alertsActivitySelect,
+        alertsBeachSelect,
+        alertMinTemperatureInput,
+        alertMaxTemperatureInput,
+        alertMinWindInput,
+        alertMaxWindInput,
+        alertMinCloudInput,
+        alertMaxCloudInput,
+        alertMinWaveInput,
+        alertMaxWaveInput,
+        alertsList,
+        alertsFeedback,
+        getCurrentUser: () => sessionUIController?.getCurrentUser?.(),
+        getPreferredActivityName: () => actividadSeleccionada || ""
+    });
+
     authModalController = initAuthModal({
         loginModalEl,
-        closeLoginModalBtn,
-        loginModalForm,
-        loginEmailInput,
-        loginPasswordInput,
-        confirmPasswordInput,
-        confirmPasswordGroup,
-        loginErrorMessageEl,
-        authSubmitBtn,
-        authModeHint,
-        toggleAuthModeBtn
+    closeLoginModalBtn,
+    loginModalForm,
+    loginEmailInput,
+    loginPasswordInput,
+    confirmPasswordInput,
+    confirmPasswordGroup,
+    loginErrorMessageEl,
+    authSubmitBtn,
+    authModeHint,
+    toggleAuthModeBtn,
+    onAuthSuccess: async () => {
+        await sessionUIController?.loadCurrentUser();
+        sessionUIController?.actualizarBotonesSesion();
+    }
     });
 
     sessionUIController = initSessionUI({
@@ -586,6 +768,9 @@ function initControllers() {
         beachActivitiesOptions,
         activityCatalogForm,
         activityCatalogNameInput,
+        cancelActivityEditBtn,
+        activityWeightsPanel,
+        activityWeightsGrid,
         activityCatalogFeedback,
         activityCatalogList,
         serviceCatalogForm,
@@ -597,6 +782,7 @@ function initControllers() {
     });
 
     resultsMapController = initResultsMap();
+
 }
 
 // ============================================================
@@ -608,10 +794,11 @@ function seleccionarActividad(actividad, limpiarResultados = false) {
     if (!card) return;
 
     const actividadAnterior = actividadSeleccionada;
-    activityCards.forEach(c => c.classList.remove("selected"));
+    getActivityCards().forEach(c => c.classList.remove("selected"));
     card.classList.add("selected");
     actividadSeleccionada = actividad;
     guardarActividadRecordada();
+    alertsUIController?.syncFormDefaults?.();
 
     if (limpiarResultados && actividadSeleccionada !== actividadAnterior) {
         resetRecommendationContext();
@@ -629,10 +816,17 @@ function configurarFechaYHoraIniciales() {
 // =========================================================
 
 function initActivityEvents() {
-    activityCards.forEach(card => {
-        card.addEventListener("click", () => {
-            seleccionarActividad(card.dataset.activity, true);
-        });
+    if (!activitiesGrid) {
+        return;
+    }
+
+    activitiesGrid.addEventListener("click", (event) => {
+        const card = event.target.closest(".activity-card");
+        if (!card) {
+            return;
+        }
+
+        seleccionarActividad(card.dataset.activity, true);
     });
 }
 
@@ -670,7 +864,7 @@ async function buscarRecomendaciones() {
     statusEl.textContent = "Buscando recomendaciones...";
     try {
         const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
-        const rango = radioSeleccionado ? radioSeleccionado.value : "5";
+        const rango = radioSeleccionado ? radioSeleccionado.value : "50";
         const cantidad = Math.max(0, Number(quantityController?.getCantidadSeleccionada() || 0));
         const recommendationResult = await fetchRecommendations({
             actividad: actividadSeleccionada,
@@ -709,6 +903,7 @@ async function buscarRecomendaciones() {
     catch (error) {
         console.error(error);
         resetRecommendationContext();
+        clearSourceMetrics();
         statusEl.textContent = "Ha ocurrido un error al consultar la API.";
         resultsMapController?.setResults([]);
         resultsContainer.innerHTML = `
@@ -769,146 +964,6 @@ async function handleFavoriteToggle(event) {
     btn.innerText = isFavorite ? "\u{1F90D}" : "\u2764\uFE0F";   // backward order because we changed it
 }
 
-resultsContainer.addEventListener("click", handleReviewClick);
-favoritesResultsContainer.addEventListener("click", handleReviewClick);
-
-let currentBeachForReviews = null;
-
-async function handleReviewClick(event) {
-    const btn = event.target.closest(".rating-badge");
-    if (!btn) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    const beachId = btn.dataset.id || btn.dataset.ratingId;
-    currentBeachForReviews = beachId;
-
-    const modal = document.getElementById("reviewsModal");
-    const list = document.getElementById("reviewsList");
-
-    modal.hidden = false;
-    list.innerHTML = "<div class='empty-state'>Cargando reseñas...</div>";
-
-    try {
-        const res = await authFetch(`/reviews/beach/${beachId}`);
-        const reviews = await res.json();
-        renderReviews(reviews);
-    }
-    catch (err) {
-        list.innerHTML = "<div class='empty-state'>Error cargando reseñas</div>";
-    }
-}
-
-document.getElementById("reviewsList").addEventListener("click", async (event) => {
-    const btn = event.target.closest(".delete-review-btn");
-    if (!btn) return;
-
-    const reviewId = btn.dataset.id;
-
-    const user = sessionUIController?.getCurrentUser?.();
-    if (!user) return;
-
-    const confirmDelete = confirm("¿Seguro que quieres borrar esta reseña?");
-    if (!confirmDelete) return;
-
-    try {
-        await authFetch(`/reviews/${reviewId}`, {
-            method: "DELETE"
-        });
-
-        // recargar reviews
-        const res = await authFetch(`/reviews/beach/${currentBeachForReviews}`);
-        const reviews = await res.json();
-        renderReviews(reviews);
-    }
-    catch (err) {
-        alert("Error al eliminar la reseña");
-    }
-});
-
-function renderReviews(reviews) {
-    const list = document.getElementById("reviewsList");
-    const user = sessionUIController?.getCurrentUser?.();
-
-    if (!reviews.length) {
-        list.innerHTML = "<div class='empty-state'>Sin reseñas todavía</div>";
-        return;
-    }
-
-    list.innerHTML = reviews.map(r => {
-
-        const isOwner = user && user.email === r.email;
-        const isAdmin = user && user.role === "admin";
-
-        return `
-            <div class="review-item" data-id="${r.id}">
-                <strong>${r.email}</strong>
-                <p>${r.content}</p>
-                <small>⭐ ${r.rating}</small>
-
-                ${(isOwner || isAdmin) ? `
-                    <button class="delete-review-btn" data-id="${r.id}">
-                        🗑️ Eliminar
-                    </button>
-                ` : ""}
-            </div>
-        `;
-    }).join("");
-}
-
-const reviewForm = document.getElementById("reviewForm");
-
-reviewForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!currentBeachForReviews) return;
-
-    const content = document.getElementById("reviewText").value;
-    try {
-        await authFetch("/reviews/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                beach_id: Number(currentBeachForReviews),
-                rating: selectedRating,
-                content
-            })
-        });
-        document.getElementById("reviewText").value = "";
-
-        // recargar lista
-        const res = await authFetch(`/reviews/beach/${currentBeachForReviews}`);
-        const reviews = await res.json();
-        renderReviews(reviews);
-    }
-    catch (err) {
-        alert("Error al enviar reseña");
-    }
-});
-
-document.getElementById("openConfigLink").addEventListener("click", () => {
-    document.getElementById("filterConfigModal").hidden = false;
-});
-
-let selectedRating = 5;
-document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("#starsInput span").forEach(star => {
-        star.addEventListener("click", () => {
-            selectedRating = Number(star.dataset.value);
-
-            document.querySelectorAll("#starsInput span").forEach(s => {
-                s.classList.toggle("active", Number(s.dataset.value) <= selectedRating);
-            });
-        });
-    });
-});
-
-document.getElementById("closeReviewsModal").addEventListener("click", () => {
-    document.getElementById("reviewsModal").hidden = true;
-    currentBeachForReviews = null;
-});
 
 function initSearchEvents() {
     if (buscarBtn) {
@@ -958,6 +1013,9 @@ function initLayoutEvents() {
         if (loginModalEl && !loginModalEl.hidden) {
             authModalController?.cerrarModalLogin();
         }
+        if (alertsModal && !alertsModal.hidden) {
+            alertsUIController?.closeModal?.();
+        }
         if (preferencesPanel && !preferencesPanel.hidden) {
             preferencesUIController?.cerrarPanelPreferencias();
         }
@@ -976,8 +1034,16 @@ async function initInitialState() {
     actualizarAlturaHeader();
     configurarBotonBusquedaFlotante();
 
-    if (fechaInput) {
-        seleccionarActividad(obtenerActividadInicial());
+    const activities = await loadActivities();
+
+    if (fechaInput && activities.length > 0) {
+        const rememberedActivity = obtenerActividadInicial();
+        const availableNames = new Set(activities.map((activity) => activity.name));
+        const initialActivity = availableNames.has(rememberedActivity)
+            ? rememberedActivity
+            : (availableNames.has(DEFAULT_ACTIVITY) ? DEFAULT_ACTIVITY : activities[0].name);
+
+        seleccionarActividad(initialActivity);
         configurarFechaYHoraIniciales();
     }
 
@@ -993,6 +1059,8 @@ async function initApp() {
     initAuthEvents();
     initLayoutEvents();
     await initInitialState();
+    initReviewsModule(sessionUIController);
+    initReviewPhotoModal();
 }
 
 // =========================================================

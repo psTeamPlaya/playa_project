@@ -1,0 +1,28 @@
+# ==========================================
+# Step 1 : downloading CLIPS model
+# ==========================================
+FROM python:3.12-slim AS model-downloader
+
+WORKDIR /build
+
+RUN pip install --no-cache-dir huggingface_hub transformers
+
+RUN python -c "import os, shutil; from huggingface_hub import hf_hub_download; from transformers import AutoTokenizer; model_dir = 'Xenova/clip-vit-base-patch32'; os.makedirs('models/tokenizer', exist_ok=True); v_p = hf_hub_download(repo_id=model_dir, filename='onnx/vision_model.onnx'); t_p = hf_hub_download(repo_id=model_dir, filename='onnx/text_model.onnx'); shutil.copy(v_p, 'models/vision_model.onnx'); shutil.copy(t_p, 'models/text_model.onnx'); AutoTokenizer.from_pretrained(model_dir).save_pretrained('models/tokenizer')"
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+COPY --from=model-downloader /build/models ./models
+
+COPY . .
+
+CMD ["python", "image_verify.py"]

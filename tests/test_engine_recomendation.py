@@ -87,14 +87,14 @@ def test_filtrar_resultados_recomendacion_aplica_filtros_estaticos():
     assert filtrados == [resultados[0]]
 
 
-def test_filtrar_resultados_recomendacion_filtra_por_tipo_roca():
+def test_filtrar_resultados_recomendacion_filtra_por_tipo_piscina_natural():
     resultados = [
         {"tipo": "arena", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 24, "nubosidad": 20, "velocidad_viento": 10, "altura_oleaje": 1.2}},
         {"tipo": "piedra", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 21, "nubosidad": 15, "velocidad_viento": 12, "altura_oleaje": 0.8}},
         {"tipo": "roca", "servicios": {}, "actividades_ideales": [], "condiciones": {"temperatura_ambiente": 20, "nubosidad": 10, "velocidad_viento": 8, "altura_oleaje": 0.6}},
     ]
 
-    filtrados = filtrar_resultados_recomendacion(resultados, tipo_roca=True)
+    filtrados = filtrar_resultados_recomendacion(resultados, tipo_piscina_natural=True)
 
     assert filtrados == [resultados[2]]
 
@@ -156,13 +156,12 @@ def test_filtrar_resultados_recomendacion_aplica_filtros_por_servicio_y_activida
         escuela_surf=True,
         restaurantes=True,
         zona_deportiva=True,
-        zona_beachvolley=True,
     )
 
     assert filtrados == [resultados[0]]
 
 
-def test_filtrar_resultados_recomendacion_sitios_para_comer_acepta_cualquier_servicio_de_comida():
+def test_filtrar_resultados_recomendacion_filtra_servicios_de_comida_de_forma_explicita():
     resultados = [
         {
             "tipo": "arena",
@@ -184,9 +183,11 @@ def test_filtrar_resultados_recomendacion_sitios_para_comer_acepta_cualquier_ser
         },
     ]
 
-    filtrados = filtrar_resultados_recomendacion(resultados, sitios_para_comer=True)
+    filtrados_restaurantes = filtrar_resultados_recomendacion(resultados, restaurantes=True)
+    filtrados_comida_para_llevar = filtrar_resultados_recomendacion(resultados, comida_para_llevar=True)
 
-    assert filtrados == [resultados[0], resultados[1]]
+    assert filtrados_restaurantes == [resultados[0]]
+    assert filtrados_comida_para_llevar == [resultados[1]]
 
 
 def test_filtrar_resultados_recomendacion_escuela_kayak_sin_datos_no_devuelve_coincidencias():
@@ -248,3 +249,50 @@ def test_recomendar_playas_con_top_n_cero_devuelve_todos(monkeypatch):
 
     assert len(resultados) == 2
     assert [resultado["beach_id"] for resultado in resultados] == [1, 2]
+
+
+def test_recomendar_playas_carga_pesos_una_vez_por_peticion(monkeypatch):
+    playas = [
+        {
+            "id": index,
+            "nombre": f"Playa {index}",
+            "ubicacion": "Sur",
+            "latitud": 28.0,
+            "longitud": -15.0,
+            "descripcion": "A",
+            "tipo": "arena",
+            "servicios": {},
+        }
+        for index in range(1, 4)
+    ]
+    condiciones = [
+        {
+            "beach_id": playa["id"],
+            "air_temp": 25,
+            "wind_speed": 5,
+            "cloud_cover": 10,
+            "rain_probability": 0,
+            "wave_height": 1,
+            "uv_index": 6,
+        }
+        for playa in playas
+    ]
+    calls = []
+
+    monkeypatch.setattr(engine_recomendation, "obtener_pesos_actividad", lambda actividad: calls.append(actividad) or {"air_temp": 1})
+
+    resultados = engine_recomendation.recomendar_playas(
+        actividad="tomar_sol",
+        fecha="2026-05-07",
+        hora="12:00",
+        lat_usuario=None,
+        lon_usuario=None,
+        radio_km=None,
+        top_n=0,
+        filtros={},
+        playas_override=playas,
+        condiciones_override=condiciones,
+    )
+
+    assert len(resultados) == 3
+    assert calls == ["tomar_sol"]

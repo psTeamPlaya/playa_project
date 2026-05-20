@@ -82,6 +82,27 @@
     box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3) !important;
 }
 
+.onboarding-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+#btn-skip-all {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #d9534f;
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    transition: color 0.2s ease;
+}
+
+#btn-skip-all:hover {
+    color: #a94442; 
+}
+
 /* Pie del modal */
 .questions-footer {
     margin-top: 3rem !important;
@@ -102,4 +123,8 @@
         opacity: 1;
         transform: scale(1);
     }
+}
+.modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
 }

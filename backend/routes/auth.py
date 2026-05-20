@@ -5,55 +5,28 @@ from backend.models.user import User
 from backend.schemas.user import UserCreate, UserLogin
 from backend.auth.auth import get_current_user, hash_password, verify_password, create_token
 from backend.user_audit import USER_AUDIT_REGISTER, create_user_audit_log
+from backend.auth.auth import get_current_user, hash_password, verify_password, create_token, verify_google_token
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 import os
 import asyncio
+from backend.notifications import send_welcome_email
 from dotenv import load_dotenv
-
-try:
-    from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
-except ModuleNotFoundError:  # pragma: no cover - fallback for local/test environments without mail deps
-    FastMail = MessageSchema = ConnectionConfig = MessageType = None
+from pydantic import BaseModel
+from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from backend.config import settings
 
 load_dotenv()
 
 router = APIRouter(prefix="/auth", tags=["AUTH"])
-
-conf = None
-if ConnectionConfig is not None:
-    conf = ConnectionConfig(
-        MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
-        MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
-        MAIL_FROM=os.getenv("MAIL_USERNAME"),
-        MAIL_PORT=587,
-        MAIL_SERVER="smtp.gmail.com",
-        MAIL_STARTTLS=True,
-        MAIL_SSL_TLS=False,
-        USE_CREDENTIALS=True,
-        VALIDATE_CERTS=True
-    )
-
-async def send_welcome_email(email: str):
-    if not all([FastMail, MessageSchema, MessageType, conf]):
-        return
-
-    message = MessageSchema(
-        subject="\u00a1Bienvenido a Playas App!",
-        recipients=[email],
-        body=f"Hola {email}, gracias por registrarte. \u00a1Disfruta de tus actividades!",
-        subtype=MessageType.html
-    )
-    fm = FastMail(conf)
-    try:
-        await fm.send_message(message)
-        print(f" Correo enviado a {email}")
-    except Exception as e:
-        print(f" Error enviando correo: {e}")
 
 
 @router.post("/register")
 async def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user_exist = db.query(User).filter(User.email == user.email).first()
     if db_user_exist:
+        if db_user_exist.hashed_password == "google_auth_user":
+            raise HTTPException(status_code=400, detail="Este correo ya está registrado con Google. Inicia sesión con Google.")
         raise HTTPException(status_code=400, detail="Este correo ya est\u00e1 registrado.")
 
     db_user = User(email=user.email, hashed_password=hash_password(user.password), is_admin=False)
@@ -71,6 +44,9 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
+
+    if db_user and db_user.hashed_password == "google_auth_user":
+        raise HTTPException(status_code=401, detail="Este correo está registrado con Google. Inicia sesión con Google.")
 
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -91,3 +67,11 @@ def me(current_user=Depends(get_current_user)):
         "is_admin": current_user.is_admin,
         "is_banned": current_user.is_banned,
     }
+
+class GoogleTokenRequest(BaseModel):
+    credential: str
+
+@router.post("/google")
+def google_login(body: GoogleTokenRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    print(f"DEBUG: El ID de cliente cargado es: {settings.GOOGLE_CLIENT_ID}")
+    return verify_google_token(body.credential, db, background_tasks)

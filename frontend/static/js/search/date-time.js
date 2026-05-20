@@ -201,7 +201,11 @@ export function initDateTime({
         const hoy = new Date();
         const fechaHoy = formatearFechaLocal(hoy);
 
+        const fechaMaxima = new Date();
+        fechaMaxima.setDate(fechaMaxima.getDate() + 15);
+
         fechaInput.min = fechaHoy;
+        fechaInput.max = formatearFechaLocal(fechaMaxima);
         fechaInput.value = initialSchedule?.fecha || fechaHoy;
         actualizarTextoFecha();
         actualizarHorasDisponibles({ silent: true });
@@ -267,8 +271,17 @@ export function initDateTime({
         fechaInput.addEventListener("change", () => {
             const hoy = formatearFechaLocal(new Date());
 
+            const fechaMaxima = new Date();
+            fechaMaxima.setDate(fechaMaxima.getDate() + 15);
+
+            const fechaMaximaTexto = formatearFechaLocal(fechaMaxima);
+
             if (fechaInput.value < hoy) {
                 fechaInput.value = hoy;
+            }
+
+            if (fechaInput.value > fechaMaximaTexto) {
+                fechaInput.value = fechaMaximaTexto;
             }
 
             actualizarTextoFecha();

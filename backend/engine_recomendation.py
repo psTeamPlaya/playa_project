@@ -1,12 +1,17 @@
-import math, logging, requests
+import math, logging
 import json
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
-import os
-import requests
+from sqlalchemy import and_
+from sqlalchemy.orm import selectinload
 from backend.config import settings
 from backend.db import SessionLocal
+from backend.models.activity import Activity
+from backend.models.activity_variable_weight import ActivityVariableWeight
 from backend.models.beach import Beach
+from backend.models.beach_condition import BeachCondition
+from backend.models.variable import Variable
 from backend.weather_provider import OpenMeteoError, obtener_condiciones_open_meteo
 
 logger = logging.getLogger(__name__)
@@ -112,6 +117,123 @@ def _normalize_beach_type(beach_type: str | None) -> str | None:
         return "piscina_natural"
     return normalized
 
+
+def _normalize_condition_keys(conditions: dict[str, Any] | None) -> dict[str, Any]:
+    conditions = conditions or {}
+    return {
+        "air_temp": conditions.get("air_temp", conditions.get("temperatura_ambiente")),
+        "wind_speed": conditions.get("wind_speed", conditions.get("velocidad_viento")),
+        "wave_height": conditions.get("wave_height", conditions.get("altura_oleaje")),
+        "water_temp": conditions.get("water_temp", conditions.get("temperatura_agua")),
+        "cloud_cover": conditions.get("cloud_cover", conditions.get("nubosidad")),
+        "rain_probability": conditions.get(
+            "rain_probability",
+            conditions.get("probabilidad_lluvia"),
+        ),
+        "uv_index": conditions.get("uv_index"),
+        "tide": conditions.get("tide", conditions.get("marea")),
+        "sea_level_height_msl": conditions.get("sea_level_height_msl"),
+    }
+
+
+def fusionar_playas(playas_locales, playas_db):
+    locales_por_id = {
+        playa["id"]: {
+            **playa,
+            "tipo": _normalize_beach_type(playa.get("tipo")),
+            "actividades_ideales": list(playa.get("actividades_ideales") or []),
+            "servicios": dict(playa.get("servicios") or {}),
+        }
+        for playa in playas_locales
+    }
+    fusionadas = []
+    ids_vistos = set()
+
+    for playa_db in playas_db:
+        ids_vistos.add(playa_db["id"])
+        playa_local = locales_por_id.get(playa_db["id"])
+        playa_db_normalizada = {
+            **playa_db,
+            "tipo": _normalize_beach_type(playa_db.get("tipo")),
+        }
+
+        if playa_local:
+            fusionadas.append({
+                **playa_local,
+                **playa_db_normalizada,
+                "actividades_ideales": playa_local["actividades_ideales"],
+                "servicios": playa_local["servicios"],
+            })
+            continue
+
+        fusionadas.append({
+            **playa_db_normalizada,
+            "actividades_ideales": [],
+            "servicios": {},
+        })
+
+    for playa_local in playas_locales:
+        if playa_local["id"] in ids_vistos:
+            continue
+        fusionadas.append({
+            **playa_local,
+            "tipo": _normalize_beach_type(playa_local.get("tipo")),
+            "actividades_ideales": list(playa_local.get("actividades_ideales") or []),
+            "servicios": dict(playa_local.get("servicios") or {}),
+        })
+
+    return fusionadas
+
+
+def filtrar_resultados_recomendacion(resultados, **filtros):
+    filtros_normalizados = dict(filtros)
+
+    filtros_base = {
+        k: v
+        for k, v in filtros_normalizados.items()
+        if k in {
+            "tipo_arena",
+            "tipo_piedra",
+            "tipo_piscina_natural",
+            "restaurantes",
+            "comida_para_llevar",
+            "balnearios",
+            "zona_deportiva",
+            "pet_friendly",
+            "min_temperatura_ambiente",
+            "max_temperatura_ambiente",
+            "min_nubosidad",
+            "max_nubosidad",
+            "min_velocidad_viento",
+            "max_velocidad_viento",
+            "min_altura_oleaje",
+            "max_altura_oleaje",
+        }
+    }
+    filtros_servicio_extra = {
+        k: v
+        for k, v in filtros_normalizados.items()
+        if k not in filtros_base and bool(v)
+    }
+
+    filtrados = []
+    for resultado in resultados:
+        playa = {
+            "tipo": _normalize_beach_type(resultado.get("tipo")),
+            "servicios": dict(resultado.get("servicios") or {}),
+        }
+        condiciones = _normalize_condition_keys(resultado.get("condiciones"))
+
+        if not filtrar(playa, condiciones, filtros_base):
+            continue
+
+        if any(not playa["servicios"].get(servicio) for servicio in filtros_servicio_extra):
+            continue
+
+        filtrados.append(resultado)
+
+    return filtrados
+
 def cargar_playas() -> list[dict[str, Any]]:
     session = SessionLocal()
     try:
@@ -120,7 +242,7 @@ def cargar_playas() -> list[dict[str, Any]]:
             with PLAYAS_JSON.open("r", encoding="utf-8") as f:
                 metadata_por_id = {playa["id"]: playa for playa in json.load(f)}
 
-        playas = session.query(Beach).all()
+        playas = session.query(Beach).options(selectinload(Beach.services)).all()
         resultado = []
         for p in playas:
             metadata = metadata_por_id.get(p.id, {})
@@ -160,17 +282,70 @@ def cargar_condiciones(playas, fecha, hora):
         return _cargar_condiciones_locales(playas, fecha, hora)
 
     try:
-        condiciones = obtener_condiciones_open_meteo(
-            playas=playas,
-            fecha=fecha,
-            hora=hora,
-            timezone=settings.OPEN_METEO_TIMEZONE,
-            timeout_seconds=settings.OPEN_METEO_TIMEOUT_SECONDS,
-        )
+        condiciones = cargar_condiciones_open_meteo(playas, fecha, hora)
         return [_normalizar_condicion(condicion) for condicion in condiciones]
     except OpenMeteoError as exc:
         logger.warning("Fallo consultando Open-Meteo, usando fallback local: %s", exc)
         return _cargar_condiciones_locales(playas, fecha, hora)
+
+
+def cargar_condiciones_open_meteo(playas, fecha, hora):
+    return obtener_condiciones_open_meteo(
+        playas=playas,
+        fecha=fecha,
+        hora=hora,
+        timezone=settings.OPEN_METEO_TIMEZONE,
+        timeout_seconds=settings.OPEN_METEO_TIMEOUT_SECONDS,
+    )
+
+
+def cargar_condiciones_locales(playas, fecha, hora):
+    return _cargar_condiciones_locales(playas, fecha, hora)
+
+
+def cargar_condiciones_desde_db(playas, fecha, hora):
+    if not playas:
+        return []
+
+    session = SessionLocal()
+    try:
+        beach_ids = [int(playa["id"]) for playa in playas]
+        target_dt = datetime.fromisoformat(f"{fecha}T{hora}")
+        next_minute = target_dt + timedelta(minutes=1)
+
+        rows = (
+            session.query(BeachCondition)
+            .filter(BeachCondition.beach_id.in_(beach_ids))
+            .filter(
+                and_(
+                    BeachCondition.datetime >= target_dt,
+                    BeachCondition.datetime < next_minute,
+                )
+            )
+            .all()
+        )
+
+        beach_names = {int(playa["id"]): playa.get("nombre") for playa in playas}
+        return [
+            {
+                "beach_id": row.beach_id,
+                "nombre_playa": beach_names.get(int(row.beach_id)),
+                "fecha": row.datetime.strftime("%Y-%m-%d"),
+                "hora": row.datetime.strftime("%H:%M"),
+                "air_temp": row.air_temp,
+                "wind_speed": row.wind_speed,
+                "wave_height": row.wave_height,
+                "water_temp": row.water_temp,
+                "cloud_cover": row.cloud_cover,
+                "rain_probability": row.rain_probability,
+                "tide": row.tide,
+                "uv_index": row.uv_index,
+                "fuente": "PostgreSQL beach_conditions",
+            }
+            for row in rows
+        ]
+    finally:
+        session.close()
 
 
 def _normalizar_condicion(condicion: dict[str, Any]) -> dict[str, Any]:
@@ -254,8 +429,8 @@ def puntuar(variable, valor):
     return rules.get(variable, lambda v: 5)(v)
 
 
-def calcular_score(condicion, actividad):
-    pesos = PESOS_ACTIVIDAD.get(actividad, {})
+def calcular_score(condicion, actividad, pesos: dict[str, float] | None = None):
+    pesos = pesos if pesos is not None else obtener_pesos_actividad(actividad)
 
     total = 0
     suma_pesos = 0
@@ -267,6 +442,54 @@ def calcular_score(condicion, actividad):
         suma_pesos += pesos[k]
 
     return total / suma_pesos if suma_pesos else 0
+
+
+def obtener_pesos_actividad(actividad: str) -> dict[str, float]:
+    actividad_normalizada = _activity_slug(actividad)
+    if not actividad_normalizada:
+        return {}
+
+    session = SessionLocal()
+    try:
+        activity = next(
+            (
+                item
+                for item in session.query(Activity).all()
+                if _activity_slug(item.name) == actividad_normalizada
+            ),
+            None,
+        )
+        if activity is None:
+            return PESOS_ACTIVIDAD.get(actividad_normalizada, {})
+
+        pesos_db = {
+            variable.name: float(weight.weight)
+            for weight, variable in (
+                session.query(ActivityVariableWeight, Variable)
+                .join(Variable, Variable.id == ActivityVariableWeight.variable_id)
+                .filter(ActivityVariableWeight.activity_id == activity.id)
+                .all()
+            )
+            if weight.weight is not None and float(weight.weight) > 0
+        }
+        return pesos_db or PESOS_ACTIVIDAD.get(actividad_normalizada, {})
+    except Exception as exc:
+        logger.warning("No se pudieron cargar pesos de actividad desde DB: %s", exc)
+        return PESOS_ACTIVIDAD.get(actividad_normalizada, {})
+    finally:
+        session.close()
+
+
+def calcular_score_final(
+    condicion,
+    actividad,
+    actividad_ideal: bool,
+    pesos: dict[str, float] | None = None,
+) -> float:
+    score = calcular_score(condicion, actividad, pesos)
+    if actividad_ideal:
+        score += BONUS_ACTIVIDAD_IDEAL
+    return clamp(score)
 
 
 def filtrar(playa, conditions, filtros: dict):
@@ -325,10 +548,18 @@ def recomendar_playas(
     lon_usuario: float | None,
     radio_km: float | None,
     top_n: int,
-    filtros: dict
+    filtros: dict,
+    *,
+    playas_override: list[dict[str, Any]] | None = None,
+    condiciones_override: list[dict[str, Any]] | None = None,
 ):
-    playas = cargar_playas()
-    condiciones = cargar_condiciones(playas, fecha, hora)
+    playas = playas_override if playas_override is not None else cargar_playas()
+    condiciones = (
+        condiciones_override
+        if condiciones_override is not None
+        else cargar_condiciones(playas, fecha, hora)
+    )
+    pesos_actividad = obtener_pesos_actividad(actividad)
 
     resultados = []
     for playa in playas:
@@ -348,9 +579,7 @@ def recomendar_playas(
             continue
 
         actividad_ideal = actividad in set(playa.get("actividades_ideales", []))
-        score = calcular_score(cond, actividad)
-        if actividad_ideal:
-            score += BONUS_ACTIVIDAD_IDEAL
+        score = calcular_score_final(cond, actividad, actividad_ideal, pesos_actividad)
         resultados.append({
             "beach_id": playa["id"],
             "nombre": playa["nombre"],
