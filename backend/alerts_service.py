@@ -38,8 +38,12 @@ ALLOWED_ALERT_FILTER_KEYS = {
     "max_velocidad_viento",
     "min_altura_oleaje",
     "max_altura_oleaje",
+    "dia_semana",
+    "hora_inicio",
+    "hora_fin",
 }
 INTERNAL_ALERT_FILTER_KEYS = {"target_beach_id"}
+SCHEDULE_ALERT_FILTER_KEYS = {"dia_semana", "hora_inicio", "hora_fin"}
 
 
 def sanitize_alert_filters(
@@ -60,6 +64,15 @@ def sanitize_alert_filters(
             continue
         if key not in ALLOWED_ALERT_FILTER_KEYS:
             continue
+        if key in SCHEDULE_ALERT_FILTER_KEYS:
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                continue
+            parsed_value = int(value)
+            if key == "dia_semana" and 0 <= parsed_value <= 6:
+                sanitized[key] = parsed_value
+            if key in {"hora_inicio", "hora_fin"} and 0 <= parsed_value <= 23:
+                sanitized[key] = parsed_value
+            continue
         if isinstance(value, bool):
             sanitized[key] = value
             continue
@@ -68,7 +81,39 @@ def sanitize_alert_filters(
     return sanitized
 
 
+def validate_alert_filters(filters: dict[str, Any] | None) -> None:
+    if not isinstance(filters, dict):
+        return
+
+    weekday = filters.get("dia_semana")
+    if weekday is not None:
+        if isinstance(weekday, bool) or not isinstance(weekday, (int, float)) or int(weekday) != weekday:
+            raise ValueError("El d\u00eda de la semana de la alerta no es v\u00e1lido.")
+        if int(weekday) < 0 or int(weekday) > 6:
+            raise ValueError("El d\u00eda de la semana de la alerta no es v\u00e1lido.")
+
+    start_hour = filters.get("hora_inicio")
+    end_hour = filters.get("hora_fin")
+    has_start_hour = start_hour is not None
+    has_end_hour = end_hour is not None
+
+    if has_start_hour != has_end_hour:
+        raise ValueError("Debes indicar la hora de inicio y la hora de fin del rango horario.")
+
+    for label, value in (("hora de inicio", start_hour), ("hora de fin", end_hour)):
+        if value is None:
+            continue
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or int(value) != value:
+            raise ValueError(f"La {label} de la alerta no es v\u00e1lida.")
+        if int(value) < 0 or int(value) > 23:
+            raise ValueError(f"La {label} de la alerta no es v\u00e1lida.")
+
+    if has_start_hour and has_end_hour and int(start_hour) > int(end_hour):
+        raise ValueError("La hora de inicio no puede ser mayor que la hora de fin.")
+
+
 def build_alert_filters(filters: dict[str, Any] | None, *, beach_id: int) -> dict[str, Any]:
+    validate_alert_filters(filters)
     sanitized = sanitize_alert_filters(filters)
     sanitized["target_beach_id"] = int(beach_id)
     return sanitized
@@ -111,6 +156,21 @@ def _condition_to_dict(condition: BeachCondition) -> dict[str, Any]:
         "tide": condition.tide,
         "uv_index": condition.uv_index,
     }
+
+
+def _matches_schedule_filters(match_datetime: datetime, filters: dict[str, Any]) -> bool:
+    weekday = filters.get("dia_semana")
+    if weekday is not None and match_datetime.weekday() != int(weekday):
+        return False
+
+    start_hour = filters.get("hora_inicio")
+    end_hour = filters.get("hora_fin")
+    if start_hour is not None and end_hour is not None:
+        current_hour = match_datetime.hour
+        if current_hour < int(start_hour) or current_hour > int(end_hour):
+            return False
+
+    return True
 
 
 def evaluate_alert_match(
@@ -172,6 +232,8 @@ def evaluate_alert_match(
             continue
 
         condition_dict = _condition_to_dict(condition)
+        if not _matches_schedule_filters(condition.datetime, filters):
+            continue
         if not filtrar(beach, condition_dict, filters):
             continue
 

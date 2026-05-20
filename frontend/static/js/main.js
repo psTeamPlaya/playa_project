@@ -172,6 +172,9 @@ const cancelAlertEditBtn = document.getElementById("cancelAlertEditBtn");
 const saveCurrentAlertBtn = document.getElementById("saveCurrentAlertBtn");
 const alertsActivitySelect = document.getElementById("alertsActivitySelect");
 const alertsBeachSelect = document.getElementById("alertsBeachSelect");
+const alertDayOfWeekSelect = document.getElementById("alertDayOfWeek");
+const alertStartHourInput = document.getElementById("alertStartHour");
+const alertEndHourInput = document.getElementById("alertEndHour");
 const alertMinTemperatureInput = document.getElementById("alertMinTemperature");
 const alertMaxTemperatureInput = document.getElementById("alertMaxTemperature");
 const alertMinWindInput = document.getElementById("alertMinWind");
@@ -672,6 +675,9 @@ function initControllers() {
         saveCurrentAlertBtn,
         alertsActivitySelect,
         alertsBeachSelect,
+        alertDayOfWeekSelect,
+        alertStartHourInput,
+        alertEndHourInput,
         alertMinTemperatureInput,
         alertMaxTemperatureInput,
         alertMinWindInput,

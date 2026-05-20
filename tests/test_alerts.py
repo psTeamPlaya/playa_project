@@ -219,6 +219,55 @@ def test_update_user_alert_replaces_activity_beach_and_filters(monkeypatch):
     assert updated["filters"] == {"max_nubosidad": 20.0}
 
 
+def test_create_user_alert_accepts_weekday_and_hour_range_filters(monkeypatch):
+    db = make_test_session()
+    user = create_user(db)
+    monkeypatch.setattr(ALERTS_HELPERS_MODULE, "collect_available_activities", lambda _db: ["surf"])
+    monkeypatch.setattr(
+        ALERTS_HELPERS_MODULE,
+        "cargar_playas",
+        lambda: [{"id": 1, "nombre": "Las Canteras", "ubicacion": "Las Palmas", "latitud": 28.1, "longitud": -15.4}],
+    )
+
+    created = create_user_alert(
+        UserAlertCreate(
+            activity_name="surf",
+            beach_id=1,
+            filters={"dia_semana": 4, "hora_inicio": 9, "hora_fin": 17},
+        ),
+        current_user=user,
+        db=db,
+    )
+
+    assert created["filters"] == {"dia_semana": 4, "hora_inicio": 9, "hora_fin": 17}
+
+
+def test_create_user_alert_rejects_incomplete_hour_range(monkeypatch):
+    db = make_test_session()
+    user = create_user(db)
+    monkeypatch.setattr(ALERTS_HELPERS_MODULE, "collect_available_activities", lambda _db: ["surf"])
+    monkeypatch.setattr(
+        ALERTS_HELPERS_MODULE,
+        "cargar_playas",
+        lambda: [{"id": 1, "nombre": "Las Canteras", "ubicacion": "Las Palmas", "latitud": 28.1, "longitud": -15.4}],
+    )
+
+    try:
+        create_user_alert(
+            UserAlertCreate(
+                activity_name="surf",
+                beach_id=1,
+                filters={"hora_inicio": 9},
+            ),
+            current_user=user,
+            db=db,
+        )
+        assert False, "Expected HTTPException"
+    except HTTPException as exc:
+        assert exc.status_code == 400
+        assert "hora de inicio" in exc.detail
+
+
 def test_evaluate_alert_match_returns_first_future_match_for_selected_beach(monkeypatch):
     db = make_test_session()
     user = create_user(db)
@@ -308,6 +357,95 @@ def test_evaluate_alert_match_returns_first_future_match_for_selected_beach(monk
     assert match["beach_name"] == "Las Canteras"
 
 
+def test_evaluate_alert_match_respects_selected_weekday_and_hour_range(monkeypatch):
+    db = make_test_session()
+    user = create_user(db)
+    now = datetime(2026, 5, 14, 9, 15)
+    wrong_weekday_dt = datetime(2026, 5, 14, 11, 0)
+    wrong_hour_dt = datetime(2026, 5, 15, 8, 0)
+    expected_match_dt = datetime(2026, 5, 15, 12, 0)
+
+    alert = UserAlert(
+        user_id=user.id,
+        activity_name="surf",
+        filters=build_alert_filters(
+            {
+                "min_velocidad_viento": 10,
+                "dia_semana": expected_match_dt.weekday(),
+                "hora_inicio": 10,
+                "hora_fin": 14,
+            },
+            beach_id=1,
+        ),
+        latitude=28.1,
+        longitude=-15.4,
+        radio_km=1,
+        location_label="Las Canteras Â· Las Palmas",
+    )
+    db.add(alert)
+    db.add_all([
+        BeachCondition(
+            beach_id=1,
+            datetime=wrong_weekday_dt,
+            air_temp=24,
+            wind_speed=14,
+            wave_height=1.5,
+            water_temp=22,
+            cloud_cover=10,
+            rain_probability=0,
+            tide=0.0,
+            uv_index=6,
+        ),
+        BeachCondition(
+            beach_id=1,
+            datetime=wrong_hour_dt,
+            air_temp=24,
+            wind_speed=14,
+            wave_height=1.5,
+            water_temp=22,
+            cloud_cover=10,
+            rain_probability=0,
+            tide=0.0,
+            uv_index=6,
+        ),
+        BeachCondition(
+            beach_id=1,
+            datetime=expected_match_dt,
+            air_temp=25,
+            wind_speed=16,
+            wave_height=1.8,
+            water_temp=22,
+            cloud_cover=8,
+            rain_probability=0,
+            tide=0.0,
+            uv_index=6,
+        ),
+    ])
+    db.commit()
+
+    monkeypatch.setattr(
+        ALERTS_SERVICE_MODULE,
+        "cargar_playas",
+        lambda: [
+            {
+                "id": 1,
+                "nombre": "Las Canteras",
+                "latitud": 28.12,
+                "longitud": -15.43,
+                "tipo": "arena",
+                "servicios": {},
+                "actividades_ideales": [normalize_activity_name("surf")],
+            }
+        ],
+    )
+
+    match = evaluate_alert_match(db, alert, now=now)
+
+    assert match is not None
+    assert match["datetime"] == expected_match_dt
+    assert match["beach_name"] == "Las Canteras"
+
+
 def test_process_user_alerts_cycle_sends_email_once_for_same_match(monkeypatch):
     db = make_test_session()
     user = create_user(db)
@@ -377,6 +515,72 @@ def test_process_user_alerts_cycle_sends_email_once_for_same_match(monkeypatch):
     assert len(sent_emails) == 1
     assert sent_emails[0]["email"] == user_email
     assert persisted_alert.last_notified_match == match_dt
+
+
+def test_process_user_alerts_cycle_sends_email_to_nestor_henriquez(monkeypatch):
+    db = make_test_session()
+    user = create_user(db, email="nestor.henriquez@gmail.com")
+    match_dt = datetime.utcnow().replace(minute=0, second=0, microsecond=0) + timedelta(hours=2)
+
+    alert = UserAlert(
+        user_id=user.id,
+        activity_name="surf",
+        filters=build_alert_filters({"min_velocidad_viento": 10}, beach_id=1),
+        latitude=28.1,
+        longitude=-15.4,
+        radio_km=1,
+        location_label="Las Canteras · Las Palmas",
+        is_active=True,
+    )
+    db.add(alert)
+    db.add(
+        BeachCondition(
+            beach_id=1,
+            datetime=match_dt,
+            air_temp=24,
+            wind_speed=14,
+            wave_height=1.5,
+            water_temp=22,
+            cloud_cover=10,
+            rain_probability=0,
+            tide=0.0,
+            uv_index=6,
+        )
+    )
+    db.commit()
+
+    sent_emails = []
+
+    def fake_send_alert_email_sync(**payload):
+        sent_emails.append(payload)
+
+    async def run_inline(func, *args, **kwargs):
+        return func(*args, **kwargs)
+
+    monkeypatch.setattr(ALERTS_SERVICE_MODULE, "SessionLocal", lambda: db)
+    monkeypatch.setattr(ALERTS_SERVICE_MODULE, "_run_in_thread", run_inline)
+    monkeypatch.setattr(ALERTS_SERVICE_MODULE, "upsert_beach_conditions", lambda _db: None)
+    monkeypatch.setattr(ALERTS_SERVICE_MODULE, "_send_alert_email_sync", fake_send_alert_email_sync)
+    monkeypatch.setattr(
+        ALERTS_SERVICE_MODULE,
+        "cargar_playas",
+        lambda: [
+            {
+                "id": 1,
+                "nombre": "Las Canteras",
+                "latitud": 28.12,
+                "longitud": -15.43,
+                "tipo": "arena",
+                "servicios": {},
+                "actividades_ideales": [normalize_activity_name("surf")],
+            }
+        ],
+    )
+
+    asyncio.run(process_user_alerts_cycle())
+
+    assert len(sent_emails) == 1
+    assert sent_emails[0]["email"] == "nestor.henriquez@gmail.com"
 
 
 def test_admin_can_crud_alerts_for_selected_user(monkeypatch):
