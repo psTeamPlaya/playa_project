@@ -773,7 +773,7 @@ button {
 }
 
 .desplegable {
-    overflow: hidden;
+    /* overflow: hidden; */
     padding: 0;
 }
 
