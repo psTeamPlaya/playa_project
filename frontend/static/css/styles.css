@@ -865,15 +865,20 @@ button {
     margin-top: 0;
 }
 
-.beach-card[open] .meta-list {
+.beach-card[open] .meta-list,
+.beach-card[open] .services-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    align-items: stretch;
 }
 
 .beach-card[open] .chip {
-    width: max-content;
+    display: flex;
+    width: 100%;
+    min-width: 0;
     font-size: 1rem;
     line-height: 1.2;
+    white-space: normal;
 }
 
 .detalle-box {
@@ -1568,7 +1573,7 @@ button {
 }
 
 .admin-modal-wide {
-    /* width: min(100%, 1100px); */
+    width: min(100%, 1280px);
 }
 
 .admin-modal-header h2 {
@@ -1686,6 +1691,12 @@ button {
     color: #ffffff;
 }
 
+.admin-inline-button-active {
+    background: #eaf7fd;
+    border-color: var(--secondary);
+    color: var(--primary-dark);
+}
+
 .admin-inline-actions {
     display: inline-flex;
     align-items: center;
@@ -1696,7 +1707,7 @@ button {
 
 .admin-user-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.2fr) minmax(0, 0.85fr);
     gap: 1rem;
     min-height: 0;
 }

@@ -6,6 +6,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from backend.catalog_utils import normalize_activity_name, prettify_catalog_name
 from backend.db import SessionLocal
 from backend.engine_recomendation import (
     calcular_score_final,
@@ -17,7 +18,6 @@ from backend.models.beach_condition import BeachCondition
 from backend.models.user import User
 from backend.models.user_alert import UserAlert
 from backend.notifications import send_alert_email
-from backend.routes.admin import normalize_activity_name, prettify_catalog_name
 from backend.routes.beach_conditions import upsert_beach_conditions
 
 
@@ -202,6 +202,10 @@ def _send_alert_email_sync(**payload) -> None:
     asyncio.run(send_alert_email(**payload))
 
 
+def _has_valid_alert_email(email: str | None) -> bool:
+    return isinstance(email, str) and "@" in email
+
+
 def _process_user_alerts_cycle_sync() -> None:
     db = SessionLocal()
     try:
@@ -214,6 +218,8 @@ def _process_user_alerts_cycle_sync() -> None:
         for alert in alerts:
             user = db.get(User, alert.user_id)
             if user is None or user.is_banned:
+                continue
+            if not _has_valid_alert_email(user.email):
                 continue
 
             match = evaluate_alert_match(db, alert)

@@ -82,7 +82,7 @@ export function initAlertsUI({
     }
 
     async function fetchJson(url, options = {}) {
-        const response = options.method ? await authFetch(url, options) : await fetch(url, options);
+        const response = await authFetch(url, options);
         if (!response.ok) {
             const payload = await response.json().catch(() => ({}));
             throw new Error(payload.detail || "No se pudo completar la operación.");
