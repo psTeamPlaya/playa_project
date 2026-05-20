@@ -122,7 +122,7 @@ export async function openReviewPhotoModal() {
     /**
      * Switches modal view to status tracking and deletion grace period.
      */
-    function switchToStatusView(previewBase64, beachId, photoHash) {
+    function switchToStatusView(previewBase64, beachId, photoHash, beachName) {
         let timeLeft = 180; // 3-minute grace period
 
         mainLayout.style.display = "none";
@@ -131,8 +131,11 @@ export async function openReviewPhotoModal() {
         statusLayout.className = "review-status-layout";
         statusLayout.innerHTML = `
             <div style="text-align: center; padding: 20px;">
-                <h3 style="margin-bottom: 15px; color: #333;">Procesando tu foto</h3>
-                
+                <h3 style="margin-bottom: 5px; color: #333;">Procesando tu foto</h3>
+                <p style="margin-bottom: 15px; font-weight: 600; color: #007bff;">
+                    📍 ${beachName}
+                </p>
+
                 <div style="position: relative; width: 180px; height: 180px; margin: 0 auto 20px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
                     <img src="${previewBase64}" style="width: 100%; height: 100%; object-fit: cover;" />
                     <div id="aiStatusBadge" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: #fff; font-size: 0.8rem; padding: 6px 0;">
@@ -141,7 +144,7 @@ export async function openReviewPhotoModal() {
                 </div>
 
                 <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">
-                    Tu foto está en la cola de verificación. Tienes un periodo de gracia para cancelar la publicación si lo deseas.
+                    La ubicación ha sido verificada. Estamos confirmando que el entorno coincide con ${beachName}.
                 </p>
 
                 <button type="button" id="undoPhotoBtn" style="background: #d9534f; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; transition: background 0.2s;">
@@ -157,6 +160,7 @@ export async function openReviewPhotoModal() {
         // Grace period countdown
         countdownInterval = setInterval(() => {
             timeLeft--;
+
             if (timeLeft <= 0) {
                 clearInterval(countdownInterval);
                 undoBtn.disabled = true;
@@ -218,9 +222,7 @@ export async function openReviewPhotoModal() {
                         undoBtn.disabled = false;
                         undoBtn.style.background = "#666";
                         undoBtn.textContent = "Cerrar ventana";
-                    }
-
-                    clearInterval(countdownInterval); 
+                    } 
                     clearInterval(apiCheckInterval);
                 }
             } catch (err) {
@@ -280,7 +282,7 @@ export async function openReviewPhotoModal() {
                         if (response.ok && result.status === "received") {
                             const previewReader = new FileReader();
                             previewReader.onloadend = function() {
-                                switchToStatusView(previewReader.result, result.beach_id, clientPhotoHash);
+                                switchToStatusView(previewReader.result, result.beach_id, clientPhotoHash, result.beach_name);
                             };
                             previewReader.readAsDataURL(fileBlob);
                         
