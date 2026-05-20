@@ -13,6 +13,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import os
 from dotenv import load_dotenv
+from backend.notifications import send_welcome_email
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -75,12 +76,13 @@ def is_logged_in(request: Request) -> bool:
     except JWTError:
         return False
 
-def verify_google_token(credential: str, db) -> dict:
+def verify_google_token(credential: str, db, background_tasks=None) -> dict:
     try:
         id_info = id_token.verify_oauth2_token(
             credential,
             google_requests.Request(),
             settings.GOOGLE_CLIENT_ID,
+            clock_skew_in_seconds = 10
         )
 
         email = id_info.get("email")
@@ -97,6 +99,8 @@ def verify_google_token(credential: str, db) -> dict:
             db.add(user)
             db.commit()
             db.refresh(user)
+            if background_tasks:
+                background_tasks.add_task(send_welcome_email, email)
 
         access_token = create_token(user.id)
         return {"access_token": access_token}

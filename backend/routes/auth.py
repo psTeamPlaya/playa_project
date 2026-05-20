@@ -13,6 +13,8 @@ from backend.notifications import send_welcome_email
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from backend.config import settings
 
 load_dotenv()
 
@@ -67,11 +69,9 @@ def me(current_user=Depends(get_current_user)):
     }
 
 class GoogleTokenRequest(BaseModel):
-    token: str
+    credential: str
 
 @router.post("/google")
-def google_login(body: GoogleTokenRequest, db: Session = Depends(get_db)):
-    from backend.config import settings
+def google_login(body: GoogleTokenRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     print(f"DEBUG: El ID de cliente cargado es: {settings.GOOGLE_CLIENT_ID}")
-
-    return verify_google_token(body.credential, db)
+    return verify_google_token(body.credential, db, background_tasks)
