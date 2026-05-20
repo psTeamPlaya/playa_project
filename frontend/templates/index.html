@@ -59,30 +59,6 @@
         </button>
 
         <div class="right-part">
-          <section class="languages">
-            <button class="language-button btn-secondary" id="languageMenuBtn" type="button" aria-label="Language">
-              <span id="currentLanguageFlag" class="language-flag" aria-hidden="true"></span>
-            </button>
-
-            <div class="language-dropdown" id="languageDropdown" hidden>
-              <button class="language-option" data-lang="es">
-                <span class="language-option-flag" aria-hidden="true"></span>
-                <span>Espa&ntilde;ol</span>
-              </button>
-
-              <button class="language-option" data-lang="en">
-                <span class="language-option-flag" aria-hidden="true"></span>
-                <span>English</span>
-              </button>
-
-              <button class="language-option" data-lang="cs">
-                <span class="language-option-flag" aria-hidden="true"></span>
-                <span>&#268;e&#353;tina</span>
-              </button>
-
-            </div>
-          </section>
-
         <section class="auth-container" id="authContainer">
 
           <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
@@ -96,6 +72,20 @@
             <span class="auth-trigger-label" id="authActionLabel">Acceder</span>
 
           </button>
+
+          <section class="language-selector" aria-label="Selector de idioma">
+            <button class="language-option language-flag-button" data-lang="es" type="button" aria-label="Español">
+              <span class="language-option-flag" aria-hidden="true"></span>
+            </button>
+
+            <button class="language-option language-flag-button" data-lang="en" type="button" aria-label="English">
+              <span class="language-option-flag" aria-hidden="true"></span>
+            </button>
+
+            <button class="language-option language-flag-button" data-lang="cs" type="button" aria-label="Čeština">
+              <span class="language-option-flag" aria-hidden="true"></span>
+            </button>
+          </section>
 
           <div class="preferences-panel" id="preferencesPanel" hidden>
 
