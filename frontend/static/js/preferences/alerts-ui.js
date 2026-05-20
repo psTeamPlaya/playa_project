@@ -10,6 +10,7 @@ const FILTER_FIELDS = [
     ["min_altura_oleaje", "Oleaje mín.", "m"],
     ["max_altura_oleaje", "Oleaje máx.", "m"],
 ];
+const WEEKDAY_LABELS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
 function escapeHtml(value = "") {
     return String(value)
@@ -37,6 +38,27 @@ function parseOptionalNumber(value) {
     return Number.isFinite(parsed) ? parsed : null;
 }
 
+function formatAlertSchedule(filters = {}) {
+    const parts = [];
+
+    if (filters.dia_semana !== undefined && filters.dia_semana !== null && filters.dia_semana !== "") {
+        const weekdayLabel = WEEKDAY_LABELS[Number(filters.dia_semana)];
+        if (weekdayLabel) {
+            parts.push(`Día: ${weekdayLabel}`);
+        }
+    }
+
+    const hasStartHour = filters.hora_inicio !== undefined && filters.hora_inicio !== null && filters.hora_inicio !== "";
+    const hasEndHour = filters.hora_fin !== undefined && filters.hora_fin !== null && filters.hora_fin !== "";
+    if (hasStartHour && hasEndHour) {
+        const startHour = String(Number(filters.hora_inicio)).padStart(2, "0");
+        const endHour = String(Number(filters.hora_fin)).padStart(2, "0");
+        parts.push(`Horario: ${startHour}:00-${endHour}:00`);
+    }
+
+    return parts.join(" · ");
+}
+
 export function initAlertsUI({
     openAlertsModalBtn,
     alertsModal,
@@ -52,6 +74,9 @@ export function initAlertsUI({
     saveCurrentAlertBtn,
     alertsActivitySelect,
     alertsBeachSelect,
+    alertDayOfWeekSelect,
+    alertStartHourInput,
+    alertEndHourInput,
     alertMinTemperatureInput,
     alertMaxTemperatureInput,
     alertMinWindInput,
@@ -212,6 +237,9 @@ export function initAlertsUI({
 
     function buildFiltersPayload() {
         const filters = {
+            dia_semana: parseOptionalNumber(alertDayOfWeekSelect?.value),
+            hora_inicio: parseOptionalNumber(alertStartHourInput?.value),
+            hora_fin: parseOptionalNumber(alertEndHourInput?.value),
             min_temperatura_ambiente: parseOptionalNumber(alertMinTemperatureInput?.value),
             max_temperatura_ambiente: parseOptionalNumber(alertMaxTemperatureInput?.value),
             min_velocidad_viento: parseOptionalNumber(alertMinWindInput?.value),
@@ -228,6 +256,16 @@ export function initAlertsUI({
     }
 
     function validateFilters(filters) {
+        const hasStartHour = filters.hora_inicio !== undefined;
+        const hasEndHour = filters.hora_fin !== undefined;
+        if (hasStartHour !== hasEndHour) {
+            throw new Error("Debes indicar la hora de inicio y la hora de fin del rango horario.");
+        }
+
+        if (hasStartHour && hasEndHour && filters.hora_inicio > filters.hora_fin) {
+            throw new Error("La hora de inicio no puede ser mayor que la hora de fin.");
+        }
+
         const ranges = [
             ["Temperatura", filters.min_temperatura_ambiente, filters.max_temperatura_ambiente],
             ["Viento", filters.min_velocidad_viento, filters.max_velocidad_viento],
@@ -255,6 +293,15 @@ export function initAlertsUI({
         }
         if (alertsBeachSelect) {
             alertsBeachSelect.value = String(alert.beach_id || "");
+        }
+        if (alertDayOfWeekSelect) {
+            alertDayOfWeekSelect.value = alert.filters?.dia_semana ?? "";
+        }
+        if (alertStartHourInput) {
+            alertStartHourInput.value = alert.filters?.hora_inicio ?? "";
+        }
+        if (alertEndHourInput) {
+            alertEndHourInput.value = alert.filters?.hora_fin ?? "";
         }
         if (alertMinTemperatureInput) {
             alertMinTemperatureInput.value = alert.filters?.min_temperatura_ambiente ?? "";
@@ -304,12 +351,23 @@ export function initAlertsUI({
             return;
         }
 
+        const formatAlertSummary = (filters = {}) => {
+            const scheduleText = formatAlertSchedule(filters);
+            const conditionsText = formatAlertFilters(filters);
+            const parts = [scheduleText];
+            if (!scheduleText || conditionsText !== "Sin condiciones extra") {
+                parts.push(conditionsText);
+            }
+            const uniqueParts = parts.filter((part, index) => parts.indexOf(part) === index);
+            return uniqueParts.join(" · ");
+        };
+
         alertsList.innerHTML = alerts.map((alert) => `
             <article class="alerts-list-card">
                 <div class="alerts-list-card-body">
                     <strong>${escapeHtml(alert.activity_label)}</strong>
                     <div>${escapeHtml(alert.beach_label || "Playa guardada")}</div>
-                    <small>${escapeHtml(formatAlertFilters(alert.filters))}</small>
+                    <small>${escapeHtml(formatAlertSummary(alert.filters))}</small>
                     <small>
                         ${alert.last_notified_match
                             ? `Último aviso: ${new Date(alert.last_notified_match).toLocaleString("es-ES")}`

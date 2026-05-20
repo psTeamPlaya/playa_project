@@ -22,8 +22,13 @@ def resolve_alert_payload(
     if target_beach is None:
         raise HTTPException(status_code=400, detail="Debes seleccionar una playa válida")
 
+    try:
+        filters = build_alert_filters(payload.filters, beach_id=int(target_beach["id"]))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     resolved_values = {
-        "filters": build_alert_filters(payload.filters, beach_id=int(target_beach["id"])),
+        "filters": filters,
         "latitude": float(target_beach["latitud"]),
         "longitude": float(target_beach["longitud"]),
         "radio_km": 1,

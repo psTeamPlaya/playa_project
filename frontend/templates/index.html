@@ -1218,6 +1218,29 @@
           <h3>Condiciones</h3>
           <div class="alerts-form-grid">
             <label class="field">
+              <span>Día de la semana</span>
+              <select id="alertDayOfWeek">
+                <option value="">Cualquier día</option>
+                <option value="0">Lunes</option>
+                <option value="1">Martes</option>
+                <option value="2">Miércoles</option>
+                <option value="3">Jueves</option>
+                <option value="4">Viernes</option>
+                <option value="5">Sábado</option>
+                <option value="6">Domingo</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Hora inicio (0-23)</span>
+              <input id="alertStartHour" type="number" step="1" min="0" max="23" placeholder="Ej: 9">
+            </label>
+
+            <label class="field">
+              <span>Hora fin (0-23)</span>
+              <input id="alertEndHour" type="number" step="1" min="0" max="23" placeholder="Ej: 17">
+            </label>
+            <label class="field">
               <span>Temperatura mín. (ºC)</span>
               <input id="alertMinTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 22">
             </label>
