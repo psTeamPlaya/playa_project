@@ -31,7 +31,7 @@ import {
 import { initQuantity } from "./search/quantity.js";
 import { initResultsMap } from "./results/results-map.js";
 import { initReviewsModule }  from "./reviews/reviews.js";
-import { openReviewPhotoModal } from "./review-photo/review-photo.js";
+import { initReviewPhotoModal } from "./review-photo/review-photo.js";
 
 const activitiesGrid = document.getElementById("activitiesGrid");
 const fechaInput = document.getElementById("fecha");
@@ -998,18 +998,11 @@ async function initApp() {
     initLayoutEvents();
     await initInitialState();
     initReviewsModule(sessionUIController);
+    initReviewPhotoModal();
 }
 
 // =========================================================
 // ARRANQUE
 // =========================================================
-const testBtn = document.getElementById("testPhotoModalBtn");
-
-// 2. Dodajemy nasłuchiwanie na kliknięcie
-if (testBtn) {
-    testBtn.addEventListener("click", () => {
-        openReviewPhotoModal();
-    });
-}
 
 initApp();
