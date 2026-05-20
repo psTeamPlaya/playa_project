@@ -139,7 +139,7 @@ export function initAuthModal({
             }
 
             const data = await res.json();
-            localStorage.setItem("token", data.access_token);
+            sessionStorage.setItem("token", data.access_token);
             await onAuthSuccessCallback?.(data);
             cerrarModalLogin();
         } catch (error) {
