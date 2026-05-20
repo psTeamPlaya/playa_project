@@ -16,50 +16,19 @@ El frontend será servido por el propio backend, evitando introducir frameworks 
 ## Requisitos
 - Python 3.11 o superior
 - PostgreSQL en ejecución
-
+- Docker
 ## Instalación
 
-### 1. Crear entorno virtual
+### 1. Como ejecutar
 - Abrimos un terminal en la carpeta base del proyecto, y ejecutamos el siguiente comando:
 
 ```bash
-python -m venv .venv
-```
-o
-```
-uv venv
-```
-
-### 2. Activar entorno virtual
-
-#### Windows
-```bash
-.venv\Scripts\activate
-```
-
-#### Linux / macOS
-```bash
-source .venv/bin/activate
+docker compose up
 ```
 
 
-### 2.1 Instalación de dependencias
+### 2. Comprobar el backend
 
-#### Si existe el fichero **requirements.txt**, ejecutamos:
-```bash
-python -m pip install -r requirements.txt
-```
-
-#### o si, por el contrario, tenemos definidas las dependencias en el fichero **pyproject.toml**, podemos ejecutar, puesto que suele ser bastante más rápido:
-```
-uv sync
-```
-
-### 3. Para levantar el backend
-
-```bash
-uvicorn backend.main:app --reload
-```
 ## URL para comprobar que el backend está funcionando
 - Salud de la API: `http://127.0.0.1:8000/api/health`
 
