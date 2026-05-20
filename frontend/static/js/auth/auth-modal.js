@@ -12,10 +12,11 @@ export function initAuthModal({
     loginErrorMessageEl,
     authSubmitBtn,
     authModeHint,
-    toggleAuthModeBtn
+    toggleAuthModeBtn,
+    onAuthSuccess
 }) {
     let authMode = "login";
-    let onAuthSuccessCallback = null;
+    let onAuthSuccessCallback = onAuthSuccess || null;
 
     function mostrarMensajeAuth(mensaje, tipo = "error") {
         if (!loginErrorMessageEl) return;
@@ -57,6 +58,7 @@ export function initAuthModal({
     function abrirModalLogin(callback) {
         if (!loginModalEl) return;
         if (callback) onAuthSuccessCallback = callback;
+        else if (!onAuthSuccessCallback) onAuthSuccessCallback = options.onAuthSuccess;
         authMode = "login";
         aplicarModoAuth();
         loginModalEl.hidden = false;

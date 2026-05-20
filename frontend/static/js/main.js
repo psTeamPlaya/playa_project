@@ -457,16 +457,20 @@ function initControllers() {
 
     authModalController = initAuthModal({
         loginModalEl,
-        closeLoginModalBtn,
-        loginModalForm,
-        loginEmailInput,
-        loginPasswordInput,
-        confirmPasswordInput,
-        confirmPasswordGroup,
-        loginErrorMessageEl,
-        authSubmitBtn,
-        authModeHint,
-        toggleAuthModeBtn
+    closeLoginModalBtn,
+    loginModalForm,
+    loginEmailInput,
+    loginPasswordInput,
+    confirmPasswordInput,
+    confirmPasswordGroup,
+    loginErrorMessageEl,
+    authSubmitBtn,
+    authModeHint,
+    toggleAuthModeBtn,
+    onAuthSuccess: async () => {
+        await sessionUIController?.loadCurrentUser();
+        sessionUIController?.actualizarBotonesSesion();
+    }
     });
 
     sessionUIController = initSessionUI({
