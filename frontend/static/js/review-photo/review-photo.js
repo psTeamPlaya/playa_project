@@ -2,7 +2,7 @@
  * Opens the photo upload and review modal.
  * Handles image selection, compression, GPS verification, and AI status tracking.
  */
-export async function openReviewPhotoModal() {
+async function openReviewPhotoModal() {
     const existingModal = document.getElementById("reviewPhotoModal");
     if (existingModal) existingModal.remove();
 
@@ -32,15 +32,21 @@ export async function openReviewPhotoModal() {
     let countdownInterval = null;
     let apiCheckInterval = null;
 
+    let undoBtnLeaving = false;
+
+    function closeModal(){
+        clearInterval(countdownInterval);
+        clearInterval(apiCheckInterval);
+        modalWrapper.remove();
+        undoBtnLeaving = false;
+    }
     // Handle modal interaction events
     modalWrapper.addEventListener("click", (e) => {
         const closeBtn = e.target.closest("#closeReviewPhotoModal");
         
         if (closeBtn || e.target === modalWrapper) {
             // Clean up intervals to prevent memory leaks if modal is closed early
-            clearInterval(countdownInterval);
-            clearInterval(apiCheckInterval);
-            modalWrapper.remove();
+            closeModal();
             return;
         }
 
@@ -173,34 +179,39 @@ export async function openReviewPhotoModal() {
 
         // Deletion action
         undoBtn.addEventListener("click", async () => {
-            if (!confirm("¿Seguro que quieres cancelar la publicación de esta foto?")) return;
+            if(!undoBtnLeaving){
+                if (!confirm("¿Seguro que quieres cancelar la publicación de esta foto?")) return;
 
-            undoBtn.disabled = true;
-            undoBtn.textContent = "Eliminando...";
+                undoBtn.disabled = true;
+                undoBtn.textContent = "Eliminando...";
 
-            try {
-                const formData = new FormData();
-                formData.append("beach_id", beachId);
-                formData.append("photo_hash", photoHash);
+                try {
+                    const formData = new FormData();
+                    formData.append("beach_id", beachId);
+                    formData.append("photo_hash", photoHash);
 
-                const response = await fetch("/api/review-photo/delete-my-photo", {
-                    method: "POST",
-                    body: formData
-                });
+                    const response = await fetch("/api/review-photo/delete-my-photo", {
+                        method: "POST",
+                        body: formData
+                    });
 
-                if (response.ok) {
-                    alert("Publicación cancelada con éxito.");
-                    clearInterval(countdownInterval);
-                    clearInterval(apiCheckInterval);
-                    modalWrapper.remove(); 
-                } else {
-                    const err = await response.json();
-                    alert(err.detail || "Error al eliminar.");
+                    if (response.ok) {
+                        alert("Publicación cancelada con éxito.");
+                        clearInterval(countdownInterval);
+                        clearInterval(apiCheckInterval);
+                        modalWrapper.remove(); 
+                    } else {
+                        const err = await response.json();
+                        alert(err.detail || "Error al eliminar.");
+                        undoBtn.disabled = false;
+                    }
+                } catch (error) {
+                    console.error(error);
                     undoBtn.disabled = false;
                 }
-            } catch (error) {
-                console.error(error);
-                undoBtn.disabled = false;
+            }
+            else{
+                closeModal();
             }
         });
 
@@ -218,10 +229,11 @@ export async function openReviewPhotoModal() {
                     else if (data.status === "rejected") {
                         aiStatusBadge.style.background = "rgba(217, 83, 79, 0.9)";
                         aiStatusBadge.textContent = "❌ Foto rechazada por la IA (Entorno inválido)";
-
+                        clearInterval(countdownInterval);
                         undoBtn.disabled = false;
                         undoBtn.style.background = "#666";
                         undoBtn.textContent = "Cerrar ventana";
+                        undoBtnLeaving = true;
                     } 
                     clearInterval(apiCheckInterval);
                 }
@@ -305,4 +317,14 @@ export async function openReviewPhotoModal() {
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     }
+}
+
+export function initReviewPhotoModal(){
+    const testBtn = document.getElementById("openPhotoModalBtn");
+
+    if (testBtn) {
+        testBtn.addEventListener("click", () => {
+            openReviewPhotoModal();
+        });
+}
 }
