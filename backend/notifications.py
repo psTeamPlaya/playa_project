@@ -42,7 +42,7 @@ async def _send_message(subject: str, recipients: list[str], body: str) -> None:
 async def send_welcome_email(email: str) -> None:
     try:
         await _send_message(
-            subject="¡Bienvenido a Playas App!",
+            subject="¡Bienvenido a \"Mi día de Playa\"",
             recipients=[email],
             body=f"Hola {email}, gracias por registrarte. ¡Disfruta de tus actividades!",
         )
@@ -64,14 +64,14 @@ async def send_alert_email(
     match_time = match_datetime.strftime("%H:%M")
     body = (
         f"Hola {email},<br><br>"
-        f"tu alerta para <strong>{activity_label}</strong> tiene una coincidencia prevista "
+        f"Tu alerta para <strong>{activity_label}</strong> tiene una coincidencia prevista "
         f"el <strong>{match_date}</strong> a las <strong>{match_time}</strong> "
         f"en <strong>{beach_name}</strong> ({location_text})."
     )
 
     try:
         await _send_message(
-            subject=f"Alerta de playa: {activity_label}",
+            subject=f"Alerta de Mi día de Playa: {activity_label}",
             recipients=[email],
             body=body,
         )
