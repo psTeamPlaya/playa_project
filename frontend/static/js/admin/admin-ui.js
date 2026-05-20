@@ -74,6 +74,23 @@ export function initAdminUI({
     userManagementList,
     userManagementFeedback,
     userManagementHistory,
+    userAlertTargetInfo,
+    userAlertManagementList,
+    userAlertManagementFeedback,
+    userAlertManagementForm,
+    userAlertEditingIdInput,
+    userAlertCancelEditBtn,
+    userAlertSaveBtn,
+    userAlertActivitySelect,
+    userAlertBeachSelect,
+    userAlertMinTemperatureInput,
+    userAlertMaxTemperatureInput,
+    userAlertMinWindInput,
+    userAlertMaxWindInput,
+    userAlertMinCloudInput,
+    userAlertMaxCloudInput,
+    userAlertMinWaveInput,
+    userAlertMaxWaveInput,
     beachManagementModal,
     closeBeachManagementModal,
     beachManagementList,
@@ -110,6 +127,7 @@ export function initAdminUI({
     onClosePreferences,
 }) {
     const state = {
+        users: [],
         activities: [],
         services: [],
         variables: [],
@@ -117,6 +135,8 @@ export function initAdminUI({
         activityItems: [],
         serviceItems: [],
         beaches: [],
+        userAlertBeachOptions: [],
+        selectedAlertUserId: null,
         selectedBeachId: null,
         beachSearchTerm: "",
         map: null,
@@ -151,6 +171,16 @@ export function initAdminUI({
         "kite surf": "kitesurf",
         "piscina natural": "piscina_natural",
     };
+    const ALERT_FILTER_FIELDS = [
+        ["min_temperatura_ambiente", "Temperatura mín.", "ºC"],
+        ["max_temperatura_ambiente", "Temperatura máx.", "ºC"],
+        ["min_velocidad_viento", "Viento mín.", "km/h"],
+        ["max_velocidad_viento", "Viento máx.", "km/h"],
+        ["min_nubosidad", "Nubosidad mín.", "%"],
+        ["max_nubosidad", "Nubosidad máx.", "%"],
+        ["min_altura_oleaje", "Oleaje mín.", "m"],
+        ["max_altura_oleaje", "Oleaje máx.", "m"],
+    ];
 
     function setActiveAdminTab(tabName = "beaches") {
         adminTabButtons.forEach((button) => {
@@ -418,6 +448,336 @@ export function initAdminUI({
         return response.json();
     }
 
+    function formatAlertFilters(filters = {}) {
+        const formatted = ALERT_FILTER_FIELDS
+            .filter(([key]) => filters[key] !== undefined && filters[key] !== null && filters[key] !== "")
+            .map(([key, label, unit]) => `${label}: ${filters[key]} ${unit}`.trim());
+
+        return formatted.length > 0 ? formatted.join(" · ") : "Sin condiciones extra";
+    }
+
+    function parseOptionalNumber(value) {
+        if (value === "" || value === null || value === undefined) {
+            return null;
+        }
+
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function validateAlertFilters(filters) {
+        const ranges = [
+            ["Temperatura", filters.min_temperatura_ambiente, filters.max_temperatura_ambiente],
+            ["Viento", filters.min_velocidad_viento, filters.max_velocidad_viento],
+            ["Nubosidad", filters.min_nubosidad, filters.max_nubosidad],
+            ["Oleaje", filters.min_altura_oleaje, filters.max_altura_oleaje],
+        ];
+
+        for (const [label, minValue, maxValue] of ranges) {
+            if (minValue !== undefined && maxValue !== undefined && minValue > maxValue) {
+                throw new Error(`${label}: el mínimo no puede ser mayor que el máximo.`);
+            }
+        }
+    }
+
+    function getSelectedAlertEditingId() {
+        return Number(userAlertEditingIdInput?.value || 0) || null;
+    }
+
+    function setUserAlertFormDisabled(isDisabled) {
+        [
+            userAlertActivitySelect,
+            userAlertBeachSelect,
+            userAlertMinTemperatureInput,
+            userAlertMaxTemperatureInput,
+            userAlertMinWindInput,
+            userAlertMaxWindInput,
+            userAlertMinCloudInput,
+            userAlertMaxCloudInput,
+            userAlertMinWaveInput,
+            userAlertMaxWaveInput,
+            userAlertSaveBtn,
+            userAlertCancelEditBtn,
+        ].forEach((element) => {
+            if (element) {
+                element.disabled = isDisabled;
+            }
+        });
+    }
+
+    function populateUserAlertActivitySelect() {
+        if (!userAlertActivitySelect) {
+            return;
+        }
+
+        const currentValue = userAlertActivitySelect.value || "";
+        userAlertActivitySelect.innerHTML = `
+            <option value="">Selecciona una actividad</option>
+            ${state.activities.map((activity) => `
+                <option value="${escapeHtml(activity.name)}">${escapeHtml(activity.label)}</option>
+            `).join("")}
+        `;
+        if (currentValue && state.activities.some((activity) => activity.name === currentValue)) {
+            userAlertActivitySelect.value = currentValue;
+        }
+    }
+
+    function populateUserAlertBeachSelect() {
+        if (!userAlertBeachSelect) {
+            return;
+        }
+
+        const currentValue = userAlertBeachSelect.value || "";
+        userAlertBeachSelect.innerHTML = `
+            <option value="">Selecciona una playa</option>
+            ${state.userAlertBeachOptions.map((beach) => `
+                <option value="${escapeHtml(String(beach.id))}">${escapeHtml(beach.label)}</option>
+            `).join("")}
+        `;
+        if (currentValue && state.userAlertBeachOptions.some((beach) => String(beach.id) === currentValue)) {
+            userAlertBeachSelect.value = currentValue;
+        }
+    }
+
+    async function ensureUserAlertCatalogsLoaded() {
+        const [catalog, beaches] = await Promise.all([
+            fetchJson("/admin/catalog"),
+            fetchJson("/admin/beaches"),
+        ]);
+
+        state.activities = catalog.activities || [];
+        state.userAlertBeachOptions = (beaches || []).map((beach) => ({
+            id: beach.id,
+            label: beach.location ? `${beach.name} · ${beach.location}` : beach.name,
+        }));
+        populateUserAlertActivitySelect();
+        populateUserAlertBeachSelect();
+    }
+
+    function resetUserAlertForm() {
+        userAlertManagementForm?.reset();
+        if (userAlertEditingIdInput) {
+            userAlertEditingIdInput.value = "";
+        }
+        if (userAlertCancelEditBtn) {
+            userAlertCancelEditBtn.hidden = true;
+        }
+        if (userAlertSaveBtn) {
+            userAlertSaveBtn.textContent = "Guardar alerta";
+        }
+    }
+
+    function clearSelectedUserAlerts() {
+        state.selectedAlertUserId = null;
+        if (userAlertTargetInfo) {
+            userAlertTargetInfo.textContent = "Selecciona un usuario para revisar o editar sus alertas.";
+        }
+        if (userAlertManagementList) {
+            userAlertManagementList.innerHTML = '<div class="empty-state">Selecciona un usuario para cargar sus alertas.</div>';
+        }
+        resetUserAlertForm();
+        setUserAlertFormDisabled(true);
+        setFeedback(userAlertManagementFeedback, "");
+    }
+
+    function populateUserAlertForm(alert) {
+        if (!alert) {
+            return;
+        }
+
+        if (userAlertEditingIdInput) {
+            userAlertEditingIdInput.value = String(alert.id);
+        }
+        if (userAlertActivitySelect) {
+            userAlertActivitySelect.value = alert.activity_name || "";
+        }
+        if (userAlertBeachSelect) {
+            userAlertBeachSelect.value = String(alert.beach_id || "");
+        }
+        if (userAlertMinTemperatureInput) {
+            userAlertMinTemperatureInput.value = alert.filters?.min_temperatura_ambiente ?? "";
+        }
+        if (userAlertMaxTemperatureInput) {
+            userAlertMaxTemperatureInput.value = alert.filters?.max_temperatura_ambiente ?? "";
+        }
+        if (userAlertMinWindInput) {
+            userAlertMinWindInput.value = alert.filters?.min_velocidad_viento ?? "";
+        }
+        if (userAlertMaxWindInput) {
+            userAlertMaxWindInput.value = alert.filters?.max_velocidad_viento ?? "";
+        }
+        if (userAlertMinCloudInput) {
+            userAlertMinCloudInput.value = alert.filters?.min_nubosidad ?? "";
+        }
+        if (userAlertMaxCloudInput) {
+            userAlertMaxCloudInput.value = alert.filters?.max_nubosidad ?? "";
+        }
+        if (userAlertMinWaveInput) {
+            userAlertMinWaveInput.value = alert.filters?.min_altura_oleaje ?? "";
+        }
+        if (userAlertMaxWaveInput) {
+            userAlertMaxWaveInput.value = alert.filters?.max_altura_oleaje ?? "";
+        }
+        if (userAlertCancelEditBtn) {
+            userAlertCancelEditBtn.hidden = false;
+        }
+        if (userAlertSaveBtn) {
+            userAlertSaveBtn.textContent = "Guardar cambios";
+        }
+        setFeedback(userAlertManagementFeedback, `Editando alerta para ${alert.beach_label || alert.activity_label}.`, "success");
+    }
+
+    function renderUserAlerts(alerts = []) {
+        if (!userAlertManagementList) return;
+
+        if (!Array.isArray(alerts) || alerts.length === 0) {
+            userAlertManagementList.innerHTML = '<div class="empty-state">Este usuario no tiene alertas guardadas.</div>';
+            return;
+        }
+
+        userAlertManagementList.innerHTML = alerts.map((alert) => `
+            <article class="alerts-list-card">
+                <div class="alerts-list-card-body">
+                    <strong>${escapeHtml(alert.activity_label)}</strong>
+                    <div>${escapeHtml(alert.beach_label || "Playa guardada")}</div>
+                    <small>${escapeHtml(formatAlertFilters(alert.filters))}</small>
+                    <small>
+                        ${alert.last_notified_match
+                            ? `Último aviso: ${new Date(alert.last_notified_match).toLocaleString("es-ES")}`
+                            : "Sin avisos enviados todavía"}
+                    </small>
+                </div>
+                <div class="alerts-list-card-actions">
+                    <button class="btn-secondary admin-inline-button" type="button" data-user-alert-action="edit" data-user-alert-id="${alert.id}">
+                        Editar
+                    </button>
+                    <button class="btn-secondary admin-inline-button" type="button" data-user-alert-action="delete" data-user-alert-id="${alert.id}">
+                        Eliminar
+                    </button>
+                </div>
+            </article>
+        `).join("");
+    }
+
+    async function loadUserAlerts(userId) {
+        const alerts = await fetchJson(`/admin/users/${userId}/alerts`);
+        renderUserAlerts(alerts);
+        return alerts;
+    }
+
+    async function selectUserForAlerts(userId) {
+        const user = state.users.find((item) => Number(item.id) === Number(userId));
+        if (!user) {
+            clearSelectedUserAlerts();
+            renderUsers(state.users);
+            return;
+        }
+
+        state.selectedAlertUserId = user.id;
+        renderUsers(state.users);
+        if (userAlertTargetInfo) {
+            userAlertTargetInfo.textContent = `Gestionando alertas de ${user.email}.`;
+        }
+        resetUserAlertForm();
+        setUserAlertFormDisabled(false);
+        setFeedback(userAlertManagementFeedback, "Cargando alertas...");
+        const alerts = await loadUserAlerts(user.id);
+        setFeedback(
+            userAlertManagementFeedback,
+            alerts.length > 0 ? "Alertas cargadas." : "Este usuario todavía no tiene alertas.",
+            alerts.length > 0 ? "success" : "",
+        );
+    }
+
+    function buildUserAlertPayload() {
+        const filters = {
+            min_temperatura_ambiente: parseOptionalNumber(userAlertMinTemperatureInput?.value),
+            max_temperatura_ambiente: parseOptionalNumber(userAlertMaxTemperatureInput?.value),
+            min_velocidad_viento: parseOptionalNumber(userAlertMinWindInput?.value),
+            max_velocidad_viento: parseOptionalNumber(userAlertMaxWindInput?.value),
+            min_nubosidad: parseOptionalNumber(userAlertMinCloudInput?.value),
+            max_nubosidad: parseOptionalNumber(userAlertMaxCloudInput?.value),
+            min_altura_oleaje: parseOptionalNumber(userAlertMinWaveInput?.value),
+            max_altura_oleaje: parseOptionalNumber(userAlertMaxWaveInput?.value),
+        };
+
+        return {
+            activity_name: userAlertActivitySelect?.value || "",
+            beach_id: Number(userAlertBeachSelect?.value || 0),
+            filters: Object.fromEntries(
+                Object.entries(filters).filter(([, value]) => value !== null)
+            ),
+        };
+    }
+
+    async function submitUserAlertForm(event) {
+        event.preventDefault();
+
+        if (!state.selectedAlertUserId) {
+            setFeedback(userAlertManagementFeedback, "Selecciona primero un usuario.", "error");
+            return;
+        }
+
+        const payload = buildUserAlertPayload();
+        if (!payload.activity_name || !payload.beach_id) {
+            setFeedback(userAlertManagementFeedback, "Debes seleccionar una actividad y una playa.", "error");
+            return;
+        }
+
+        try {
+            validateAlertFilters(payload.filters);
+            const editingId = getSelectedAlertEditingId();
+            const url = editingId
+                ? `/admin/users/${state.selectedAlertUserId}/alerts/${editingId}`
+                : `/admin/users/${state.selectedAlertUserId}/alerts`;
+            const method = editingId ? "PUT" : "POST";
+
+            setFeedback(userAlertManagementFeedback, "Guardando alerta...");
+            await fetchJson(url, {
+                method,
+                body: JSON.stringify(payload),
+            });
+            resetUserAlertForm();
+            await loadUserAlerts(state.selectedAlertUserId);
+            setFeedback(
+                userAlertManagementFeedback,
+                editingId ? "Alerta actualizada." : "Alerta creada.",
+                "success",
+            );
+        } catch (error) {
+            setFeedback(userAlertManagementFeedback, error.message, "error");
+        }
+    }
+
+    async function deleteUserAlert(alertId) {
+        if (!state.selectedAlertUserId) {
+            return;
+        }
+
+        await fetchJson(`/admin/users/${state.selectedAlertUserId}/alerts/${alertId}`, {
+            method: "DELETE",
+        });
+        if (getSelectedAlertEditingId() === Number(alertId)) {
+            resetUserAlertForm();
+        }
+        await loadUserAlerts(state.selectedAlertUserId);
+        setFeedback(userAlertManagementFeedback, "Alerta eliminada.", "success");
+    }
+
+    async function editUserAlert(alertId) {
+        if (!state.selectedAlertUserId) {
+            return;
+        }
+
+        const alerts = await loadUserAlerts(state.selectedAlertUserId);
+        const selectedAlert = alerts.find((alert) => Number(alert.id) === Number(alertId));
+        if (!selectedAlert) {
+            setFeedback(userAlertManagementFeedback, "No se pudo cargar la alerta.", "error");
+            return;
+        }
+        populateUserAlertForm(selectedAlert);
+    }
+
     function renderUsers(users) {
         if (!userManagementList) return;
         const currentUser = getCurrentUser?.();
@@ -433,8 +793,16 @@ export function initAdminUI({
                     <strong>${user.email}</strong>
                     <div class="admin-list-meta">${user.is_admin ? "Administrador" : user.is_banned ? "Usuario baneado" : "Usuario"}</div>
                 </div>
-                ${user.is_admin || user.id === currentUser?.id ? "" : `
-                    <div class="admin-inline-actions">
+                <div class="admin-inline-actions">
+                    <button
+                        class="btn-secondary admin-inline-button ${state.selectedAlertUserId === user.id ? "admin-inline-button-active" : ""}"
+                        data-user-id="${user.id}"
+                        data-user-action="manage-alerts"
+                        type="button"
+                    >
+                        Alertas
+                    </button>
+                    ${user.is_admin || user.id === currentUser?.id ? "" : `
                         <button
                             class="btn-secondary admin-inline-button ${user.is_banned ? "admin-inline-button-danger" : ""}"
                             data-user-id="${user.id}"
@@ -452,8 +820,8 @@ export function initAdminUI({
                         >
                             Eliminar
                         </button>
-                    </div>
-                `}
+                    `}
+                </div>
             </article>
         `).join("");
     }
@@ -553,8 +921,15 @@ export function initAdminUI({
             fetchJson("/admin/users"),
             fetchJson("/admin/users/history"),
         ]);
+        state.users = users || [];
         renderUsers(users);
         renderUserHistory(history || []);
+        if (
+            state.selectedAlertUserId
+            && !state.users.some((user) => user.id === state.selectedAlertUserId)
+        ) {
+            clearSelectedUserAlerts();
+        }
         setFeedback(userManagementFeedback, "");
     }
 
@@ -662,10 +1037,15 @@ export function initAdminUI({
     async function openUsersModal() {
         onClosePreferences?.();
         openModal(userManagementModal);
+        clearSelectedUserAlerts();
         try {
-            await loadUsers();
+            await Promise.all([
+                loadUsers(),
+                ensureUserAlertCatalogsLoaded(),
+            ]);
         } catch (error) {
             setFeedback(userManagementFeedback, error.message, "error");
+            setFeedback(userAlertManagementFeedback, error.message, "error");
         }
     }
 
@@ -889,6 +1269,10 @@ export function initAdminUI({
         const button = event.target.closest("[data-user-id]");
         if (!button) return;
         try {
+            if (button.dataset.userAction === "manage-alerts") {
+                await selectUserForAlerts(button.dataset.userId);
+                return;
+            }
             if (button.dataset.userAction === "toggle-ban") {
                 await setUserBanStatus(
                     button.dataset.userId,
@@ -900,6 +1284,26 @@ export function initAdminUI({
             await deleteUser(button.dataset.userId);
         } catch (error) {
             setFeedback(userManagementFeedback, error.message, "error");
+        }
+    });
+
+    userAlertManagementForm?.addEventListener("submit", submitUserAlertForm);
+    userAlertCancelEditBtn?.addEventListener("click", () => {
+        resetUserAlertForm();
+        setFeedback(userAlertManagementFeedback, "");
+    });
+    userAlertManagementList?.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-user-alert-id]");
+        if (!button) return;
+
+        try {
+            if (button.dataset.userAlertAction === "edit") {
+                await editUserAlert(button.dataset.userAlertId);
+                return;
+            }
+            await deleteUserAlert(button.dataset.userAlertId);
+        } catch (error) {
+            setFeedback(userAlertManagementFeedback, error.message, "error");
         }
     });
 
@@ -964,6 +1368,8 @@ export function initAdminUI({
             setFeedback(serviceCatalogFeedback, error.message, "error");
         }
     });
+
+    clearSelectedUserAlerts();
 
     return {
         updateAdminVisibility,

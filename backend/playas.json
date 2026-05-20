@@ -1382,25 +1382,25 @@
   {
     "id": 44,
     "nombre": "Playa de Aguamarina",
-    "ubicacion": "Mogán",
-    "latitud": 27.7666,
-    "longitud": -15.6884,
+    "ubicacion": "Mogán, Canarias, España",
+    "latitud": 27.771979,
+    "longitud": -15.692105,
     "tipo": "arena",
     "descripcion": "Playa del litoral de Mogán con zona específica para mascotas, permitida legalmente sin restricción horaria dentro del espacio delimitado.",
     "actividades_ideales": [
       {
-        "actividad": "tomar_sol",
-        "condicion": "adecuada en condiciones generales"
-      },
-      {
         "actividad": "nadar",
         "condicion": "adecuada con mar tranquilo"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
       }
     ],
     "servicios": {
       "restaurantes": true,
       "comida_para_llevar": true,
-      "balneario": false,
+      "balnearios": false,
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false,
@@ -1543,6 +1543,10 @@
         "condicion": "adecuada con marea baja"
       },
       {
+        "actividad": "kitesurf",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
         "actividad": "tomar_sol",
         "condicion": "adecuada en condiciones favorables"
       }
@@ -1550,7 +1554,7 @@
     "servicios": {
       "restaurantes": false,
       "comida_para_llevar": false,
-      "balneario": false,
+      "balnearios": false,
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false,

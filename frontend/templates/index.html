@@ -12,7 +12,7 @@
 
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
 
-  <link rel="stylesheet" href="/static/css/styles.css?v=admin-catalog-20260507">
+  <link rel="stylesheet" href="/static/css/styles.css?v=admin-catalog-20260520-2">
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 
@@ -792,7 +792,7 @@
 
   <div class="modal-backdrop" id="userManagementModal" hidden>
 
-    <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="userManagementModalTitle">
+    <div class="admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="userManagementModalTitle">
 
       <button class="modal-close" id="closeUserManagementModal" type="button" aria-label="Cerrar">&times;</button>
       <div class="admin-modal-header">
@@ -810,6 +810,95 @@
           <h3>Usuarios</h3>
 
           <div class="admin-list admin-scroll-panel" id="userManagementList"></div>
+
+        </section>
+
+        <section class="admin-user-panel">
+
+          <div class="alerts-existing-header">
+            <h3 id="userAlertManagementTitle">Alertas del usuario</h3>
+            <p id="userAlertTargetInfo">Selecciona un usuario para revisar o editar sus alertas.</p>
+          </div>
+
+          <div class="alerts-list admin-scroll-panel" id="userAlertManagementList">
+            <div class="empty-state">Selecciona un usuario para cargar sus alertas.</div>
+          </div>
+
+          <form class="alerts-form" id="userAlertManagementForm">
+            <input id="userAlertEditingId" type="hidden">
+
+            <div class="alerts-form-grid">
+              <label class="field">
+                <span>Actividad</span>
+                <select id="userAlertActivitySelect" required>
+                  <option value="">Selecciona una actividad</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Playa</span>
+                <select id="userAlertBeachSelect" required>
+                  <option value="">Selecciona una playa</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="alerts-conditions">
+              <h3>Condiciones</h3>
+              <div class="alerts-form-grid">
+                <label class="field">
+                  <span>Temperatura mín. (ºC)</span>
+                  <input id="userAlertMinTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 22">
+                </label>
+
+                <label class="field">
+                  <span>Temperatura máx. (ºC)</span>
+                  <input id="userAlertMaxTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 30">
+                </label>
+
+                <label class="field">
+                  <span>Viento mín. (km/h)</span>
+                  <input id="userAlertMinWind" type="number" step="1" min="0" max="60" placeholder="Ej: 8">
+                </label>
+
+                <label class="field">
+                  <span>Viento máx. (km/h)</span>
+                  <input id="userAlertMaxWind" type="number" step="1" min="0" max="60" placeholder="Ej: 20">
+                </label>
+
+                <label class="field">
+                  <span>Nubosidad mín. (%)</span>
+                  <input id="userAlertMinCloud" type="number" step="1" min="0" max="100" placeholder="Ej: 0">
+                </label>
+
+                <label class="field">
+                  <span>Nubosidad máx. (%)</span>
+                  <input id="userAlertMaxCloud" type="number" step="1" min="0" max="100" placeholder="Ej: 25">
+                </label>
+
+                <label class="field">
+                  <span>Oleaje mín. (m)</span>
+                  <input id="userAlertMinWave" type="number" step="0.1" min="0" max="5" placeholder="Ej: 0.5">
+                </label>
+
+                <label class="field">
+                  <span>Oleaje máx. (m)</span>
+                  <input id="userAlertMaxWave" type="number" step="0.1" min="0" max="5" placeholder="Ej: 1.5">
+                </label>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn-primary auth-submit" id="userAlertSaveBtn" type="submit">
+                Guardar alerta
+              </button>
+              <button class="btn-secondary" id="userAlertCancelEditBtn" type="button" hidden>
+                Cancelar edición
+              </button>
+            </div>
+          </form>
+
+          <div class="admin-feedback" id="userAlertManagementFeedback"></div>
 
         </section>
 
@@ -1353,7 +1442,7 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <script type="module" src="/static/js/main.js?v=admin-catalog-20260507"></script>
+  <script type="module" src="/static/js/main.js?v=admin-catalog-20260520-2"></script>
 
   <script type="module" src="/static/js/favorites/favorites.js?v=admin-catalog-20260507"></script>
 

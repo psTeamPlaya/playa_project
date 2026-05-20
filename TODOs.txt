@@ -1,4 +1,4 @@
 TODO: nueva rama para trabajar con ReDIS (BBDD).
 TODO : revisar playas pet-friendly.
 TODO: crear iconos bodyboard, kitesurf, paddle-surf, windsurf.
-TODO: buscar infor sobre playas ideales para bodyboard, windsurf, kitesurf y paddle-surf.
+TODO: buscar info sobre playas ideales para bodyboard, windsurf, kitesurf y paddle-surf.
