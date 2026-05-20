@@ -10,10 +10,12 @@ from sqlalchemy.orm import Session, selectinload
 from backend.auth.auth import require_admin
 from backend.db import get_db
 from backend.models.activity import Activity
+from backend.models.activity_variable_weight import ActivityVariableWeight
 from backend.models.beach import Beach
 from backend.models.service import Service
 from backend.models.user import User
 from backend.models.user_audit_log import UserAuditLog
+from backend.models.variable import Variable
 from backend.schemas.user import UserAuditLogResponse, UserResponse
 from backend.user_audit import (
     USER_AUDIT_BAN,
@@ -23,7 +25,11 @@ from backend.user_audit import (
 )
 from backend.engine_recomendation import PESOS_ACTIVIDAD
 
-router = APIRouter(prefix="/admin", tags=["Admin"])
+from .reviews import router as reviews_router
+
+router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin)])
+
+router.include_router(reviews_router)
 
 PLAYAS_FILE = Path(__file__).resolve().parents[1] / "playas.json"
 
@@ -34,7 +40,9 @@ ACTIVITY_ALIASES = {
     "surf": "surf",
     "windsurf": "windsurf",
     "wind surf": "windsurf",
+    "buceo": "bucear",
     "bucear": "bucear",
+    "snorkel": "bucear",
     "caminar": "caminar",
     "pasear": "caminar",
     "pescar": "pescar",
@@ -63,6 +71,7 @@ class AdminBeachPayload(BaseModel):
 
 class AdminCatalogItemPayload(BaseModel):
     name: str = Field(min_length=1)
+    weights: dict[str, float] = Field(default_factory=dict)
 
 
 class AdminUserBanPayload(BaseModel):
@@ -159,17 +168,34 @@ def save_beach_metadata(beaches: list[dict]) -> None:
 
 
 def ensure_beach_id_sequence(db: Session) -> None:
+    ensure_table_id_sequence(db, "beaches")
+
+
+def ensure_table_id_sequence(db: Session, table_name: str) -> None:
+    bind = getattr(db, "bind", None)
+    dialect_name = getattr(getattr(bind, "dialect", None), "name", None)
+    if bind is not None and dialect_name != "postgresql":
+        return
+
     db.execute(
         text(
-            """
+            f"""
             SELECT setval(
-                pg_get_serial_sequence('beaches', 'id'),
-                COALESCE((SELECT MAX(id) FROM beaches), 1),
+                pg_get_serial_sequence('{table_name}', 'id'),
+                COALESCE((SELECT MAX(id) FROM {table_name}), 1),
                 true
             )
             """
         )
     )
+
+
+def ensure_activity_id_sequence(db: Session) -> None:
+    ensure_table_id_sequence(db, "activities")
+
+
+def ensure_service_id_sequence(db: Session) -> None:
+    ensure_table_id_sequence(db, "services")
 
 
 def serialize_beach(beach: Beach, metadata: dict | None = None) -> dict:
@@ -271,6 +297,15 @@ def serialize_catalog_option(name: str) -> dict:
     }
 
 
+def serialize_variable_option(variable: Variable) -> dict:
+    return {
+        "id": variable.id,
+        "name": variable.name,
+        "label": prettify_catalog_name(variable.name),
+        "unit": variable.unit,
+    }
+
+
 def serialize_catalog_item(item: Activity | Service, normalizer) -> dict:
     normalized = normalizer(item.name)
     return {
@@ -278,6 +313,106 @@ def serialize_catalog_item(item: Activity | Service, normalizer) -> dict:
         "name": normalized,
         "label": prettify_catalog_name(normalized or item.name),
     }
+
+
+def serialize_admin_activity(
+    normalized_name: str,
+    db_activity: Activity | None,
+    weights: dict[str, float],
+) -> dict:
+    is_system = normalized_name in PESOS_ACTIVIDAD
+    return {
+        "id": db_activity.id if db_activity is not None else None,
+        "name": normalized_name,
+        "label": prettify_catalog_name(normalized_name),
+        "weights": weights,
+        "is_system": is_system,
+        "can_rename": not is_system,
+        "can_delete": db_activity is not None and not is_system,
+    }
+
+
+def _list_unique_activities(db: Session) -> list[Activity]:
+    seen_names = set()
+    unique_activities = []
+    for activity in db.query(Activity).order_by(Activity.name.asc()).all():
+        normalized = normalize_activity_name(activity.name)
+        if not normalized or normalized in seen_names:
+            continue
+        seen_names.add(normalized)
+        unique_activities.append(activity)
+    return unique_activities
+
+
+def _find_activity_by_normalized_name(db: Session, normalized_name: str) -> Activity | None:
+    for activity in db.query(Activity).all():
+        if normalize_activity_name(activity.name) == normalized_name:
+            return activity
+    return None
+
+
+def get_activity_weights_definition(db: Session, normalized_name: str) -> dict[str, float]:
+    activity = _find_activity_by_normalized_name(db, normalized_name)
+    if activity is None:
+        return dict(PESOS_ACTIVIDAD.get(normalized_name, {}))
+
+    weights = {
+        variable.name: float(weight.weight)
+        for weight, variable in (
+            db.query(ActivityVariableWeight, Variable)
+            .join(Variable, Variable.id == ActivityVariableWeight.variable_id)
+            .filter(ActivityVariableWeight.activity_id == activity.id)
+            .all()
+        )
+        if weight.weight is not None and float(weight.weight) > 0
+    }
+    return weights or dict(PESOS_ACTIVIDAD.get(normalized_name, {}))
+
+
+def normalize_activity_weights(raw_weights: dict[str, float], db: Session) -> dict[int, float]:
+    if not raw_weights:
+        return {}
+
+    variables = {
+        variable.name: variable.id
+        for variable in db.query(Variable).all()
+    }
+    unknown_variables = sorted(name for name in raw_weights if name not in variables)
+    if unknown_variables:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Variables no válidas: {', '.join(unknown_variables)}",
+        )
+
+    normalized_pairs = [
+        (variables[name], float(weight))
+        for name, weight in raw_weights.items()
+        if float(weight) > 0
+    ]
+    total = sum(weight for _, weight in normalized_pairs)
+    if total <= 0:
+        return {}
+
+    return {
+        variable_id: weight / total
+        for variable_id, weight in normalized_pairs
+    }
+
+
+def replace_activity_weights(db: Session, activity_id: int, raw_weights: dict[str, float]) -> None:
+    normalized_weights = normalize_activity_weights(raw_weights, db)
+    db.query(ActivityVariableWeight).filter(
+        ActivityVariableWeight.activity_id == activity_id
+    ).delete()
+
+    for variable_id, weight in normalized_weights.items():
+        db.add(
+            ActivityVariableWeight(
+                activity_id=activity_id,
+                variable_id=variable_id,
+                weight=weight,
+            )
+        )
 
 
 def remove_activity_from_metadata(metadata: list[dict], activity_name: str) -> list[dict]:
@@ -288,6 +423,25 @@ def remove_activity_from_metadata(metadata: list[dict], activity_name: str) -> l
             item
             for item in entry.get("actividades_ideales", [])
             if normalize_activity_name(item.get("actividad")) != activity_name
+        ]
+        updated.append(new_entry)
+    return updated
+
+
+def replace_activity_name_in_metadata(
+    metadata: list[dict],
+    previous_name: str,
+    new_name: str,
+) -> list[dict]:
+    updated = []
+    for entry in metadata:
+        new_entry = dict(entry)
+        new_entry["actividades_ideales"] = [
+            {
+                **item,
+                "actividad": new_name if normalize_activity_name(item.get("actividad")) == previous_name else item.get("actividad"),
+            }
+            for item in entry.get("actividades_ideales", [])
         ]
         updated.append(new_entry)
     return updated
@@ -310,7 +464,6 @@ def remove_service_from_metadata(metadata: list[dict], service_name: str) -> lis
 @router.get("/users", response_model=list[UserResponse])
 def list_users(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     return db.query(User).order_by(User.is_admin.desc(), User.email.asc()).all()
 
@@ -318,7 +471,6 @@ def list_users(
 @router.get("/users/history", response_model=list[UserAuditLogResponse])
 def list_user_audit_logs(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     return (
         db.query(UserAuditLog)
@@ -378,51 +530,129 @@ def set_user_ban_status(
 @router.get("/catalog")
 def get_catalog(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     activities = [serialize_catalog_option(name) for name in collect_available_activities(db)]
     services = [serialize_catalog_option(name) for name in collect_available_services(db)]
+    variables = [
+        serialize_variable_option(variable)
+        for variable in db.query(Variable).order_by(Variable.name.asc()).all()
+    ]
     return {
         "activities": activities,
         "services": services,
+        "variables": variables,
+        "activity_weight_templates": PESOS_ACTIVIDAD,
     }
 
 
 @router.get("/activities")
 def list_admin_activities(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
-    activities = db.query(Activity).order_by(Activity.name.asc()).all()
-    return [serialize_catalog_item(activity, normalize_activity_name) for activity in activities]
+    return [
+        serialize_admin_activity(
+            normalized_name=activity_name,
+            db_activity=_find_activity_by_normalized_name(db, activity_name),
+            weights=get_activity_weights_definition(db, activity_name),
+        )
+        for activity_name in collect_available_activities(db)
+    ]
 
 
 @router.post("/activities")
 def create_admin_activity(
     payload: AdminCatalogItemPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     normalized_name = normalize_activity_name(payload.name)
     if not normalized_name or normalized_name in EXCLUDED_ADMIN_ACTIVITIES:
         raise HTTPException(status_code=400, detail="Nombre de actividad no válido")
 
-    existing = db.query(Activity).filter(Activity.name == normalized_name).first()
+    existing = _find_activity_by_normalized_name(db, normalized_name)
     if existing is not None:
         raise HTTPException(status_code=400, detail="La actividad ya existe")
 
+    normalized_weights = normalize_activity_weights(payload.weights, db)
+    if not normalized_weights and normalized_name not in PESOS_ACTIVIDAD:
+        raise HTTPException(
+            status_code=400,
+            detail="Debes asignar al menos un peso positivo para la nueva actividad",
+        )
+
+    ensure_activity_id_sequence(db)
     activity = Activity(name=normalized_name)
     db.add(activity)
+    db.flush()
+    replace_activity_weights(db, activity.id, payload.weights)
     db.commit()
     db.refresh(activity)
     return serialize_catalog_item(activity, normalize_activity_name)
+
+
+@router.put("/activities/{activity_name}")
+def update_admin_activity(
+    activity_name: str,
+    payload: AdminCatalogItemPayload,
+    db: Session = Depends(get_db),
+):
+    current_name = normalize_activity_name(activity_name)
+    new_name = normalize_activity_name(payload.name)
+
+    if not current_name:
+        raise HTTPException(status_code=404, detail="Actividad no encontrada")
+    if not new_name or new_name in EXCLUDED_ADMIN_ACTIVITIES:
+        raise HTTPException(status_code=400, detail="Nombre de actividad no válido")
+    if current_name in PESOS_ACTIVIDAD and new_name != current_name:
+        raise HTTPException(
+            status_code=400,
+            detail="Las actividades base solo permiten editar pesos",
+        )
+
+    current_activity = _find_activity_by_normalized_name(db, current_name)
+    conflicting_activity = _find_activity_by_normalized_name(db, new_name)
+    if (
+        conflicting_activity is not None
+        and current_activity is not None
+        and conflicting_activity.id != current_activity.id
+    ):
+        raise HTTPException(status_code=400, detail="La actividad ya existe")
+    if current_activity is None and conflicting_activity is not None:
+        raise HTTPException(status_code=400, detail="La actividad ya existe")
+
+    normalized_weights = normalize_activity_weights(payload.weights, db)
+    if not normalized_weights and new_name not in PESOS_ACTIVIDAD:
+        raise HTTPException(
+            status_code=400,
+            detail="Debes asignar al menos un peso positivo para la actividad",
+        )
+
+    metadata = load_beach_metadata()
+    if current_activity is None:
+        ensure_activity_id_sequence(db)
+        current_activity = Activity(name=new_name)
+        db.add(current_activity)
+        db.flush()
+    else:
+        current_activity.name = new_name
+
+    replace_activity_weights(db, current_activity.id, payload.weights)
+    if current_name != new_name:
+        metadata = replace_activity_name_in_metadata(metadata, current_name, new_name)
+        save_beach_metadata(metadata)
+
+    db.commit()
+    db.refresh(current_activity)
+    return serialize_admin_activity(
+        normalized_name=new_name,
+        db_activity=current_activity,
+        weights=get_activity_weights_definition(db, new_name),
+    )
 
 
 @router.delete("/activities/{activity_id}")
 def delete_admin_activity(
     activity_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     activity = db.get(Activity, activity_id)
     if activity is None:
@@ -432,6 +662,9 @@ def delete_admin_activity(
     metadata = remove_activity_from_metadata(load_beach_metadata(), normalized_name or activity.name)
     save_beach_metadata(metadata)
 
+    db.query(ActivityVariableWeight).filter(
+        ActivityVariableWeight.activity_id == activity.id
+    ).delete()
     db.delete(activity)
     db.commit()
     return {"ok": True}
@@ -440,7 +673,6 @@ def delete_admin_activity(
 @router.get("/services")
 def list_admin_services(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     services = db.query(Service).order_by(Service.name.asc()).all()
     return [serialize_catalog_item(service, normalize_service_name) for service in services]
@@ -450,7 +682,6 @@ def list_admin_services(
 def create_admin_service(
     payload: AdminCatalogItemPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     normalized_name = normalize_service_name(payload.name)
     if not normalized_name:
@@ -460,6 +691,7 @@ def create_admin_service(
     if existing is not None:
         raise HTTPException(status_code=400, detail="El servicio ya existe")
 
+    ensure_service_id_sequence(db)
     service = Service(name=normalized_name)
     db.add(service)
     db.commit()
@@ -471,7 +703,6 @@ def create_admin_service(
 def delete_admin_service(
     service_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     service = db.query(Service).options(selectinload(Service.beaches)).filter(Service.id == service_id).first()
     if service is None:
@@ -490,7 +721,6 @@ def delete_admin_service(
 @router.get("/beaches")
 def list_beaches(
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     metadata_by_id = {item["id"]: item for item in load_beach_metadata()}
     beaches = (
@@ -547,7 +777,6 @@ def persist_beach(
 def create_beach(
     payload: AdminBeachPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     return persist_beach(payload, db)
 
@@ -557,7 +786,6 @@ def update_beach(
     beach_id: int,
     payload: AdminBeachPayload,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
 ):
     beach = db.query(Beach).options(selectinload(Beach.services)).filter(Beach.id == beach_id).first()
     if beach is None:

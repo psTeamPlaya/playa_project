@@ -18,17 +18,13 @@ export function guardarPreferencia(clave, valor) {
 
 export function cargarPreferenciasUI({
     rememberActivityPreference,
-    rememberSchedulePreference,
-    expandResultsPreference
+    rememberSchedulePreference
 }) {
     if (rememberActivityPreference) {
         rememberActivityPreference.checked = leerPreferencia(STORAGE_KEYS.rememberActivity);
     }
     if (rememberSchedulePreference) {
         rememberSchedulePreference.checked = leerPreferencia(STORAGE_KEYS.rememberSchedule);
-    }
-    if (expandResultsPreference) {
-        expandResultsPreference.checked = leerPreferencia(STORAGE_KEYS.expandResults);
     }
 }
 

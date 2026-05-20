@@ -1,29 +1,51 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer-when-downgrade">
+
   <title data-i18n="titles.app_title">Mi día de Playa</title>
+
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
+
   <link rel="stylesheet" href="/static/css/styles.css?v=admin-catalog-20260507">
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <link href="https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="/static/css/favorites.css">
+
   <link rel="stylesheet" href="/static/css/reviews.css">
+
   <link rel="stylesheet" href="/static/css/questions-modal.css">
+
 </head>
 
 <body>
+
   <header class="container" id="appHeader">
+
     <section class="hero">
+
       <div class="hero-brand">
+
         <div class="hero-logo">
+
           <img src="/static/img/logo.png" alt="Logo Mi dia de Playa">
+
         </div>
 
         <h1 data-i18n="titles.app_title">Mi día de Playa</h1>
@@ -45,6 +67,7 @@
               <button class="language-option" data-lang="cs">
                 🇨🇿 Čeština
               </button>
+
             </div>
           </section>
           <section class="auth-container">
@@ -93,117 +116,172 @@
           </section>
         </div>
       </div>
+
     </section>
+
   </header>
 
+
+
   <div class="app-shell container">
+
     <aside class="filters-sidebar" id="filtersSidebar" hidden aria-label="Filtros de playa">
+
       <div class="filters-content">
         <h2 data-i18n="titles.filters">Filtros</h2>
         <div class="filter-actions" aria-label="Acciones globales de filtros">
           <button data-i18n="search.reset_filters" class="filter-chip-button filter-action-button"
             id="disableStaticFilters" type="button">
             Reset filtros estáticos
+
           </button>
+
         </div>
+
         <fieldset class="filter-group" data-user-filter="tipo_playa">
           <legend data-i18n="titles.beach_type">Tipo de playa</legend>
           <label class="filter-option">
+
             <input type="checkbox" id="filterSandBeach" value="arena">
             <span data-i18n="beach_types.sand">Arena</span>
           </label>
+
           <label class="filter-option">
+
             <input type="checkbox" id="filterStoneBeach" value="piedra">
             <span data-i18n="beach_types.stone">Piedra</span>
           </label>
+
           <label class="filter-option">
+
             <input type="checkbox" id="filterNaturalPoolBeach" value="piscina_natural">
             <span data-i18n="beach_types.natural_pool">Piscina natural</span>
           </label>
+
         </fieldset>
+
+
 
         <fieldset class="filter-group" data-user-filter="servicios">
           <legend data-i18n="services.title">Servicios</legend>
           <label class="filter-option">
+
             <input type="checkbox" id="filterRestaurant" value="restaurant">
             <span data-i18n="services.restaurant">Restaurante</span>
           </label>
+
           <label class="filter-option">
+
             <input type="checkbox" id="filterTakeAwayFood" value="takeAwayFood">
             <span data-i18n="services.take_away_food">Comida para llevar</span>
           </label>
+
           <label class="filter-option">
+
             <input type="checkbox" id="filterBalneario" value="balneario">
             <span data-i18n="services.spa">Balneario</span>
           </label>
+
           <label class="filter-option">
+
             <input type="checkbox" id="filterSportZone" value="sportZone">
             <span data-i18n="services.sport_zone">Zona deportiva</span>
           </label>
+
           <label class="filter-option">
+
             <input type="checkbox" id="filterPetFriendly" value="petFriendly">
             <span data-i18n="services.pet_friendly">Pet-friendly</span>
           </label>
+
         </fieldset>
+
         <div class="filter-actions" aria-label="Acciones globales de filtros">
           <button data-i18n="search.enable_dynamic_filters" class="filter-chip-button filter-action-button"
             id="disableDynamicFilters" type="button">
             Activar filtros dinámicos
           </button>
+
         </div>
+
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="nubosidad">
           <div data-i18n="weather.cloudiness" class="dynamic-filter-title">Nubosidad</div>
           <div class="dynamic-filter-slider">
+
             <div class="range-values">
+
               <span><strong id="cloudMinValue">0</strong>%</span>
+
               <span><strong id="cloudMaxValue">20</strong>%</span>
+
             </div>
+
             <div class="dual-range" id="cloudRangeTrack">
               <input data-i18n-aria="weather.cloud_min" type="range" id="filterCloudMin" min="0" max="100" step="1"
                 value="0" aria-label="Nubosidad minima">
               <input data-i18n-aria="weather.cloud_max" type="range" id="filterCloudMax" min="0" max="100" step="1"
                 value="20" aria-label="Nubosidad maxima">
             </div>
+
           </div>
+
           <div class="dynamic-filter-actions-row">
             <button data-i18n="common.reset" class="filter-chip-button" id="filterCloudReset" type="button">
               reset
+
             </button>
+
             <label class="filter-option filter-compact-option filter-toggle-button">
+
               <input type="checkbox" id="filterCloudDisabled">
               <span data-i18n="search.activate_filter" class="filter-toggle-text">Activar filtro</span>
             </label>
+
           </div>
+
         </fieldset>
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="viento">
           <div data-i18n="weather.wind" class="dynamic-filter-title">Viento(km/h)</div>
           <div class="dynamic-filter-slider">
+
             <div class="range-values">
+
               <span><strong id="windMinValue">0</strong> km/h</span>
+
               <span><strong id="windMaxValue">15</strong> km/h</span>
+
             </div>
+
             <div class="dual-range" id="windRangeTrack">
               <input data-i18n-aria="weather.wind_min" type="range" id="filterWindMin" min="0" max="60" step="1"
                 value="0" aria-label="Viento minimo">
               <input data-i18n-aria="weather.wind_max" type="range" id="filterWindMax" min="0" max="60" step="1"
                 value="15" aria-label="Viento maximo">
             </div>
+
           </div>
+
           <div class="dynamic-filter-actions-row">
             <button data-i18n="common.reset" class="filter-chip-button" id="filterWindReset" type="button">
               reset
+
             </button>
+
             <label class="filter-option filter-compact-option filter-toggle-button">
+
               <input type="checkbox" id="filterWindDisabled">
               <span data-i18n="search.activate_filter" class="filter-toggle-text">Activar filtro</span>
             </label>
+
           </div>
+
         </fieldset>
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="temperatura">
           <div data-i18n="weather.temp" class="dynamic-filter-title">Temp.(&ordm;C)</div>
           <div class="dynamic-filter-slider">
+
             <div class="range-values">
               <span><strong id="temperatureMinValue">20</strong> ºC</span>
               <span><strong id="temperatureMaxValue">29</strong> ºC</span>
@@ -214,21 +292,31 @@
               <input data-i18n-aria="weather.temp_max" type="range" id="filterTemperatureMax" min="0" max="45" step="1"
                 value="29" aria-label="Temperatura ambiente maxima">
             </div>
+
           </div>
+
           <div class="dynamic-filter-actions-row">
             <button data-i18n="common.reset" class="filter-chip-button" id="filterTemperatureReset" type="button">
               reset
+
             </button>
+
             <label class="filter-option filter-compact-option filter-toggle-button">
+
               <input type="checkbox" id="filterTemperatureDisabled">
               <span data-i18n="search.activate_filter" class="filter-toggle-text">Activar filtro</span>
             </label>
+
           </div>
+
         </fieldset>
+
+
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="oleaje">
           <div data-i18n="weather.waves" class="dynamic-filter-title">Olas(m)</div>
           <div class="dynamic-filter-slider">
+
             <div class="range-values">
               <span><strong id="waveMinValue">0</strong> m</span>
               <span><strong id="waveMaxValue">1</strong> m</span>
@@ -239,18 +327,27 @@
               <input data-i18n-aria="weather.waves_max" type="range" id="filterWaveMax" min="0" max="5" step="0.1"
                 value="1" aria-label="Oleaje maximo">
             </div>
+
           </div>
+
           <div class="dynamic-filter-actions-row">
             <button data-i18n="common.reset" class="filter-chip-button" id="filterWaveReset" type="button">
               reset
+
             </button>
+
             <label class="filter-option filter-compact-option filter-toggle-button">
+
               <input type="checkbox" id="filterWaveDisabled">
               <span data-i18n="search.activate_filter" class="filter-toggle-text">Activar filtro</span>
             </label>
+
           </div>
+
         </fieldset>
+
       </div>
+
     </aside>
 
     <main class="app-main">
@@ -324,6 +421,7 @@
               <div class="hour-wheel" id="hourWheel"></div>
             </div>
           </div>
+
         </div>
       </section>
 
@@ -359,6 +457,7 @@
               <label for="rango50">50 km</label>
             </div>
           </div>
+
         </div>
         <div id="locationHistory" class="mini-chip-container"></div>
       </section>
@@ -393,6 +492,7 @@
               <span id="cantidadSliderMax">3</span>
             </div>
           </div>
+
         </div>
 
         <div id="resultsContainer" class="results-grid">
@@ -406,281 +506,606 @@
 
   <button data-i18n="search.search_beaches" class="btn-primary floating-search-button" id="floatingBuscarBtn" type="button" aria-hidden="true">
     Buscar playas recomendadas
+
   </button>
 
+
+
   <div id="mapModal" class="map-modal hidden">
+
     <div class="map-container">
-      <button id="closeMap" type="button" aria-label="Cerrar mapa">x</button>
+
+      <button id="closeMap" type="button" aria-label="Cerrar mapa">&times;</button>
       <div id="map" style="height: 400px;"></div>
       <button data-i18n="search.location.select" id="confirmLocation" class="btn-primary" type="button">Seleccionar ubicacion</button>
     </div>
+
   </div>
 
+
+
   <div id="resultsMapModal" class="map-modal hidden">
+
     <div class="map-container results-map-container">
-      <button id="closeResultsMap" type="button" aria-label="Cerrar mapa de recomendaciones">x</button>
+
+      <button id="closeResultsMap" type="button" aria-label="Cerrar mapa de recomendaciones">&times;</button>
       <div class="results-map-header">
         <h3 data-i18n="titles.in_map_title">Mapa de playas recomendadas</h3>
         <p data-i18n="titles.in_map_description">Consulta el ranking y score de cada playa directamente en el mapa.</p>
       </div>
+
       <div id="resultsMap" style="height: 420px;"></div>
+
     </div>
+
   </div>
 
+
+
   <div class="modal-backdrop" id="loginModal" hidden>
+
     <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
       <button class="modal-close" id="closeLoginModal" type="button" aria-label="Cerrar">×</button>
       <h2 data-i18n="auth.login" id="loginModalTitle">Iniciar sesion</h2>
 
       <form id="loginModalForm">
+
         <div class="field auth-field">
           <label data-i18n="auth.email" for="loginEmail">Correo o usuario</label>
           <input data-i18n-placeholder="placeholders.email" id="loginEmail" type="text" placeholder="tu@correo.com o admin" required>
         </div>
+
+
 
         <div class="field auth-field">
           <label data-i18n="auth.password" for="loginPassword">Contraseña</label>
           <input  id="loginPassword" type="password" placeholder="********" required>
         </div>
 
+
+
         <div class="field auth-field" id="confirmPasswordGroup" style="display: none;">
           <label data-i18n="auth.confirm_password" for="confirmPassword">Confirmar contraseña</label>
           <input id="confirmPassword" type="password" placeholder="********">
+
         </div>
 
         <button data-i18n="auth.enter" class="btn-primary auth-submit" id="authSubmitBtn" type="submit">Entrar a mi cuenta</button>
       </form>
 
+
+
       <div class="auth-error" id="loginErrorMessage"></div>
+
+      <div class="auth-divider">
+
+        <span>o continúa con</span>
+
+      </div>
+
+      <div id="googleSignInBtn"
+
+        data-client-id="833555363742-69076ol0c0l4gb2rdv679t5rr2vl9c2o.apps.googleusercontent.com"
+        class="auth-google-btn-wrapper">
+
+      </div>
 
       <div class="auth-register-row">
         <span data-i18n="auth.no_account_question" id="authModeHint">¿Sin cuenta?</span>
         <button data-i18n="auth.register" class="btn-secondary" id="toggleAuthModeBtn" type="button">Registrarse</button>
       </div>
+
+
+
     </div>
+
   </div>
 
+
+
   <div class="favorites-modal-backdrop" id="favoritesModal" hidden>
+
     <div class="favorites-modal" role="dialog" aria-modal="true" aria-labelledby="favoritesModalTitle">
-      <button class="favorites-modal-close" id="closeFavoritesModal" type="button" aria-label="Cerrar">X</button>
+
+      <button class="favorites-modal-close" id="closeFavoritesModal" type="button" aria-label="Cerrar">&times;</button>
       <div class="favorites-modal-header">
         <h2 data-i18n="titles.favorite_beaches" id="favoritesModalTitle">Mis playas favoritas</h2>
       </div>
+
       <div id="favoritesResultsContainer" class="results-grid favorites-results-grid">
         <div data-i18n="titles.downloading_favs" class="empty-state">
           Cargando playas favoritas...
+
         </div>
+
       </div>
+
     </div>
+
   </div>
 
+
+
   <div class="modal-backdrop" id="userManagementModal" hidden>
+
     <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="userManagementModalTitle">
-      <button class="modal-close" id="closeUserManagementModal" type="button" aria-label="Cerrar">×</button>
+
+      <button class="modal-close" id="closeUserManagementModal" type="button" aria-label="Cerrar">&times;</button>
       <div class="admin-modal-header">
+
         <h2 id="userManagementModalTitle">Gestión de usuarios</h2>
         <p>Panel básico para revisar usuarios, banearlos o eliminar cuentas no administradoras.</p>
       </div>
+
       <div class="admin-feedback" id="userManagementFeedback"></div>
+
       <div class="admin-user-layout">
+
         <section class="admin-user-panel">
+
           <h3>Usuarios</h3>
+
           <div class="admin-list admin-scroll-panel" id="userManagementList"></div>
+
         </section>
+
         <section class="admin-user-panel admin-history-panel">
+
           <h3>Histórico reciente</h3>
           <div class="admin-history-list admin-scroll-panel" id="userManagementHistory"></div>
+
         </section>
+
       </div>
+
     </div>
+
   </div>
 
+
+
   <div class="modal-backdrop" id="beachManagementModal" hidden>
-    <div class="admin-modal admin-modal-wide" role="dialog" aria-modal="true"
-      aria-labelledby="beachManagementModalTitle">
-      <button class="modal-close" id="closeBeachManagementModal" type="button" aria-label="Cerrar">×</button>
+
+    <div class="admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="beachManagementModalTitle">
+
+      <button class="modal-close" id="closeBeachManagementModal" type="button" aria-label="Cerrar">&times;</button>
       <div class="admin-modal-header">
+
         <h2 id="beachManagementModalTitle">Gestión de playas</h2>
         <p>Añade nuevas playas o modifica las existentes con sus actividades y servicios.</p>
       </div>
+
       <div class="admin-modal-layout">
+
         <aside class="admin-sidebar">
+
           <button class="btn-secondary admin-create-button" id="newBeachBtn" type="button">Nueva playa</button>
+
           <div class="admin-list admin-beach-list" id="beachManagementList"></div>
+
         </aside>
+
         <section class="admin-form-panel">
+
           <form id="beachManagementForm" class="admin-form">
+
             <input id="beachId" type="hidden">
+
             <div class="admin-form-grid">
+
               <div class="field auth-field">
+
                 <label for="beachName">Nombre</label>
+
                 <input id="beachName" type="text" required>
+
               </div>
+
               <div class="field auth-field">
+
                 <label for="beachLocation">Ubicación</label>
+
                 <input id="beachLocation" type="text">
+
               </div>
+
               <div class="field auth-field">
+
                 <label for="beachType">Tipo</label>
+
                 <select id="beachType">
+
                   <option value="arena">Arena</option>
+
                   <option value="piedra">Piedra</option>
+
                   <option value="piscina_natural">Piscina natural</option>
+
                 </select>
+
               </div>
+
               <div class="field auth-field">
+
                 <label for="beachAccessibility">Accesibilidad</label>
+
                 <select id="beachAccessibility">
+
                   <option value="alta">Alta</option>
+
                   <option value="media">Media</option>
+
                   <option value="baja">Baja</option>
+
                 </select>
+
               </div>
+
               <div class="field auth-field">
+
                 <label for="beachLatitude">Latitud</label>
+
                 <input id="beachLatitude" type="number" step="0.000001" required>
+
               </div>
+
               <div class="field auth-field">
+
                 <label for="beachLongitude">Longitud</label>
+
                 <input id="beachLongitude" type="number" step="0.000001" required>
+
               </div>
+
               <div class="field auth-field admin-full-width">
+
                 <div class="admin-map-toolbar">
+
                   <label for="beachMap">Ubicación en mapa</label>
+
                   <button class="btn-secondary admin-map-button" id="beachPickOnMapBtn" type="button">
+
                     Elegir en mapa
+
                   </button>
+
                 </div>
+
                 <p class="admin-map-help">
+
                   Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.
+
                 </p>
-                <div id="beachMap" class="admin-beach-map" aria-label="Mapa para seleccionar ubicación de la playa">
-                </div>
+
+                <div id="beachMap" class="admin-beach-map" aria-label="Mapa para seleccionar ubicación de la playa"></div>
               </div>
+
               <div class="field auth-field admin-full-width">
+
                 <label for="beachImage">Imagen</label>
+
                 <input id="beachImage" type="text" placeholder="nombre_imagen.jpg">
+
               </div>
+
               <div class="field auth-field admin-full-width">
+
                 <label for="beachDescription">Descripción</label>
+
                 <textarea id="beachDescription" rows="4"></textarea>
+
               </div>
+
             </div>
 
+
+
             <div class="admin-section">
+
               <h3>Servicios</h3>
+
               <div class="admin-chip-grid" id="beachServicesOptions"></div>
+
             </div>
 
+
+
             <div class="admin-section">
+
               <h3>Actividades</h3>
+
               <div class="admin-chip-grid" id="beachActivitiesOptions"></div>
+
             </div>
+
+
 
             <div class="actions admin-form-actions">
+
               <button class="btn-secondary" id="resetBeachFormBtn" type="button">Limpiar</button>
+
               <button class="btn-primary" type="submit">Guardar playa</button>
+
             </div>
+
             <div class="admin-feedback" id="beachManagementFeedback"></div>
+
           </form>
 
+
+
           <section class="admin-section admin-catalog-section">
+
             <div class="admin-catalog-layout">
-              <article class="admin-catalog-card">
-                <div class="admin-catalog-header">
-                  <h3>Catálogo de actividades</h3>
-                  <p>Crea o elimina actividades disponibles para asignarlas a las playas.</p>
-                </div>
-                <form class="admin-inline-form" id="activityCatalogForm">
-                  <input id="activityCatalogName" type="text" placeholder="Ej: paddle surf" required>
-                  <button class="btn-secondary" type="submit">Añadir</button>
-                </form>
-                <div class="admin-feedback" id="activityCatalogFeedback"></div>
-                <div class="admin-list" id="activityCatalogList"></div>
-              </article>
 
               <article class="admin-catalog-card">
+
                 <div class="admin-catalog-header">
-                  <h3>Catálogo de servicios</h3>
-                  <p>Gestiona los servicios globales que luego podrás marcar en cada playa.</p>
+
+                  <h3>Catálogo de actividades</h3>
+
+                  <p>Crea o elimina actividades disponibles para asignarlas a las playas.</p>
+
                 </div>
-                <form class="admin-inline-form" id="serviceCatalogForm">
-                  <input id="serviceCatalogName" type="text" placeholder="Ej: hamacas" required>
+
+                <form class="admin-inline-form" id="activityCatalogForm">
+
+                  <input id="activityCatalogName" type="text" placeholder="Ej: paddle surf" required>
+
+                  <button class="btn-secondary" id="cancelActivityEditBtn" type="button" hidden>Cancelar</button>
+
                   <button class="btn-secondary" type="submit">Añadir</button>
+
                 </form>
-                <div class="admin-feedback" id="serviceCatalogFeedback"></div>
-                <div class="admin-list" id="serviceCatalogList"></div>
+
+                <div class="admin-weights-panel" id="activityWeightsPanel">
+
+                  <div class="admin-weights-header">
+
+                    <h4>Pesos de la actividad</h4>
+
+                    <p>Define la importancia relativa de cada variable. No hace falta que sumen 1: se normalizan automáticamente.</p>
+
+                  </div>
+
+                  <div class="admin-weights-grid" id="activityWeightsGrid"></div>
+
+                </div>
+
+                <div class="admin-feedback" id="activityCatalogFeedback"></div>
+
+                <div class="admin-list" id="activityCatalogList"></div>
+
               </article>
+
+
+
+              <article class="admin-catalog-card">
+
+                <div class="admin-catalog-header">
+
+                  <h3>Catálogo de servicios</h3>
+
+                  <p>Gestiona los servicios globales que luego podrás marcar en cada playa.</p>
+
+                </div>
+
+                <form class="admin-inline-form" id="serviceCatalogForm">
+
+                  <input id="serviceCatalogName" type="text" placeholder="Ej: hamacas" required>
+
+                  <button class="btn-secondary" type="submit">Añadir</button>
+
+                </form>
+
+                <div class="admin-feedback" id="serviceCatalogFeedback"></div>
+
+                <div class="admin-list" id="serviceCatalogList"></div>
+
+              </article>
+
             </div>
+
           </section>
+
         </section>
+
       </div>
+
     </div>
+
   </div>
+
   <div class="modal-backdrop" id="filterConfigModal" hidden>
+
     <div class="auth-modal config-modal">
+
       <h2>Personaliza tu experiencia</h2>
+
       <p>Selecciona los filtros que deseas tener siempre a mano. Podrás cambiarlos luego en preferencias.</p>
+
+
 
       <div class="config-list" id="configFilterList">
       </div>
 
+
+
       <button class="btn-primary auth-submit" id="saveFilterConfigBtn">Guardar mi configuración</button>
+
     </div>
+
   </div>
+
+  <div class="modal-backdrop" id="alertsModal" hidden>
+
+    <div class="auth-modal alerts-modal" role="dialog" aria-modal="true" aria-labelledby="alertsModalTitle">
+
+      <button class="modal-close" id="closeAlertsModal" type="button" aria-label="Cerrar">&times;</button>
+      <h2 id="alertsModalTitle">Alertas por email</h2>
+
+      <p class="alerts-modal-copy">
+        Configura una alerta indicando la actividad, la playa y las condiciones que quieres vigilar.
+      </p>
+
+      <section class="alerts-existing-section" aria-labelledby="alertsListTitle">
+        <div class="alerts-existing-header">
+          <h3 id="alertsListTitle">Mis alertas</h3>
+          <p>Desde aquí puedes revisar, editar o borrar cualquiera de tus alertas guardadas.</p>
+        </div>
+
+        <div class="alerts-list" id="alertsList"></div>
+      </section>
+
+      <form class="alerts-form" id="alertsForm">
+        <input id="alertsEditingId" type="hidden">
+
+        <div class="alerts-form-grid">
+          <label class="field">
+            <span>Actividad</span>
+            <select id="alertsActivitySelect" required>
+              <option value="">Selecciona una actividad</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Playa</span>
+            <select id="alertsBeachSelect" required>
+              <option value="">Selecciona una playa</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="alerts-conditions">
+          <h3>Condiciones</h3>
+          <div class="alerts-form-grid">
+            <label class="field">
+              <span>Temperatura mín. (ºC)</span>
+              <input id="alertMinTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 22">
+            </label>
+
+            <label class="field">
+              <span>Temperatura máx. (ºC)</span>
+              <input id="alertMaxTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 30">
+            </label>
+
+            <label class="field">
+              <span>Viento mín. (km/h)</span>
+              <input id="alertMinWind" type="number" step="1" min="0" max="60" placeholder="Ej: 8">
+            </label>
+
+            <label class="field">
+              <span>Viento máx. (km/h)</span>
+              <input id="alertMaxWind" type="number" step="1" min="0" max="60" placeholder="Ej: 20">
+            </label>
+
+            <label class="field">
+              <span>Nubosidad mín. (%)</span>
+              <input id="alertMinCloud" type="number" step="1" min="0" max="100" placeholder="Ej: 0">
+            </label>
+
+            <label class="field">
+              <span>Nubosidad máx. (%)</span>
+              <input id="alertMaxCloud" type="number" step="1" min="0" max="100" placeholder="Ej: 25">
+            </label>
+
+            <label class="field">
+              <span>Oleaje mín. (m)</span>
+              <input id="alertMinWave" type="number" step="0.1" min="0" max="5" placeholder="Ej: 0.5">
+            </label>
+
+            <label class="field">
+              <span>Oleaje máx. (m)</span>
+              <input id="alertMaxWave" type="number" step="0.1" min="0" max="5" placeholder="Ej: 1.5">
+            </label>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary auth-submit" id="saveCurrentAlertBtn" type="submit">
+            Guardar alerta
+          </button>
+          <button class="btn-secondary" id="cancelAlertEditBtn" type="button" hidden>
+            Cancelar edición
+          </button>
+        </div>
+      </form>
+
+      <div class="admin-feedback" id="alertsFeedback"></div>
+
+    </div>
+
+  </div>
+
   <div id="onboarding-modal" class="modal" hidden>
+
     <div class="modal-content onboarding-card">
-      <div id="onboarding-step-container">
-      </div>
-      <div class="onboarding-footer">
-        <span id="onboarding-progress">Paso 1 de 3</span>
-      </div>
+
+        <div id="onboarding-step-container">
+
+            </div>
+
+        <div class="onboarding-footer">
+
+            <span id="onboarding-progress">Paso 1 de 3</span>
+            <button id="btn-skip-all" type="button">
+              Omitir todo
+            </button>
+        </div>
+
     </div>
+
   </div>
+
   <div class="modal-backdrop" id="reviewsModal" hidden>
+
     <div class="auth-modal reviews-modal">
-      <button class="modal-close" id="closeReviewsModal" type="button">×</button>
+
+      <button class="modal-close" id="closeReviewsModal" type="button">&times;</button>
       <h2>Reseñas de la playa</h2>
 
+
       <div id="reviewsList" class="reviews-list">
+
         <div class="empty-state">Cargando reseñas...</div>
       </div>
 
+
+
       <form id="reviewForm" class="review-form">
+
         <div class="stars-input" id="starsInput">
-          <span data-value="1">★</span>
-          <span data-value="2">★</span>
-          <span data-value="3">★</span>
-          <span data-value="4">★</span>
-          <span data-value="5">★</span>
+
+          <span data-value="1">&#9733;</span>
+          <span data-value="2">&#9733;</span>
+          <span data-value="3">&#9733;</span>
+          <span data-value="4">&#9733;</span>
+          <span data-value="5">&#9733;</span>
         </div>
+
+
 
         <textarea id="reviewText" placeholder="Escribe tu reseña..."></textarea>
         <button class="btn-primary" type="submit">Añadir reseña</button>
       </form>
-    </div>
-  </div>
-  <div class="modal-backdrop" id="reviewManagementModal" hidden>
-    <div class="reviews-admin-modal">
-      <button class="modal-close" id="closeReviewManagementModal" type="button">×</button>
-      <div class="reviews-admin-layout">
-        <!-- IZQUIERDA: playas -->
-        <aside class="reviews-admin-sidebar">
-          <h3>Playas</h3>
-          <div id="reviewsBeachList" class="reviews-beach-list"></div>
-        </aside>
 
-        <!-- DERECHA: reseñas -->
-        <section class="reviews-admin-content">
-          <h3>Reseñas</h3>
-          <div id="reviewsAdminList" class="reviews-list"></div>
-        </section>
-      </div>
     </div>
-  </div>
+
+  </div>   
+  
+
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script src="https://unpkg.com/virtual-scroller@1.16.4/bundle/virtual-scroller-dom.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
+
   <script type="module" src="/static/js/main.js?v=admin-catalog-20260507"></script>
+
   <script type="module" src="/static/js/favorites/favorites.js?v=admin-catalog-20260507"></script>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
 </body>
 
 </html>

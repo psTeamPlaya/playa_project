@@ -7,6 +7,7 @@ from backend.models.service import Service
 from backend.models.user_activity_preference import UserActivityPreference
 from backend.models.user_favorite_beaches import UserFavoriteBeaches
 from backend.models.user import User
+from backend.models.user_alert import UserAlert
 from backend.models.user_audit_log import UserAuditLog
 from backend.models.variable import Variable
 from backend.models.review import Review

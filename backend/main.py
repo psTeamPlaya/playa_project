@@ -5,22 +5,29 @@ from contextlib import asynccontextmanager
 from sqlalchemy import inspect, text
 from datetime import date, timedelta
 from sqlalchemy import func
+from time import perf_counter
 
 import backend.models  # NO BORRAR
 from backend.config import settings
 from backend.routes import (
     api_router, views_router, auth_router, users_router,
-    services_router, activities_router, variables_router,
-    beach_conditions_router, favourites_router, admin_router,
-    reviews_router
+    services_router, activities_router, beaches_router, variables_router,
+    beach_conditions_router, favourites_router, alerts_router, admin_router,
+    reviews_router, review_photo_router
 )
 
-from backend.engine_recomendation import recomendar_playas, cargar_playas
+from backend.engine_recomendation import (
+    cargar_condiciones_desde_db,
+    cargar_playas,
+    recomendar_playas,
+)
 from backend.db import SessionLocal, engine, Base
 from backend.auth.auth import hash_password
 from backend.models.user import User
 from backend.sunlight_provider import obtener_aviso_luz_solar, SunlightError
 from backend.models.beach_condition import BeachCondition
+from backend.alerts_service import process_user_alerts_cycle
+import asyncio
 
 
 def ensure_user_schema() -> None:
@@ -76,6 +83,16 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     ensure_user_schema()
     ensure_admin_user()
+    alert_worker_task = None
+
+    async def alert_worker_loop():
+        await asyncio.sleep(getattr(settings, "ALERTS_INITIAL_DELAY_SECONDS", 2))
+        while True:
+            try:
+                await process_user_alerts_cycle()
+            except Exception as exc:
+                print(f"Alert worker error: {exc}")
+            await asyncio.sleep(getattr(settings, "ALERTS_POLL_SECONDS", 900))
 
     """
     db = SessionLocal()
@@ -89,17 +106,36 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
     """
-    yield
+    if getattr(settings, "ALERTS_ENABLED", True):
+        alert_worker_task = asyncio.create_task(alert_worker_loop())
+
+    try:
+        yield
+    finally:
+        if alert_worker_task is not None:
+            alert_worker_task.cancel()
+            try:
+                await alert_worker_task
+            except asyncio.CancelledError:
+                pass
 
 app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
+
+@app.middleware("http")
+async def add_coop_header(request, call_next):
+    response = await call_next(request)
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"
+    return response
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "frontend" / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 routers = [
     api_router, views_router, auth_router, users_router, services_router,
-    activities_router, variables_router, beach_conditions_router, favourites_router,
-    admin_router, reviews_router
+    activities_router, beaches_router, variables_router, beach_conditions_router, favourites_router,
+    alerts_router, admin_router, reviews_router, review_photo_router
 ]
 
 for router in routers: 
@@ -141,6 +177,26 @@ def obtener_recomendaciones(
 ):
     try:
         playas = cargar_playas()
+        comparativa_consulta = {
+            "db": {
+                "elapsed_ms": None,
+                "available": False,
+                "records": 0,
+                "error": None,
+            }
+        }
+
+        db_conditions: list[dict] = []
+        db_started_at = perf_counter()
+        try:
+            db_conditions = cargar_condiciones_desde_db(playas, fecha, hora)
+            comparativa_consulta["db"]["available"] = bool(db_conditions)
+            comparativa_consulta["db"]["records"] = len(db_conditions)
+        except Exception as exc:
+            comparativa_consulta["db"]["error"] = str(exc)
+        finally:
+            comparativa_consulta["db"]["elapsed_ms"] = round((perf_counter() - db_started_at) * 1000, 2)
+
         try:
             aviso_sol = obtener_aviso_luz_solar(
                 actividad=actividad,
@@ -160,6 +216,7 @@ def obtener_recomendaciones(
                 "hora": hora,
                 "resultados": [],
                 "aviso_sol": aviso_sol,
+                "comparativa_consulta": comparativa_consulta,
             }
 
         filtros = {
@@ -183,6 +240,11 @@ def obtener_recomendaciones(
             "max_altura_oleaje": max_altura_oleaje,
         }
         filtros = {k: v for k, v in filtros.items() if v is not None}
+        db_condition_ids = {int(condicion["beach_id"]) for condicion in db_conditions}
+        beach_ids = {int(playa["id"]) for playa in playas}
+        condiciones_recomendacion = db_conditions if db_condition_ids == beach_ids else None
+        comparativa_consulta["db"]["used_for_recommendations"] = condiciones_recomendacion is not None
+
         resultados = recomendar_playas(
             actividad=actividad,
             fecha=fecha,
@@ -191,7 +253,9 @@ def obtener_recomendaciones(
             lon_usuario=lon,
             radio_km=radio_km,
             top_n=top_n,
-            filtros=filtros
+            filtros=filtros,
+            playas_override=playas,
+            condiciones_override=condiciones_recomendacion,
         )
         return {
             "actividad": actividad,
@@ -199,6 +263,7 @@ def obtener_recomendaciones(
             "hora": hora,
             "resultados": resultados,
             "aviso_sol": None,
+            "comparativa_consulta": comparativa_consulta,
         }
 
     except ValueError as e:

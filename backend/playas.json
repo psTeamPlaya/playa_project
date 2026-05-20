@@ -211,18 +211,18 @@
     "descripcion": "Playa de ambiente tranquilo, adecuada para baño relajado y descanso.",
     "actividades_ideales": [
       {
-        "actividad": "Nadar",
+        "actividad": "caminar",
         "condicion": "gestionado desde panel admin"
       },
       {
-        "actividad": "Pasear",
+        "actividad": "nadar",
         "condicion": "gestionado desde panel admin"
       }
     ],
     "servicios": {
       "restaurantes": true,
       "comida_para_llevar": true,
-      "balneario": false,
+      "balnearios": false,
       "zona_deportiva": false,
       "escuela_surf": false,
       "escuela_windsurf": false
@@ -612,5 +612,737 @@
     },
     "imagen": "",
     "accesibilidad": "alta"
+  },
+  {
+    "id": 23,
+    "nombre": "Playa de Mogán",
+    "ubicacion": "Mogán",
+    "latitud": 27.8175,
+    "longitud": -15.763,
+    "tipo": "arena",
+    "descripcion": "Playa resguardada de ambiente familiar, situada junto al puerto deportivo de Mogán, adecuada para baño tranquilo, descanso y actividades suaves en el mar.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "ideal con mar calmado por su zona resguardada"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "ideal en condiciones generales"
+      },
+      {
+        "actividad": "pasear",
+        "condicion": "adecuada por su entorno turístico y paseo cercano"
+      },
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada en zonas tranquilas y con buena visibilidad"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "playa_de_mogan.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 24,
+    "nombre": "Playa de Taurito",
+    "ubicacion": "Mogán",
+    "latitud": 27.8144,
+    "longitud": -15.7534,
+    "tipo": "arena",
+    "descripcion": "Playa turística de arena oscura, situada en una zona hotelera del suroeste de Gran Canaria, con servicios cercanos y opciones de ocio acuático.",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "ideal en condiciones generales"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada con mar favorable"
+      },
+      {
+        "actividad": "kayak",
+        "condicion": "adecuada con viento moderado y mar tranquilo"
+      },
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada con buena visibilidad y mar calmado"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": true,
+      "zona_deportiva": true,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "taurito.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 25,
+    "nombre": "Playa de Vargas",
+    "ubicacion": "Agüimes",
+    "latitud": 27.8909,
+    "longitud": -15.394,
+    "tipo": "piedra",
+    "descripcion": "Zona costera abierta del este de Gran Canaria, especialmente conocida por sus condiciones de viento y oleaje, muy apropiada para deportes náuticos.",
+    "actividades_ideales": [
+      {
+        "actividad": "windsurf",
+        "condicion": "ideal con viento constante y oleaje favorable"
+      },
+      {
+        "actividad": "surf",
+        "condicion": "adecuada con oleaje suficiente y experiencia previa"
+      },
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada para recorrer el entorno costero"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": true,
+      "pet_friendly": false
+    },
+    "imagen": "playa_de_vargas.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 26,
+    "nombre": "Playa de Guayedra",
+    "ubicacion": "Agaete",
+    "latitud": 28.0868,
+    "longitud": -15.7094,
+    "tipo": "arena",
+    "descripcion": "Playa natural de arena oscura y callaos, situada en un entorno protegido al pie de Tamadaba, adecuada para quienes buscan una experiencia más salvaje y tranquila.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su acceso y entorno natural"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en días tranquilos y con buen tiempo"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "solo recomendable con mar calmado y extremando la precaución"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "guayedra.jpg",
+    "accesibilidad": "baja"
+  },
+  {
+    "id": 27,
+    "nombre": "Playa de Las Alcaravaneras",
+    "ubicacion": "Las Palmas de Gran Canaria",
+    "latitud": 28.1307,
+    "longitud": -15.429,
+    "tipo": "arena",
+    "descripcion": "Playa urbana situada en la bahía de Las Palmas de Gran Canaria, de aguas generalmente tranquilas y muy utilizada para deportes de playa y actividades náuticas suaves.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "ideal con aguas tranquilas"
+      },
+      {
+        "actividad": "paddle_surf",
+        "condicion": "adecuada con poco viento y mar calmado"
+      },
+      {
+        "actividad": "kayak",
+        "condicion": "adecuada por la protección de la bahía"
+      },
+      {
+        "actividad": "voley_playa",
+        "condicion": "adecuada por sus instalaciones deportivas"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": true,
+      "zona_deportiva": true,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "las_alcaravaneras.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 28,
+    "nombre": "Playa de Las Burras",
+    "ubicacion": "San Bartolomé de Tirajana",
+    "latitud": 27.7742,
+    "longitud": -15.5478,
+    "tipo": "arena",
+    "descripcion": "Playa turística y familiar situada entre San Agustín y Playa del Inglés, protegida parcialmente por rompeolas y adecuada para baño tranquilo y descanso.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "ideal con mar tranquilo por su zona protegida"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "ideal en condiciones generales"
+      },
+      {
+        "actividad": "pasear",
+        "condicion": "adecuada por su paseo marítimo y conexión con otras playas cercanas"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": true,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "las_burras.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 29,
+    "nombre": "El Veril",
+    "ubicacion": "San Bartolomé de Tirajana",
+    "latitud": 27.7635,
+    "longitud": -15.5556,
+    "tipo": "arena",
+    "descripcion": "Playa situada junto a Playa del Inglés, con ambiente turístico y buenas condiciones para descanso, paseo y baño en días de mar favorable.",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "ideal en condiciones generales"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada con mar calmado"
+      },
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su conexión con Playa del Inglés"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "el_veril.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 30,
+    "nombre": "Playa del Águila",
+    "ubicacion": "San Bartolomé de Tirajana",
+    "latitud": 27.7839,
+    "longitud": -15.5236,
+    "tipo": "arena",
+    "descripcion": "Playa tranquila del sur de Gran Canaria, con ambiente menos masificado que otros núcleos turísticos cercanos y adecuada para descanso y paseo.",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      },
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su entorno costero"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "recomendable solo con mar calmado"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "playa_del_aguila.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 31,
+    "nombre": "Playa del Cura",
+    "ubicacion": "Mogán",
+    "latitud": 27.7985,
+    "longitud": -15.7319,
+    "tipo": "arena",
+    "descripcion": "Playa turística del suroeste de Gran Canaria, situada en una pequeña bahía, adecuada para baño tranquilo, descanso y actividades familiares.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada con mar favorable"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "ideal en condiciones generales"
+      },
+      {
+        "actividad": "pasear",
+        "condicion": "adecuada por su entorno urbano y turístico"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "playa_del_cura.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 32,
+    "nombre": "Playa de Tauro",
+    "ubicacion": "Mogán",
+    "latitud": 27.7953,
+    "longitud": -15.7366,
+    "tipo": "arena",
+    "descripcion": "Playa del suroeste de Gran Canaria, próxima a Playa del Cura y Amadores, adecuada para descanso, baño con mar tranquilo y paseo por la costa.",
+    "actividades_ideales": [
+      {
+        "actividad": "tomar_sol",
+        "condicion": "ideal en condiciones generales"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada con mar calmado"
+      },
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su entorno litoral"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "tauro.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 33,
+    "nombre": "Patalavaca",
+    "ubicacion": "Mogán",
+    "latitud": 27.7697,
+    "longitud": -15.6925,
+    "tipo": "arena",
+    "descripcion": "Playa turística situada entre Arguineguín y Anfi del Mar, con aguas generalmente tranquilas y servicios cercanos de restauración.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "ideal con mar calmado"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "ideal en condiciones generales"
+      },
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada con buena visibilidad"
+      },
+      {
+        "actividad": "pasear",
+        "condicion": "adecuada por su paseo y entorno turístico"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "patalavaca.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 34,
+    "nombre": "Arguineguín",
+    "ubicacion": "Mogán",
+    "latitud": 27.7597,
+    "longitud": -15.6819,
+    "tipo": "arena",
+    "descripcion": "Playa urbana situada junto al núcleo pesquero de Arguineguín, con ambiente local, servicios próximos y buenas condiciones para paseo y baño tranquilo.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada con mar tranquilo"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en condiciones generales"
+      },
+      {
+        "actividad": "pasear",
+        "condicion": "ideal por su paseo marítimo y ambiente local"
+      },
+      {
+        "actividad": "pescar",
+        "condicion": "adecuada en zonas permitidas y con precaución"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "arguineguin.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 35,
+    "nombre": "Playa de Veneguera",
+    "ubicacion": "Mogán",
+    "latitud": 27.861,
+    "longitud": -15.7967,
+    "tipo": "piedra",
+    "descripcion": "Playa natural y aislada del oeste de Gran Canaria, situada en un entorno poco urbanizado y adecuada para quienes buscan tranquilidad y paisaje volcánico.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "ideal por su entorno natural y poco urbanizado"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en días de buen tiempo"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "solo recomendable con mar calmado y extremando la precaución"
+      },
+      {
+        "actividad": "pescar",
+        "condicion": "adecuada en zonas permitidas y con experiencia"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "veneguera.jpg",
+    "accesibilidad": "baja"
+  },
+  {
+    "id": 36,
+    "nombre": "Playa de Tasarte",
+    "ubicacion": "La Aldea de San Nicolás",
+    "latitud": 27.8868,
+    "longitud": -15.7819,
+    "tipo": "piedra",
+    "descripcion": "Playa de callaos situada en la costa oeste de Gran Canaria, de ambiente tranquilo y natural, adecuada para desconectar y disfrutar del paisaje.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "adecuada por su entorno natural"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en días tranquilos"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "solo recomendable con mar calmado"
+      },
+      {
+        "actividad": "pescar",
+        "condicion": "adecuada en zonas permitidas"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "tasarte.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 37,
+    "nombre": "Güigüí",
+    "ubicacion": "La Aldea de San Nicolás",
+    "latitud": 27.9308,
+    "longitud": -15.8147,
+    "tipo": "arena",
+    "descripcion": "Playa virgen y aislada del oeste de Gran Canaria, rodeada de acantilados y naturaleza, accesible principalmente a pie o por mar.",
+    "actividades_ideales": [
+      {
+        "actividad": "caminar",
+        "condicion": "ideal para senderismo por su acceso a pie"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en días despejados y con mar tranquilo"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "solo recomendable con mar calmado y buena visibilidad"
+      },
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada con mar tranquilo y buena visibilidad"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "guigui.jpg",
+    "accesibilidad": "baja"
+  },
+  {
+    "id": 38,
+    "nombre": "Piscinas de Roque Prieto",
+    "ubicacion": "Santa María de Guía",
+    "latitud": 28.1666,
+    "longitud": -15.6165,
+    "tipo": "piscina_natural",
+    "descripcion": "Conjunto de piscinas naturales situadas en la costa norte de Gran Canaria, adecuadas para baño tranquilo cuando la marea y el oleaje son favorables.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "ideal con marea media y oleaje controlado"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada por su zona de solárium"
+      },
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada con buena visibilidad y poca agitación"
+      }
+    ],
+    "servicios": {
+      "restaurantes": false,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "roque_prieto.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 39,
+    "nombre": "El Agujero",
+    "ubicacion": "Gáldar",
+    "latitud": 28.1611,
+    "longitud": -15.6686,
+    "tipo": "piscina_natural",
+    "descripcion": "Piscinas naturales de agua salada situadas en la costa de Gáldar, muy frecuentadas por población local y adecuadas para baño familiar en zonas delimitadas.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "ideal dentro de las zonas delimitadas de baño"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en las zonas habilitadas junto al mar"
+      },
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada con buena visibilidad"
+      },
+      {
+        "actividad": "bodyboard",
+        "condicion": "solo recomendable fuera de las piscinas y con experiencia"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": false,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "el_agujero.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 40,
+    "nombre": "Charco de San Lorenzo",
+    "ubicacion": "Moya",
+    "latitud": 28.1527,
+    "longitud": -15.5892,
+    "tipo": "piscina_natural",
+    "descripcion": "Piscinas naturales acondicionadas en la costa de Moya, con zonas amplias de baño, solárium y servicios cercanos.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "ideal en las piscinas naturales con mar favorable"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "ideal por su zona de solárium"
+      },
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada con buena visibilidad"
+      },
+      {
+        "actividad": "pasear",
+        "condicion": "adecuada por el entorno costero"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": true,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "charco_de_san_lorenzo.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 41,
+    "nombre": "Los Charcones",
+    "ubicacion": "Arucas",
+    "latitud": 28.1496,
+    "longitud": -15.5269,
+    "tipo": "piscina_natural",
+    "descripcion": "Piscinas naturales situadas en la zona de El Puertillo, en Arucas, conocidas por su tamaño, facilidad de acceso y servicios próximos.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "ideal con marea adecuada y oleaje bajo"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "ideal por su zona de solárium"
+      },
+      {
+        "actividad": "pasear",
+        "condicion": "adecuada por el paseo marítimo de El Puertillo"
+      },
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada con buena visibilidad"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": true,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "los_charcones.jpg",
+    "accesibilidad": "alta"
+  },
+  {
+    "id": 42,
+    "nombre": "Piscinas naturales de Bañaderos",
+    "ubicacion": "Arucas",
+    "latitud": 28.1508,
+    "longitud": -15.5306,
+    "tipo": "piscina_natural",
+    "descripcion": "Zona de baño natural próxima a Bañaderos y El Puertillo, adecuada para baño tranquilo cuando las condiciones del mar son favorables.",
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "adecuada con marea favorable y poco oleaje"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "adecuada en zonas próximas al litoral"
+      },
+      {
+        "actividad": "pasear",
+        "condicion": "adecuada por su cercanía al paseo costero"
+      },
+      {
+        "actividad": "bucear",
+        "condicion": "adecuada con agua clara y mar tranquilo"
+      }
+    ],
+    "servicios": {
+      "restaurantes": true,
+      "comida_para_llevar": true,
+      "balneario": false,
+      "zona_deportiva": false,
+      "escuela_surf": false,
+      "escuela_windsurf": false,
+      "pet_friendly": false
+    },
+    "imagen": "banaderos.jpg",
+    "accesibilidad": "media"
   }
 ]

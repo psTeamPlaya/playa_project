@@ -26,7 +26,6 @@ export function initPreferencesUI({
     authActionBtn,
     rememberActivityPreference,
     rememberSchedulePreference,
-    expandResultsPreference,
     onRememberActivityChange,
     onRememberScheduleChange
 }) {
@@ -34,8 +33,7 @@ export function initPreferencesUI({
 
     cargarPreferenciasUI({
         rememberActivityPreference,
-        rememberSchedulePreference,
-        expandResultsPreference
+        rememberSchedulePreference
     });
 
     const checkPreferencias = document.getElementById('rememberSchedulePreference');
@@ -65,12 +63,6 @@ export function initPreferencesUI({
             import("./filters-ui.js").then(module => {
                 module.abrirConfiguradorInicial();
             });
-        });
-    }
-
-    if (expandResultsPreference) {
-        expandResultsPreference.addEventListener("change", () => {
-            guardarPreferencia(STORAGE_KEYS.expandResults, expandResultsPreference.checked);
         });
     }
 

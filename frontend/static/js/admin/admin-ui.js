@@ -1,4 +1,6 @@
 import { authFetch } from "../api/auth-fetch.js";
+import { getServiceLabel } from "../shared/formatters.js";
+import { openReviewAdminModal } from "../reviews/reviews_admin.js";
 
 function escapeHtml(value = "") {
     return String(value)
@@ -28,11 +30,12 @@ function closeModal(modal) {
     modal.hidden = true;
 }
 
-function buildAdminCheckboxes(container, options) {
+function buildAdminCheckboxes(container, options, labelFormatter = null) {
     if (!container) return;
     container.innerHTML = options.map((option) => {
         const value = typeof option === "string" ? option : option.name;
-        const label = typeof option === "string" ? option : option.label;
+        const baseLabel = typeof option === "string" ? option : option.label;
+        const label = labelFormatter ? labelFormatter(value, baseLabel, option) : baseLabel;
         return `
         <label class="admin-chip-option">
             <input type="checkbox" value="${escapeHtml(value)}">
@@ -94,6 +97,9 @@ export function initAdminUI({
     beachActivitiesOptions,
     activityCatalogForm,
     activityCatalogNameInput,
+    cancelActivityEditBtn,
+    activityWeightsPanel,
+    activityWeightsGrid,
     activityCatalogFeedback,
     activityCatalogList,
     serviceCatalogForm,
@@ -106,17 +112,38 @@ export function initAdminUI({
     const state = {
         activities: [],
         services: [],
+        variables: [],
+        activityWeightTemplates: {},
         activityItems: [],
         serviceItems: [],
         beaches: [],
         selectedBeachId: null,
         map: null,
         mapMarker: null,
+        activityWeightSourceKey: "",
+        editingActivityName: null,
     };
 
     const DEFAULT_MAP_COORDS = [28.1235, -15.4363];
     const DEFAULT_MAP_ZOOM = 10;
     const DETAIL_MAP_ZOOM = 15;
+    const ACTIVITY_ALIASES = {
+        "tomar sol": "tomar_sol",
+        "nadar": "nadar",
+        "surf": "surf",
+        "windsurf": "windsurf",
+        "wind surf": "windsurf",
+        "buceo": "bucear",
+        "bucear": "bucear",
+        "snorkel": "bucear",
+        "caminar": "caminar",
+        "pasear": "caminar",
+        "pescar": "pescar",
+        "kayak": "kayak",
+        "kitesurf": "kitesurf",
+        "kite surf": "kitesurf",
+        "piscina natural": "piscina_natural",
+    };
 
     function updateAdminVisibility(user) {
         adminPreferencesGroup?.classList.toggle("hidden", !user?.is_admin);
@@ -125,6 +152,94 @@ export function initAdminUI({
     function parseCoordinate(value) {
         const parsed = Number(value);
         return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function normalizeActivityName(name = "") {
+        const normalized = String(name)
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim()
+            .toLowerCase()
+            .replaceAll("-", " ")
+            .replaceAll("_", " ")
+            .replace(/\s+/g, " ");
+
+        return ACTIVITY_ALIASES[normalized] || normalized.replaceAll(" ", "_");
+    }
+
+    function formatVariableLabel(variable) {
+        if (!variable) return "";
+        return variable.unit
+            ? `${variable.label} (${variable.unit})`
+            : variable.label;
+    }
+
+    function buildActivityWeightInputs(weights = {}) {
+        if (activityWeightsPanel) {
+            activityWeightsPanel.hidden = state.variables.length === 0;
+        }
+        if (!activityWeightsGrid) return;
+
+        activityWeightsGrid.innerHTML = state.variables.map((variable) => {
+            const value = Number(weights[variable.name] ?? 0);
+            return `
+                <label class="admin-weight-field">
+                    <span>${escapeHtml(formatVariableLabel(variable))}</span>
+                    <input
+                        type="number"
+                        min="0"
+                        step="0.05"
+                        value="${Number.isFinite(value) ? value : 0}"
+                        data-variable-name="${escapeHtml(variable.name)}"
+                    >
+                </label>
+            `;
+        }).join("");
+    }
+
+    function getActivityCatalogSubmitButton() {
+        return activityCatalogForm?.querySelector('button[type="submit"]') || null;
+    }
+
+    function setActivityEditMode(item = null) {
+        state.editingActivityName = item?.name || null;
+        if (activityCatalogNameInput) {
+            activityCatalogNameInput.value = item?.name || "";
+            activityCatalogNameInput.readOnly = Boolean(item && item.can_rename === false);
+        }
+        if (cancelActivityEditBtn) {
+            cancelActivityEditBtn.hidden = !item;
+        }
+        const submitButton = getActivityCatalogSubmitButton();
+        if (submitButton) {
+            submitButton.textContent = item ? "Guardar cambios" : "Añadir";
+        }
+        state.activityWeightSourceKey = item?.name || "";
+        buildActivityWeightInputs(item?.weights || {});
+    }
+
+    function syncActivityWeightInputsFromName() {
+        const normalizedName = normalizeActivityName(activityCatalogNameInput?.value || "");
+        if (normalizedName === state.activityWeightSourceKey) {
+            return;
+        }
+
+        state.activityWeightSourceKey = normalizedName;
+        const templateWeights = state.activityWeightTemplates[normalizedName] || {};
+        buildActivityWeightInputs(templateWeights);
+    }
+
+    function getActivityWeightsPayload() {
+        if (!activityWeightsGrid) return {};
+
+        return Array.from(activityWeightsGrid.querySelectorAll("[data-variable-name]"))
+            .reduce((acc, input) => {
+                const numericValue = Number(input.value);
+                if (Number.isFinite(numericValue) && numericValue > 0) {
+                    acc[input.dataset.variableName] = numericValue;
+                }
+                return acc;
+            }, {});
     }
 
     function getBeachCoordinates() {
@@ -360,14 +475,30 @@ export function initAdminUI({
                     <strong>${escapeHtml(item.label)}</strong>
                     <div class="admin-list-meta">${escapeHtml(item.name)}</div>
                 </div>
-                <button
-                    class="btn-secondary admin-inline-button"
-                    data-catalog-type="${type}"
-                    data-catalog-id="${item.id}"
-                    type="button"
-                >
-                    Eliminar
-                </button>
+                <div class="admin-inline-actions">
+                    ${type === "activity" ? `
+                        <button
+                            class="btn-secondary admin-inline-button"
+                            data-catalog-type="${type}"
+                            data-catalog-action="edit"
+                            data-catalog-name="${escapeHtml(item.name)}"
+                            type="button"
+                        >
+                            Editar
+                        </button>
+                    ` : ""}
+                    ${item.can_delete !== false ? `
+                        <button
+                            class="btn-secondary admin-inline-button"
+                            data-catalog-type="${type}"
+                            data-catalog-action="delete"
+                            data-catalog-id="${item.id}"
+                            type="button"
+                        >
+                            Eliminar
+                        </button>
+                    ` : ""}
+                </div>
             </article>
         `).join("");
     }
@@ -423,13 +554,20 @@ export function initAdminUI({
         const catalog = await fetchJson("/admin/catalog");
         state.activities = catalog.activities || [];
         state.services = catalog.services || [];
+        state.variables = catalog.variables || [];
+        state.activityWeightTemplates = catalog.activity_weight_templates || {};
 
         const selectedServices = getSelectedOptions(beachServicesOptions);
         const selectedActivities = getSelectedOptions(beachActivitiesOptions);
         buildAdminCheckboxes(beachActivitiesOptions, state.activities);
-        buildAdminCheckboxes(beachServicesOptions, state.services);
+        buildAdminCheckboxes(beachServicesOptions, state.services, (value, baseLabel) => {
+            const decorated = getServiceLabel(value);
+            return decorated === value ? baseLabel : decorated;
+        });
         setSelectedOptions(beachServicesOptions, selectedServices);
         setSelectedOptions(beachActivitiesOptions, selectedActivities);
+        buildActivityWeightInputs();
+        syncActivityWeightInputsFromName();
     }
 
     async function loadCatalogItems() {
@@ -563,9 +701,22 @@ export function initAdminUI({
 
     async function createCatalogItem(type, rawName) {
         const url = type === "activity" ? "/admin/activities" : "/admin/services";
+        const payload = type === "activity"
+            ? { name: rawName, weights: getActivityWeightsPayload() }
+            : { name: rawName };
         return fetchJson(url, {
             method: "POST",
-            body: JSON.stringify({ name: rawName }),
+            body: JSON.stringify(payload),
+        });
+    }
+
+    async function updateActivityCatalogItem(previousName, rawName) {
+        return fetchJson(`/admin/activities/${encodeURIComponent(previousName)}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                name: rawName,
+                weights: getActivityWeightsPayload(),
+            }),
         });
     }
 
@@ -583,14 +734,26 @@ export function initAdminUI({
 
         try {
             setFeedback(feedback, "Guardando...");
-            await createCatalogItem(type, rawName);
+            const wasEditingActivity = type === "activity" && Boolean(state.editingActivityName);
+            if (type === "activity" && state.editingActivityName) {
+                await updateActivityCatalogItem(state.editingActivityName, rawName);
+            } else {
+                await createCatalogItem(type, rawName);
+            }
             if (input) {
                 input.value = "";
+            }
+            if (type === "activity") {
+                setActivityEditMode(null);
             }
             await reloadAdminCatalogData({ refreshBeaches: true });
             setFeedback(
                 feedback,
-                type === "activity" ? "Actividad añadida." : "Servicio añadido.",
+                type === "activity"
+                    ? wasEditingActivity
+                        ? "Actividad actualizada."
+                        : "Actividad añadida."
+                    : "Servicio añadido.",
                 "success",
             );
         } catch (error) {
@@ -606,7 +769,7 @@ export function initAdminUI({
 
     openUserManagementBtn?.addEventListener("click", openUsersModal);
     openBeachManagementBtn?.addEventListener("click", openBeachesModal);
-    openReviewManagementBtn?.addEventListener("click", () => {});
+    openReviewManagementBtn?.addEventListener("click", openReviewAdminModal);
 
     closeUserManagementModal?.addEventListener("click", () => closeModal(userManagementModal));
     closeBeachManagementModal?.addEventListener("click", () => closeModal(beachManagementModal));
@@ -658,13 +821,30 @@ export function initAdminUI({
     beachLatitudeInput?.addEventListener("input", () => syncMapWithInputs());
     beachLongitudeInput?.addEventListener("input", () => syncMapWithInputs());
     activityCatalogForm?.addEventListener("submit", (event) => submitCatalogForm(event, "activity"));
+    activityCatalogNameInput?.addEventListener("input", syncActivityWeightInputsFromName);
+    cancelActivityEditBtn?.addEventListener("click", () => {
+        setActivityEditMode(null);
+        setFeedback(activityCatalogFeedback, "");
+    });
     serviceCatalogForm?.addEventListener("submit", (event) => submitCatalogForm(event, "service"));
     activityCatalogList?.addEventListener("click", async (event) => {
-        const button = event.target.closest("[data-catalog-id]");
+        const button = event.target.closest("[data-catalog-action]");
         if (!button) return;
+        if (button.dataset.catalogAction === "edit") {
+            const activity = state.activityItems.find((item) => item.name === button.dataset.catalogName);
+            setActivityEditMode(activity || null);
+            setFeedback(
+                activityCatalogFeedback,
+                activity?.can_rename === false
+                    ? "Puedes editar los pesos de esta actividad base, pero no cambiar su nombre."
+                    : "",
+            );
+            return;
+        }
         try {
             setFeedback(activityCatalogFeedback, "Eliminando...");
             await deleteCatalogItem(button.dataset.catalogType, button.dataset.catalogId);
+            setActivityEditMode(null);
             setFeedback(activityCatalogFeedback, "Actividad eliminada.", "success");
         } catch (error) {
             setFeedback(activityCatalogFeedback, error.message, "error");
