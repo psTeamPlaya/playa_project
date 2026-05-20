@@ -1,0 +1,48 @@
+{
+  "titles": {
+    "app_title": "Můj den na pláži",
+    "preferences": "Preference",
+    "favorite_beaches": "Mé oblíbené pláže",
+    "filters": "Filtry",
+    "my_filters": "Moje filtry",
+    "configure_alerts": "Nastavení upozornění",
+    "beaches": "Pláže",
+    "weather": "Počasí",
+    "alerts": "Upozornění"
+  },
+  "search": {
+    "beach_type": "Typ pláže",
+    "types": {
+      "sand": "Písečná",
+      "stone": "Kamenitá",
+      "natural_pool": "Přírodní bazén"
+    },
+    "search_beaches": "Vyhledat pláže",
+    "reset_filters": "Vymazat statické filtry",
+    "disable_dynamic_filters": "Vypnout dynamické filtry",
+    "enable_dynamic_filters": "Zapnout dynamické filtry",
+    "services": {
+      "title": "Služby",
+      "restaurant": "Restaurace",
+      "take_away_food": "Jídlo s sebou",
+      "showers": "Sprchy",
+      "toilets": "Toalety",
+      "parking": "Parkoviště",
+      "lifeguard": "Plavčík",
+      "accessibility": "Bezbariérový přístup",
+      "sport_zone": "Sportovní zóna",
+      "pet_friendly": "Vhodné pro zvířata",
+      "spa": "Lázně"
+    }
+  },
+  "placeholders": {
+    "city": "např. Las Palmas"
+  },
+  "admin": {
+    "management": {
+      "users": "Správa uživatelů",
+      "beaches": "Správa pláží",
+      "reviews": "Správa recenzí"
+    }
+  }
+}

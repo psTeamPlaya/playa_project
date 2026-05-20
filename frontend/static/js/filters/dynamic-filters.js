@@ -1,3 +1,5 @@
+import { t } from "/static/js/languages/i18n.js";
+
 export const WIND_FILTER_DEFAULTS = { min: 0, max: 15 };
 export const CLOUD_FILTER_DEFAULTS = { min: 0, max: 20 };
 export const TEMPERATURE_FILTER_DEFAULTS = { min: 20, max: 29 };
@@ -129,7 +131,7 @@ export function actualizarFiltroDinamicoUI(filtro) {
     const toggleLabel = filtro.disabledCheck?.closest(".filter-toggle-button");
     const toggleText = toggleLabel?.querySelector(".filter-toggle-text");
     if (toggleText) {
-        toggleText.textContent = desactivado ? "Activar filtro" : "Desactivar filtro";
+        toggleText.textContent = desactivado ? t("search.activate_filter") : t("search.deactivate_filter");
     }
     if (toggleLabel) {
         toggleLabel.classList.toggle("is-active", desactivado);
@@ -153,8 +155,8 @@ export function actualizarToggleFiltrosDinamicos(disableDynamicFilters, dynamicF
 
     const desactivados = estanTodosLosFiltrosDinamicosDesactivados(dynamicFilters);
     disableDynamicFilters.textContent = desactivados
-        ? "Activar filtros din\u00e1micos"
-        : "Desactivar filtros din\u00e1micos";
+        ? t("search.enable_dynamic_filters")
+        : t("search.disable_dynamic_filters");
     disableDynamicFilters.setAttribute("aria-pressed", desactivados ? "true" : "false");
     disableDynamicFilters.classList.toggle("is-active", desactivados);
 }
