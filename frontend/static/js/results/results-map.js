@@ -1,3 +1,5 @@
+import { t } from "../languages/i18n.js";
+
 const MAP_INITIAL_VIEW = [28.1235, -15.4363];
 const MAP_INITIAL_ZOOM = 10;
 
@@ -23,9 +25,9 @@ function buildPopup(playa, rank, score) {
     return `
         <div class="results-map-popup">
             <strong>${playa.nombre}</strong>
-            <div>${playa.ubicacion || "Ubicacion no disponible"}</div>
-            <div>Ranking: #${rank}</div>
-            <div>Score: ${score}</div>
+            <div>${playa.ubicacion || t("map.location_unavailable")}</div>
+            <div>${t("map.ranking")}: #${rank}</div>
+            <div>${t("results.score")}: ${score}</div>
         </div>
     `;
 }

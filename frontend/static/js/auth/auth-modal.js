@@ -1,5 +1,6 @@
 import { login } from "./login.js";
 import { registerUser } from "./register.js";
+import { t } from "../languages/i18n.js";
 
 export function initAuthModal({
     loginModalEl,
@@ -30,10 +31,10 @@ export function initAuthModal({
         const titleEl = document.getElementById("loginModalTitle");
 
         if (authMode === "register") {
-            if (titleEl) titleEl.textContent = "Registrarse";
-            authSubmitBtn.textContent = "Crear cuenta";
-            authModeHint.textContent = "\u00bfYa tienes cuenta?";
-            toggleAuthModeBtn.textContent = "Iniciar sesión";
+            if (titleEl) titleEl.textContent = t("auth.register");
+            authSubmitBtn.textContent = t("auth.create_account");
+            authModeHint.textContent = t("auth.already_have_account");
+            toggleAuthModeBtn.textContent = t("auth.login");
             if (confirmPasswordGroup) {
                 confirmPasswordGroup.style.display = "block";
             }
@@ -42,10 +43,11 @@ export function initAuthModal({
             }
             return;
         }
-        if (titleEl) titleEl.textContent = "Iniciar sesión";
-        authSubmitBtn.textContent = "Entrar a mi cuenta";
-        authModeHint.textContent = "\u00bfTodav\u00eda no tienes cuenta?";
-        toggleAuthModeBtn.textContent = "Registrarse";
+
+        if (titleEl) titleEl.textContent = t("auth.login");
+        authSubmitBtn.textContent = t("auth.enter");
+        authModeHint.textContent = t("auth.no_account_question");
+        toggleAuthModeBtn.textContent = t("auth.register");
         if (confirmPasswordGroup) {
             confirmPasswordGroup.style.display = "none";
         }
@@ -57,8 +59,9 @@ export function initAuthModal({
 
     function abrirModalLogin(callback) {
         if (!loginModalEl) return;
-        if (callback) onAuthSuccessCallback = callback;
-        else if (!onAuthSuccessCallback) onAuthSuccessCallback = options.onAuthSuccess;
+        if (callback) {
+            onAuthSuccessCallback = callback;
+        }
         authMode = "login";
         aplicarModoAuth();
         loginModalEl.hidden = false;
@@ -79,32 +82,35 @@ export function initAuthModal({
         }
     }
 
-    async function handleSubmit(event, onAuthSuccess) {
+    async function handleSubmit(event, onAuthSuccessHandler) {
         event.preventDefault();
         const email = loginEmailInput?.value.trim() || "";
         const password = loginPasswordInput?.value || "";
 
         if (!email || !password) {
-            mostrarMensajeAuth("Debes indicar correo y contrase\u00f1a.");
+            mostrarMensajeAuth(t("auth.errors.email_password_required"));
             return;
         }
+
         if (authMode === "register") {
             const confirmPassword = confirmPasswordInput?.value ?? "";
             if (password !== confirmPassword) {
-                mostrarMensajeAuth("Las contrase\u00f1as no coinciden.");
+                mostrarMensajeAuth(t("auth.errors.passwords_mismatch"));
                 return;
             }
         }
+
         mostrarMensajeAuth(
-            authMode === "register" ? "Creando cuenta..." : "Accediendo...",
+            authMode === "register" ? t("auth.creating_account") : t("auth.signing_in"),
             "success"
         );
+
         try {
             if (authMode === "register") {
                 await registerUser(email, password);
                 authMode = "login";
                 aplicarModoAuth();
-                mostrarMensajeAuth("Cuenta creada. Ya puedes iniciar sesión.", "success");
+                mostrarMensajeAuth(t("auth.account_created"), "success");
                 if (loginPasswordInput) {
                     loginPasswordInput.value = "";
                 }
@@ -116,16 +122,16 @@ export function initAuthModal({
 
             const data = await login(email, password);
             sessionStorage.setItem("token", data.access_token);
-            await onAuthSuccess?.(data);
+            await onAuthSuccessHandler?.(data);
             cerrarModalLogin();
         } catch (error) {
             console.error(error);
-            mostrarMensajeAuth(error.message || "No se pudo completar la operacion.");
+            mostrarMensajeAuth(error.message || t("auth.errors.generic"));
         }
     }
 
-     window.handleGoogleLogin = async (response) => {
-        mostrarMensajeAuth("Accediendo con Google...", "success");
+    window.handleGoogleLogin = async (response) => {
+        mostrarMensajeAuth(t("auth.signing_in_google"), "success");
         try {
             const res = await fetch("/auth/google", {
                 method: "POST",
@@ -135,7 +141,7 @@ export function initAuthModal({
 
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.detail || "Error al iniciar sesión con Google");
+                throw new Error(err.detail || t("auth.errors.google_login"));
             }
 
             const data = await res.json();
@@ -144,7 +150,7 @@ export function initAuthModal({
             cerrarModalLogin();
         } catch (error) {
             console.error(error);
-            mostrarMensajeAuth(error.message || "No se pudo iniciar sesión con Google.");
+            mostrarMensajeAuth(error.message || t("auth.errors.google_login"));
         }
     };
 
@@ -191,13 +197,14 @@ export function initAuthModal({
                 theme: "outline",
                 text: "signin_with",
                 locale: "es",
-                width: "250"   /*ESTO PODRÍAMOS CAMBIARLO*/
+                width: "250"
             });
             googleInitialized = true;
         }
     }
 
-    initGoogleSignIn()
+    initGoogleSignIn();
+
     return {
         abrirModalLogin,
         cerrarModalLogin,

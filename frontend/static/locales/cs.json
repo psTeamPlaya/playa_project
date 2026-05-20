@@ -1,42 +1,190 @@
 {
   "titles": {
     "app_title": "Můj den na pláži",
-    "preferences": "Preference",
-    "favorite_beaches": "Mé oblíbené pláže",
+    "preferences": "Předvolby",
+    "favorite_beaches": "Moje oblíbené pláže",
+    "downloading_favs": "Načítají se oblíbené pláže...",
     "filters": "Filtry",
     "my_filters": "Moje filtry",
-    "configure_alerts": "Nastavení upozornění",
+    "configure_alerts": "Nastavit upozornění",
     "beaches": "Pláže",
     "weather": "Počasí",
-    "alerts": "Upozornění"
+    "alerts": "Upozornění",
+    "beach_type": "Typ pláže",
+    "results": "Doporučené pláže",
+    "see_map": "Zobrazit mapu",
+    "in_map_title": "Mapa doporučených pláží",
+    "in_map_description": "Zkontrolujte pořadí a hodnocení každé pláže přímo na mapě.",
+    "language": "Jazyk"
+  },
+  "common": {
+    "reset": "Reset",
+    "date": "Datum",
+    "time": "Čas",
+    "submit": "Odeslat",
+    "cancel": "Zrušit",
+    "close": "Zavřít"
+  },
+  "mobile": {
+    "title": "Menu",
+    "subtitle": "Přístup a filtry",
+    "open_menu": "Otevřít menu",
+    "close_menu": "Zavřít menu"
   },
   "search": {
-    "beach_type": "Typ pláže",
-    "types": {
-      "sand": "Písečná",
-      "stone": "Kamenitá",
-      "natural_pool": "Přírodní bazén"
-    },
-    "search_beaches": "Vyhledat pláže",
-    "reset_filters": "Vymazat statické filtry",
+    "search_beaches": "Vyhledat doporučené pláže",
+    "reset_filters": "Reset statických filtrů",
     "disable_dynamic_filters": "Vypnout dynamické filtry",
     "enable_dynamic_filters": "Zapnout dynamické filtry",
-    "services": {
-      "title": "Služby",
-      "restaurant": "Restaurace",
-      "take_away_food": "Jídlo s sebou",
-      "showers": "Sprchy",
-      "toilets": "Toalety",
-      "parking": "Parkoviště",
-      "lifeguard": "Plavčík",
-      "accessibility": "Bezbariérový přístup",
-      "sport_zone": "Sportovní zóna",
-      "pet_friendly": "Vhodné pro zvířata",
-      "spa": "Lázně"
-    }
+    "deactivate_filter": "Vypnout filtr",
+    "activate_filter": "Zapnout filtr",
+    "quantity": "Počet",
+    "quantity_label": "Počet doporučení",
+    "quantity_aria": "Počet doporučených pláží",
+    "loading_activities": "Načítají se dostupné aktivity...",
+    "no_activities": "Momentálně nejsou k dispozici žádné aktivity.",
+    "start_time": "Čas začátku",
+    "end_time": "Čas konce",
+    "location": {
+      "title": "Město / Poloha",
+      "my_location": "📍 Moje poloha",
+      "choose_location": "🗺️ Vybrat polohu",
+      "range": "Rozsah hledání:",
+      "select": "Vybrat polohu"
+    },
+    "questions": {
+      "actividad": "1. Co chcete dělat během dne na pláži?",
+      "when": "2. Kdy chcete jít na pláž?",
+      "where": "3. Vyberte svou polohu"
+    },
+    "status": {
+      "searching": "Vyhledávají se doporučení...",
+      "found": "Bylo nalezeno {count} doporučení pro aktivitu {activity}.",
+      "found_interval": "Bylo nalezeno {count} doporučení pro aktivitu {activity} mezi {start} a {end}."
+    },
+    "errors": {
+      "activity_required": "Musíte vybrat aktivitu.",
+      "date_required": "Musíte vybrat datum.",
+      "time_range_required": "Musíte vybrat čas začátku a konce.",
+      "past_date": "Nemůžete vybrat minulé datum.",
+      "past_start_time": "Pro dnešní den nemůžete vybrat čas začátku v minulosti.",
+      "end_before_start": "Čas konce musí být později než čas začátku.",
+      "missing_location": "Zadejte prosím informace o poloze.",
+      "api_error": "Při dotazu na API došlo k chybě.",
+      "results_load": "Výsledky se nepodařilo načíst.",
+      "activities_load": "Aktivity se nepodařilo načíst.",
+      "activities_load_status": "Dostupné aktivity se nepodařilo načíst."
+    },
+    "empty_results": "Momentálně nejsou k dispozici žádná doporučení pláží."
+  },
+  "activities": {
+    "sunbathing": "Opalování",
+    "swimming": "Plavání",
+    "surfing": "Surfování",
+    "wind_surfing": "Windsurfing",
+    "kitesurfing": "Kitesurfing",
+    "snorkeling": "Šnorchlování",
+    "walking": "Procházka",
+    "fishing": "Rybaření",
+    "kayaking": "Kajak",
+    "paddle_surfing": "Paddle surf",
+    "bodyboarding": "Bodyboard",
+    "beach_volleyball": "Plážový volejbal"
+  },
+  "weather": {
+    "cloudiness": "Oblačnost",
+    "cloud_min": "Minimální oblačnost",
+    "cloud_max": "Maximální oblačnost",
+    "wind": "Vítr (km/h)",
+    "wind_min": "Minimální vítr",
+    "wind_max": "Maximální vítr",
+    "temp": "Teplota (°C)",
+    "temp_min": "Minimální teplota vzduchu",
+    "temp_max": "Maximální teplota vzduchu",
+    "waves": "Vlny (m)",
+    "waves_min": "Minimální výška vln",
+    "waves_max": "Maximální výška vln"
+  },
+  "services": {
+    "title": "Služby",
+    "restaurant": "Restaurace",
+    "take_away_food": "Jídlo s sebou",
+    "showers": "Sprchy",
+    "toilets": "Toalety",
+    "parking": "Parkoviště",
+    "lifeguard": "Plavčík",
+    "accessibility": "Bezbariérový přístup",
+    "sport_zone": "Sportovní zóna",
+    "pet_friendly": "Vhodné pro domácí mazlíčky",
+    "spa": "Lázně",
+    "surf_school": "Škola surfování",
+    "windsurf_school": "Škola windsurfingu"
+  },
+  "beach_types": {
+    "sand": "Písečná",
+    "stone": "Kamenitá",
+    "natural_pool": "Přírodní bazén"
   },
   "placeholders": {
-    "city": "např. Las Palmas"
+    "city": "Např. Las Palmas",
+    "email": "vas@email.cz nebo admin"
+  },
+  "auth": {
+    "login": "Přihlásit se",
+    "logout": "Odhlásit se",
+    "register": "Registrovat se",
+    "email": "E-mail nebo uživatel",
+    "password": "Heslo",
+    "confirm_password": "Potvrdit heslo",
+    "enter": "Vstoupit do účtu",
+    "no_account_question": "Nemáte účet?",
+    "create_account": "Vytvořit účet",
+    "already_have_account": "Už máte účet?",
+    "signing_in": "Přihlašování...",
+    "signing_in_google": "Přihlašování přes Google...",
+    "creating_account": "Vytváří se účet...",
+    "account_created": "Účet byl vytvořen. Nyní se můžete přihlásit.",
+    "errors": {
+      "email_password_required": "Musíte zadat e-mail a heslo.",
+      "passwords_mismatch": "Hesla se neshodují.",
+      "generic": "Operaci se nepodařilo dokončit.",
+      "google_login": "Přihlášení přes Google se nepodařilo."
+    }
+  },
+  "favorites": {
+    "loading": "Načítají se oblíbené pláže...",
+    "fetch_error": "Oblíbené pláže se nepodařilo získat.",
+    "load_error": "Vaše oblíbené pláže se nepodařilo načíst.",
+    "empty": "Zatím nemáte uložené žádné oblíbené pláže.",
+    "remove": "Odebrat z oblíbených",
+    "login_required": "Pro zobrazení oblíbených pláží se přihlaste.",
+    "remove_error": "Pláž se nepodařilo odebrat z oblíbených."
+  },
+  "results": {
+    "score": "Skóre",
+    "recommendation_explanation": "Vysvětlení doporučení",
+    "interval": "Časový úsek",
+    "tide": "Příliv",
+    "beach_type": "Typ",
+    "avg_air_temp": "Prům. teplota vzduchu",
+    "avg_wave": "Prům. výška vln",
+    "avg_wind": "Prům. rychlost větru",
+    "avg_water_temp": "Prům. teplota vody",
+    "avg_cloud": "Prům. oblačnost",
+    "avg_rain": "Prům. pravděpodobnost deště",
+    "view_beach_photos": "Zobrazit fotografie pláže"
+  },
+  "map": {
+    "location_unavailable": "Poloha není k dispozici",
+    "ranking": "Pořadí",
+    "close": "Zavřít mapu",
+    "close_recommendations": "Zavřít mapu doporučených pláží",
+    "select_location": "Vybrat polohu"
+  },
+  "tide": {
+    "low": "Nízký",
+    "medium": "Střední",
+    "high": "Vysoký"
   },
   "admin": {
     "management": {
