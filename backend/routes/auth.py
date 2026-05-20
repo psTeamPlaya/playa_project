@@ -47,6 +47,8 @@ class GoogleTokenRequest(BaseModel):
 async def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user_exist = db.query(User).filter(User.email == user.email).first()
     if db_user_exist:
+        if db_user_exist.hashed_password == "google_auth_user":
+            raise HTTPException(status_code=400, detail="Este correo ya está registrado con Google. Inicia sesión con Google.")
         raise HTTPException(status_code=400, detail="Este correo ya est\u00e1 registrado.")
 
     db_user = User(email=user.email, hashed_password=hash_password(user.password), is_admin=False)
@@ -62,6 +64,9 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
+
+    if db_user and db_user.hashed_password == "google_auth_user":
+        raise HTTPException(status_code=401, detail="Este correo está registrado con Google. Inicia sesión con Google.")
 
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")

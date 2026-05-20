@@ -65,33 +65,34 @@ def is_logged_in(request: Request) -> bool:
     except JWTError:
         return False
 
-
 def verify_google_token(credential: str, db) -> dict:
     try:
-        client_id = os.getenv("GOOGLE_CLIENT_ID", "")
-        print(f"DEBUG client_id usado: '{client_id}'")
-
         id_info = id_token.verify_oauth2_token(
             credential,
             google_requests.Request(),
-            client_id,
+            settings.GOOGLE_CLIENT_ID,
         )
 
         email = id_info.get("email")
-        # 1. Buscar si el usuario ya existe
         user = db.query(User).filter(User.email == email).first()
 
-        if not user:
-            # 2. Si no existe, crear uno nuevo sin contraseña (o con una aleatoria)
+        if user:
+            if user.hashed_password != "google_auth_user":
+                raise HTTPException(
+                    status_code=400,
+                    detail="Este correo ya está registrado con contraseña. Inicia sesión con tu contraseña."
+                )
+        else:
             user = User(email=email, hashed_password="google_auth_user", is_admin=False)
             db.add(user)
             db.commit()
             db.refresh(user)
 
-        # 3. Generar token de nuestra app para el usuario (sea nuevo o viejo)
         access_token = create_token(user.id)
         return {"access_token": access_token}
 
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Error real de Google: {type(e).__name__}: {e}") # Mira esto en tu terminal
+        print(f"Error real de Google: {e}")
         raise HTTPException(status_code=401, detail="Token de Google inválido")
