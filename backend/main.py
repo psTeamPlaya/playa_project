@@ -124,7 +124,7 @@ app = FastAPI(title=settings.APP_NAME, lifespan=lifespan)
 @app.middleware("http")
 async def add_coop_header(request, call_next):
     response = await call_next(request)
-    response.headers["Cross-Origin-Opener-Policy"] = "unsafe-none"
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
     response.headers["Cross-Origin-Embedder-Policy"] = "unsafe-none"
     return response
 
