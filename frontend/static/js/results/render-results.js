@@ -1,6 +1,7 @@
 
 
 import { formatearMarea, formatearServicios } from "../shared/formatters.js";
+import "../review-photo/galllery-photos.js"
 
 const DEFAULT_OPTIONS = {
     emptyMessage: "No hay resultados para esa b\u00fasqueda.",
@@ -113,6 +114,17 @@ function renderFavoriteButton(playa, options) {
     `;
 }
 
+async function getBeachPhotosCount(beachId) {
+    try {
+        const res = await fetch(`/api/review-photo/count-photos/${beachId}`);
+        if (!res.ok) return { photos_count: 0 };
+        return await res.json();
+    } catch (err) {
+        console.error("Error fetching photos count:", err);
+        return { photos_count: 0 };
+    }
+}
+
 async function getBeachRating(beachId) {
     const res = await fetch(`/reviews/beach/${beachId}/rating`);
     return await res.json();
@@ -164,6 +176,7 @@ export function pintarResultados(resultados, container, options = {}) {
                             <div class="beach-location">${playa.ubicacion}</div>
                             <div class="beach-actions-row">
                                 <button type="button" class="rating-badge" data-id="${playa.beach_id}" data-rating-id="${playa.beach_id}">&#9733; ...</button>
+                                <button type="button" class="photos-badge" data-id="${playa.beach_id}" data-photos-id="${playa.beach_id}" title="Ver fotos de la playa">🖼️</button>
                                 <div class="beach-actions-trailing">
                                     ${renderFavoriteButton(playa, resolvedOptions)}
                                     <span class="expand-hint expand-hint-inline" aria-hidden="true">+</span>
@@ -217,6 +230,16 @@ export function pintarResultados(resultados, container, options = {}) {
             <span>(${rating.reviews_count || 0})</span>
         `;
     });
+
+    resultados.forEach(async (playa) => {
+        const photoData = await getBeachPhotosCount(playa.beach_id);
+        const photoBtn = container.querySelector(`[data-photos-id="${playa.beach_id}"]`);
+        if (!photoBtn) return;
+
+        photoBtn.innerHTML = `🖼️ (${photoData.photos_count || 0})`;
+    });
+
+    configurarAnimacionDetalles(container);
 
     configurarAnimacionDetalles(container);
 }

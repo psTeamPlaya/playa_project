@@ -15,7 +15,10 @@ dependencies = [
     "pydantic-settings>=2.6.1",
     "python-jose>=3.5.0",
     "fastapi-mail>=1.6.2",
-    "passlib >= 1.7.4"
+    "passlib >= 1.7.4",
+    "python-multipart>=0.0.29",
+    "redis>=7.4.0",
+    "pillow>=12.2.0",
 ]
 
 [dependency-groups]

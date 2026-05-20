@@ -1,5 +1,6 @@
 import { authFetch } from "../api/auth-fetch.js";
 import { getServiceLabel } from "../shared/formatters.js";
+import { openReviewAdminModal } from "../reviews/reviews_admin.js";
 
 function escapeHtml(value = "") {
     return String(value)
@@ -832,7 +833,7 @@ export function initAdminUI({
 
     openUserManagementBtn?.addEventListener("click", openUsersModal);
     openBeachManagementBtn?.addEventListener("click", openBeachesModal);
-    openReviewManagementBtn?.addEventListener("click", () => {});
+    openReviewManagementBtn?.addEventListener("click", openReviewAdminModal);
 
     closeUserManagementModal?.addEventListener("click", () => closeModal(userManagementModal));
     closeBeachManagementModal?.addEventListener("click", () => closeModal(beachManagementModal));

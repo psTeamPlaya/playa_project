@@ -1,0 +1,112 @@
+{
+  "titles": {
+    "app_title": "Mi día de Playa",
+    "preferences": "Preferencias",
+    "favorite_beaches": "Mis Playas Favoritas",
+    "downloading_favs": "Descargando playas favoritas...",
+    "filters": "Filtros",
+    "my_filters": "Mis Filtros",
+    "configure_alerts": "Configurar alertas",
+    "beaches": "Playas",
+    "weather": "Clima",
+    "alerts": "Alertas",
+    "beach_type": "Tipo de playa",
+    "results": "Playas recomendadas",
+    "see_map": "Ver mapa",
+    "in_map_title": "Mapa de playas recomendadas",
+    "in_map_description": "Consulta el ranking y score de cada playa directamente en el mapa."
+  },
+  "common": {
+    "reset": "reset",
+    "date": "Fecha",
+    "time": "Hora",
+    "submit": "Enviar",
+    "cancel": "Cancelar"
+  },
+  "search": {
+    "search_beaches": "Buscar playas recomendadas",
+    "reset_filters": "Reset filtros estáticos",
+    "disable_dynamic_filters": "Desactivar filtros dinámicos",
+    "enable_dynamic_filters": "Activar filtros dinámicos",
+    "deactivate_filter": "Desactivar filtro",
+    "activate_filter": "Activar filtro",
+    "quantity": "Cantidad",
+    "location": {
+      "title": "Ciudad / Ubicación",
+      "my_location": "Mi ubicación",
+      "choose_location": "Elege una ubicación",
+      "range": "Rango de búsqueda:",
+      "select": "Seleccionar ubicacion"
+    },
+    "questions": {
+      "actividad": "1. ¿Qué quieres hacer en tu día de playa?",
+      "when": "2. ¿Cuándo quieres ir a la playa?",
+      "where": "3. Elige tu ubicación"
+    },
+    "empty_results": "Por ahora no hay ninguna recomendacion de playas."
+  },
+  "activities": {
+    "sunbathing": "Tomar el sol",
+    "swimming": "Nadar",
+    "surfing": "Surf",
+    "wind_surfing": "Windsurf",
+    "kitesurfing": "KiteSurf",
+    "snorkeling": "Bucear",
+    "walking": "Pasear",
+    "fishing": "Pescar",
+    "kayaking": "Kayak"
+  },
+  "weather": {
+    "cloudiness": "Nubosidad",
+    "cloud_min": "Nubosidad mínima",
+    "cloud_max": "Nubosidad máxima",
+    "wind": "Viento (km/h)",
+    "wind_min": "Viento mínimo",
+    "wind_max": "Viento máximo",
+    "temp": "Temp. (°C)",
+    "temp_min": "Temperatura ambiente minima",
+    "temp_max": "Temperatura ambiente máxima",
+    "waves": "Olas (m)",
+    "waves_min": "Oleaje mínimo",
+    "waves_max": "Oleaje máximo"
+  },
+  "services": {
+    "title": "Servicios",
+    "restaurant": "Restaurante",
+    "take_away_food": "Comida para llevar",
+    "showers": "Duchas",
+    "toilets": "Baños",
+    "parking": "Aparcamiento",
+    "lifeguard": "Salvavidas",
+    "accessibility": "Accesibilidad",
+    "sport_zone": "Zona deportiva",
+    "pet_friendly": "Pet-friendly",
+    "spa": "Balneario"
+  },
+  "beach_types": {
+    "sand": "Arena",
+    "stone": "Piedra",
+    "natural_pool": "Piscina natural"
+  },
+  "placeholders": {
+    "city": "Ej: Las Palmas",
+    "email": "tu@correo.com o admin"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "register": "Registrarse",
+    "email": "Correo o usuario",
+    "password": "Contraseña",
+    "confirm_password": "Confirmar contraseña",
+    "enter": "Entrar a mi cuenta",
+    "no_account_question": "¿Sin cuenta?"
+  },
+  "admin": {
+    "management": {
+      "users": "Gestión de usuarios",
+      "beaches": "Gestión de playas",
+      "reviews": "Gestión de reseñas"
+    }
+  }
+}

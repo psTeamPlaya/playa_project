@@ -8,6 +8,8 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <meta name="referrer" content="no-referrer-when-downgrade">
+
   <title>Mi día de Playa</title>
 
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
@@ -56,6 +58,28 @@
           <i class="bi bi-list" aria-hidden="true"></i>
         </button>
 
+        <div class="right-part">
+          <section class="languages">
+            <button class="language-button btn-secondary" id="languageMenuBtn" type="button" aria-label="Language">
+              <span id="currentLanguageFlag">ðŸ‡¬ðŸ‡§</span>
+            </button>
+
+            <div class="language-dropdown" id="languageDropdown" hidden>
+              <button class="language-option" data-lang="es">
+                ðŸ‡ªðŸ‡¸ EspaÃ±ol
+              </button>
+
+              <button class="language-option" data-lang="en">
+                ðŸ‡¬ðŸ‡§ English
+              </button>
+
+              <button class="language-option" data-lang="cs">
+                ðŸ‡¨ðŸ‡¿ ÄŒeÅ¡tina
+              </button>
+
+            </div>
+          </section>
+
         <section class="auth-container" id="authContainer">
 
           <button class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
@@ -72,7 +96,7 @@
 
           <div class="preferences-panel" id="preferencesPanel" hidden>
 
-            <h3>Preferencias</h3>
+            <h3 data-i18n="titles.preferences">Preferencias</h3>
 
             <div class="preferences-user" id="preferencesUserInfo"></div>
 
@@ -80,7 +104,7 @@
 
               <button id="showFavoritesBtn" class="invisible-button" type="button">
 
-                <i class="fas fa-heart fav-icon"></i><span>Mis Playas Favoritas</span>
+                <i class="fas fa-heart fav-icon"></i><span data-i18n="titles.favorite_beaches">Mis Playas Favoritas</span>
 
               </button>
 
@@ -88,19 +112,19 @@
 
             <div class="preferences-admin-group hidden" id="adminPreferencesGroup">
 
-              <button class="preferences-action-button" id="openUserManagementBtn" type="button">
+              <button data-i18n="admin.management.users" class="preferences-action-button" id="openUserManagementBtn" type="button">
 
                 Gestión de usuarios
 
               </button>
 
-              <button class="preferences-action-button" id="openBeachManagementBtn" type="button">
+              <button data-i18n="admin.management.beaches" class="preferences-action-button" id="openBeachManagementBtn" type="button">
 
                 Gestión de playas
 
               </button>
 
-              <button class="preferences-action-button is-disabled" id="openReviewManagementBtn" type="button" disabled>
+              <button data-i18n="admin.management.reviews" class="preferences-action-button is-disabled" id="openReviewManagementBtn" type="button" disabled>
 
                 Gestión de reseñas
 
@@ -112,13 +136,13 @@
 
               <input type="checkbox" id="rememberSchedulePreference">
 
-              <span id="openConfigLink" style="cursor:pointer; text-decoration: none;">Mis Filtros</span>
+              <span data-i18n="titles.my_filters" id="openConfigLink" style="cursor:pointer; text-decoration: none;">Mis Filtros</span>
 
             </label>
 
             <div class="preference-item">
 
-              <button class="preferences-link-button" id="openAlertsModalBtn" type="button">
+              <button data-i18n="titles.configure_alerts" class="preferences-link-button" id="openAlertsModalBtn" type="button">
 
                 Configurar alertas
 
@@ -136,6 +160,8 @@
           </div>
 
         </section>
+
+        </div>
 
       </div>
 
@@ -165,11 +191,11 @@
 
       <div class="filters-content">
 
-        <h2>Filtros</h2>
+        <h2 data-i18n="titles.filters">Filtros</h2>
 
         <div class="filter-actions" aria-label="Acciones globales de filtros">
 
-          <button class="filter-chip-button filter-action-button" id="disableStaticFilters" type="button">
+          <button data-i18n="search.reset_filters" class="filter-chip-button filter-action-button" id="disableStaticFilters" type="button">
 
             Reset filtros estáticos
 
@@ -179,13 +205,13 @@
 
         <fieldset class="filter-group" data-user-filter="tipo_playa">
 
-          <legend>Tipo de playa</legend>
+          <legend data-i18n="titles.beach_type">Tipo de playa</legend>
 
           <label class="filter-option">
 
             <input type="checkbox" id="filterSandBeach" value="arena">
 
-            <span>Arena</span>
+            <span data-i18n="beach_types.sand">Arena</span>
 
           </label>
 
@@ -193,7 +219,7 @@
 
             <input type="checkbox" id="filterStoneBeach" value="piedra">
 
-            <span>Piedra</span>
+            <span data-i18n="beach_types.stone">Piedra</span>
 
           </label>
 
@@ -201,7 +227,7 @@
 
             <input type="checkbox" id="filterNaturalPoolBeach" value="piscina_natural">
 
-            <span>Piscina natural</span>
+            <span data-i18n="beach_types.natural_pool">Piscina natural</span>
 
           </label>
 
@@ -211,13 +237,13 @@
 
         <fieldset class="filter-group" data-user-filter="servicios">
 
-          <legend>Servicios</legend>
+          <legend data-i18n="services.title">Servicios</legend>
 
           <label class="filter-option">
 
             <input type="checkbox" id="filterRestaurant" value="restaurant">
 
-            <span>Restaurante</span>
+            <span data-i18n="services.restaurant">Restaurante</span>
 
           </label>
 
@@ -225,7 +251,7 @@
 
             <input type="checkbox" id="filterTakeAwayFood" value="takeAwayFood">
 
-            <span>Comida para llevar</span>
+            <span data-i18n="services.take_away_food">Comida para llevar</span>
 
           </label>
 
@@ -233,7 +259,7 @@
 
             <input type="checkbox" id="filterBalneario" value="balneario">
 
-            <span>Balneario</span>
+            <span data-i18n="services.spa">Balneario</span>
 
           </label>
 
@@ -241,7 +267,7 @@
 
             <input type="checkbox" id="filterSportZone" value="sportZone">
 
-            <span>Zona deportiva</span>
+            <span data-i18n="services.sport_zone">Zona deportiva</span>
 
           </label>
 
@@ -249,7 +275,7 @@
 
             <input type="checkbox" id="filterPetFriendly" value="petFriendly">
 
-            <span>Pet-friendly</span>
+            <span data-i18n="services.pet_friendly">Pet-friendly</span>
 
           </label>
 
@@ -257,7 +283,7 @@
 
         <div class="filter-actions" aria-label="Acciones globales de filtros">
 
-          <button class="filter-chip-button filter-action-button" id="disableDynamicFilters" type="button">
+          <button data-i18n="search.enable_dynamic_filters" class="filter-chip-button filter-action-button" id="disableDynamicFilters" type="button">
 
             Desactivar filtros dinámicos
 
@@ -477,7 +503,7 @@
 
         <div class="field">
 
-          <label for="fecha">Fecha</label>
+          <label data-i18n="common.date" for="fecha">Fecha</label>
 
 
 
@@ -522,7 +548,7 @@
 
           <label for="locationInput">Ciudad / Ubicación</label>
 
-          <input type="text" id="locationInput" placeholder="Ej: Las Palmas">
+          <input type="text" id="locationInput" data-i18n-placeholder="placeholders.city" placeholder="Ej: Las Palmas">
 
           <div id="suggestions" class="suggestions-dropdown"></div>
 
@@ -572,7 +598,7 @@
 
       <div class="actions search-actions">
 
-        <button class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
+        <button data-i18n="search.search_beaches" class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
 
       </div>
 
@@ -590,11 +616,11 @@
 
         <div class="results-title-row">
 
-          <h2 id="beachesLabel">Playas recomendadas</h2>
+          <h2 id="beachesLabel" data-i18n="titles.results">Playas recomendadas</h2>
 
           <button class="btn-secondary hidden" id="btnShowResultsMap" type="button">
 
-            Ver Mapa
+            <span data-i18n="titles.see_map">Ver mapa</span>
 
           </button>
 
@@ -1409,9 +1435,15 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+  <script src="https://unpkg.com/virtual-scroller@1.16.4/bundle/virtual-scroller-dom.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
+
   <script type="module" src="/static/js/main.js?v=admin-catalog-20260520-5"></script>
 
   <script type="module" src="/static/js/favorites/favorites.js?v=admin-catalog-20260507"></script>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 </body>
 
