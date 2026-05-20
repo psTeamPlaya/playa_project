@@ -493,6 +493,7 @@ button {
     cursor: pointer;
     transition: 0.25s ease;
     font-family: 'Atma';
+    width: max-content;
 }
 
 .btn-primary {

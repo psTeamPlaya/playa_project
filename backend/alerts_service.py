@@ -43,8 +43,9 @@ ALLOWED_ALERT_FILTER_KEYS = {
     "hora_inicio",
     "hora_fin",
 }
-INTERNAL_ALERT_FILTER_KEYS = {"target_beach_id"}
+INTERNAL_ALERT_FILTER_KEYS = {"target_beach_id", "last_notification_sent_at_ts"}
 SCHEDULE_ALERT_FILTER_KEYS = {"dia_semana", "dias_semana", "hora_inicio", "hora_fin"}
+ALERT_NOTIFICATION_INTERVAL = timedelta(days=7)
 
 
 def _normalize_weekdays_value(value: Any) -> list[int]:
@@ -81,8 +82,12 @@ def sanitize_alert_filters(
         if value is None:
             continue
         if key in INTERNAL_ALERT_FILTER_KEYS:
-            if include_internal and isinstance(value, (int, float)):
+            if not include_internal:
+                continue
+            if key == "target_beach_id" and isinstance(value, (int, float)):
                 sanitized[key] = int(value)
+            if key == "last_notification_sent_at_ts" and isinstance(value, (int, float)):
+                sanitized[key] = float(value)
             continue
         if key not in ALLOWED_ALERT_FILTER_KEYS:
             continue
@@ -199,6 +204,27 @@ def _matches_schedule_filters(match_datetime: datetime, filters: dict[str, Any])
     return True
 
 
+def _get_last_notification_sent_at(alert: UserAlert) -> datetime | None:
+    stored_filters = sanitize_alert_filters(alert.filters, include_internal=True)
+    timestamp = stored_filters.get("last_notification_sent_at_ts")
+    if not isinstance(timestamp, (int, float)):
+        return None
+    return datetime.fromtimestamp(timestamp)
+
+
+def _set_last_notification_sent_at(alert: UserAlert, sent_at: datetime) -> None:
+    current_filters = dict(alert.filters or {})
+    current_filters["last_notification_sent_at_ts"] = sent_at.timestamp()
+    alert.filters = current_filters
+
+
+def _can_send_automatic_alert(alert: UserAlert, sent_at: datetime) -> bool:
+    last_sent_at = _get_last_notification_sent_at(alert)
+    if last_sent_at is None:
+        return True
+    return sent_at - last_sent_at >= ALERT_NOTIFICATION_INTERVAL
+
+
 def evaluate_alert_match(
     db: Session,
     alert: UserAlert,
@@ -278,6 +304,41 @@ def evaluate_alert_match(
     return current_match
 
 
+def send_user_alert_notification(
+    db: Session,
+    alert: UserAlert,
+    user: User,
+    *,
+    now: datetime | None = None,
+    force: bool = False,
+) -> dict[str, Any]:
+    sent_at = now or datetime.now()
+
+    if user.is_banned:
+        raise ValueError("No se puede enviar el email porque el usuario está bloqueado.")
+    if not _has_valid_alert_email(user.email):
+        raise ValueError("El usuario no tiene un email válido para recibir alertas.")
+
+    match = evaluate_alert_match(db, alert, now=sent_at)
+    if match is None:
+        raise ValueError("No hay coincidencias actuales para esta alerta.")
+
+    if not force and not _can_send_automatic_alert(alert, sent_at):
+        raise ValueError("Ya se envió un email automático para esta alerta durante la última semana.")
+
+    _send_alert_email_sync(
+        email=user.email,
+        activity_label=prettify_catalog_name(normalize_activity_name(alert.activity_name) or alert.activity_name),
+        location_label=alert.location_label,
+        beach_name=match["beach_name"],
+        match_datetime=match["datetime"],
+    )
+    alert.last_notified_match = match["datetime"]
+    _set_last_notification_sent_at(alert, sent_at)
+
+    return match
+
+
 async def process_user_alerts_cycle() -> None:
     await _run_in_thread(_process_user_alerts_cycle_sync)
 
@@ -310,22 +371,12 @@ def _process_user_alerts_cycle_sync() -> None:
             if not _has_valid_alert_email(user.email):
                 continue
 
-            match = evaluate_alert_match(db, alert)
-            if match is None:
-                alert.last_notified_match = None
+            try:
+                send_user_alert_notification(db, alert, user, force=False)
+            except ValueError as exc:
+                if str(exc) == "No hay coincidencias actuales para esta alerta.":
+                    alert.last_notified_match = None
                 continue
-
-            if alert.last_notified_match == match["datetime"]:
-                continue
-
-            _send_alert_email_sync(
-                email=user.email,
-                activity_label=prettify_catalog_name(normalize_activity_name(alert.activity_name) or alert.activity_name),
-                location_label=alert.location_label,
-                beach_name=match["beach_name"],
-                match_datetime=match["datetime"],
-            )
-            alert.last_notified_match = match["datetime"]
 
         db.commit()
     finally:
