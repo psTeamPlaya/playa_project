@@ -2705,3 +2705,45 @@ button {
 .user-hidden {
     display: none !important;
 }
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  color: #999;
+  font-size: 0.9rem;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+.auth-google-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1rem 0;
+  color: #999;
+  font-size: 13px;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.auth-modal {
+  max-height: 90vh;
+  overflow-y: auto;
+}

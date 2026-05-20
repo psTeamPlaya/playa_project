@@ -12,6 +12,7 @@ import asyncio
 from backend.notifications import send_welcome_email
 from dotenv import load_dotenv
 from pydantic import BaseModel
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -64,6 +65,9 @@ def me(current_user=Depends(get_current_user)):
         "is_admin": current_user.is_admin,
         "is_banned": current_user.is_banned,
     }
+
+class GoogleTokenRequest(BaseModel):
+    token: str
 
 @router.post("/google")
 def google_login(body: GoogleTokenRequest, db: Session = Depends(get_db)):
