@@ -233,13 +233,13 @@ def test_create_user_alert_accepts_weekday_and_hour_range_filters(monkeypatch):
         UserAlertCreate(
             activity_name="surf",
             beach_id=1,
-            filters={"dia_semana": 4, "hora_inicio": 9, "hora_fin": 17},
+            filters={"dias_semana": [1, 4], "hora_inicio": 9, "hora_fin": 17},
         ),
         current_user=user,
         db=db,
     )
 
-    assert created["filters"] == {"dia_semana": 4, "hora_inicio": 9, "hora_fin": 17}
+    assert created["filters"] == {"dias_semana": [1, 4], "hora_inicio": 9, "hora_fin": 17}
 
 
 def test_create_user_alert_rejects_incomplete_hour_range(monkeypatch):
@@ -371,7 +371,7 @@ def test_evaluate_alert_match_respects_selected_weekday_and_hour_range(monkeypat
         filters=build_alert_filters(
             {
                 "min_velocidad_viento": 10,
-                "dia_semana": expected_match_dt.weekday(),
+                "dias_semana": [expected_match_dt.weekday()],
                 "hora_inicio": 10,
                 "hora_fin": 14,
             },
