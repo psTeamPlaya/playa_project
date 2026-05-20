@@ -88,9 +88,6 @@ const openUserManagementBtn = document.getElementById("openUserManagementBtn");
 const openBeachManagementBtn = document.getElementById("openBeachManagementBtn");
 const openReviewManagementBtn = document.getElementById("openReviewManagementBtn");
 const openAlertsModalBtn = document.getElementById("openAlertsModalBtn");
-const currentLanguageFlag = document.getElementById("currentLanguageFlag");
-const languageMenuBtn = document.getElementById("languageMenuBtn");
-const languageDropdown = document.getElementById("languageDropdown");
 const rememberActivityPreference = document.getElementById("rememberActivityPreference");
 const rememberSchedulePreference = document.getElementById("rememberSchedulePreference");
 const appHeader = document.getElementById("appHeader");
@@ -282,8 +279,10 @@ const staticFilterInputs = [
 ];
 
 function updateLanguageFlag(lang) {
-    currentLanguageFlag.textContent =
-        languageFlags[lang] || "🌐";
+    const currentLanguageFlag = document.getElementById("currentLanguageFlag");
+    if (currentLanguageFlag) {
+        currentLanguageFlag.textContent = languageFlags[lang] || "🌐";
+    }
 }
 
 function updateLanguageOptionFlags() {
@@ -291,56 +290,41 @@ function updateLanguageOptionFlags() {
         const flagEl = button.querySelector(".language-option-flag");
         if (!flagEl) return;
         flagEl.textContent = languageFlags[button.dataset.lang] || "🌐";
+        button.classList.toggle("is-active", button.dataset.lang === currentLang());
+        button.setAttribute("aria-pressed", button.dataset.lang === currentLang() ? "true" : "false");
     });
 }
 
-function openLanguageDropdown() {
-    if (!languageDropdown) return;
-    languageDropdown.hidden = false;
-    languageDropdown.classList.add("open");
-}
+function currentLang() {
+    const savedLang = localStorage.getItem("lang");
+    if (savedLang) {
+        return savedLang;
+    }
 
-function closeLanguageDropdown() {
-    if (!languageDropdown) return;
-    languageDropdown.classList.remove("open");
-    languageDropdown.hidden = true;
+    if (navigator.language.startsWith("cs")) {
+        return "cs";
+    }
+    if (navigator.language.startsWith("en")) {
+        return "en";
+    }
+    return "es";
 }
 
 document.querySelectorAll(".language-option").forEach(btn => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
         const lang = btn.dataset.lang;
 
-        setLanguage(lang);
-
+        localStorage.setItem("lang", lang);
+        await setLanguage(lang);
         updateLanguageFlag(lang);
-
-        closeLanguageDropdown();
+        updateLanguageOptionFlags();
     });
-});
-
-document.addEventListener("click", (e) => {
-    if (!e.target.closest(".languages")) {
-        closeLanguageDropdown();
-    }
 });
 
 updateLanguageFlag(
-    localStorage.getItem("lang") || "en"
+    currentLang()
 );
 updateLanguageOptionFlags();
-
-if (languageMenuBtn && languageDropdown) {
-    closeLanguageDropdown();
-
-    languageMenuBtn.addEventListener("click", (event) => {
-        event.stopPropagation();
-        if (languageDropdown.classList.contains("open")) {
-            closeLanguageDropdown();
-            return;
-        }
-        openLanguageDropdown();
-    });
-}
 
 
 
