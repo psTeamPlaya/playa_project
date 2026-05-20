@@ -13,6 +13,7 @@ class Settings:
     ALERTS_ENABLED = os.getenv("ALERTS_ENABLED", "true").lower() == "true"
     ALERTS_INITIAL_DELAY_SECONDS = int(os.getenv("ALERTS_INITIAL_DELAY_SECONDS", "2"))
     ALERTS_POLL_SECONDS = int(os.getenv("ALERTS_POLL_SECONDS", "900"))
+    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     DATABASE_URL = os.getenv(
             "DATABASE_URL",
         )

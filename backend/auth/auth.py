@@ -9,11 +9,16 @@ from fastapi.security import OAuth2PasswordBearer
 from backend.db import get_db
 from backend.models.user import User
 from backend.config import settings
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+import os
+from dotenv import load_dotenv
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 _BCRYPT_SHA256_PREFIX = "bcrypt_sha256$"
 
+load_dotenv()
 
 def _normalize_password(password: str) -> bytes:
     digest = hashlib.sha256(password.encode("utf-8")).digest()
@@ -52,7 +57,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
 
     return user
 
-
 def require_admin(current_user: User = Depends(get_current_user)):
     if not current_user or not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Admin access required")
@@ -70,3 +74,35 @@ def is_logged_in(request: Request) -> bool:
         return True
     except JWTError:
         return False
+
+def verify_google_token(credential: str, db) -> dict:
+    try:
+        id_info = id_token.verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID,
+        )
+
+        email = id_info.get("email")
+        user = db.query(User).filter(User.email == email).first()
+
+        if user:
+            if user.hashed_password != "google_auth_user":
+                raise HTTPException(
+                    status_code=400,
+                    detail="Este correo ya está registrado con contraseña. Inicia sesión con tu contraseña."
+                )
+        else:
+            user = User(email=email, hashed_password="google_auth_user", is_admin=False)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        access_token = create_token(user.id)
+        return {"access_token": access_token}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error real de Google: {e}")
+        raise HTTPException(status_code=401, detail="Token de Google inválido")
