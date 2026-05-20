@@ -33,6 +33,18 @@ import { initResultsMap } from "./results/results-map.js";
 import { initReviewsModule }  from "./reviews/reviews.js";
 import { initReviewPhotoModal } from "./review-photo/review-photo.js";
 
+import { initLanguage, setLanguage } from "/static/js/languages/i18n.js";
+
+initLanguage();
+
+
+const languageFlags = {
+    es: "🇪🇸",
+    en: "🇬🇧",
+    cs: "🇨🇿",
+};
+
+const activityCards = document.querySelectorAll(".activity-card");
 const activitiesGrid = document.getElementById("activitiesGrid");
 const fechaInput = document.getElementById("fecha");
 
@@ -216,6 +228,52 @@ const staticFilterInputs = [
     filterSportZone,
     filterPetFriendly
 ];
+
+function updateLanguageFlag(lang) {
+    currentLanguageFlag.textContent =
+        languageFlags[lang] || "🌍";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // const languageMenuBtn = document.getElementById("languageMenuBtn");
+    // const languageDropdown = document.getElementById("languageDropdown");
+    const currentLanguageFlag = document.getElementById("currentLanguageFlag");
+    const btn = document.getElementById("languageMenuBtn");
+    const dropdown = document.getElementById("languageDropdown");
+
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle("open");
+    });
+
+    document.addEventListener("click", () => {
+        dropdown.classList.remove("open");
+    });
+});
+
+document.querySelectorAll(".language-option").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const lang = btn.dataset.lang;
+
+        setLanguage(lang);
+
+        updateLanguageFlag(lang);
+
+        languageDropdown.hidden = true;
+    });
+});
+
+document.addEventListener("click", (e) => {
+    if (!e.target.closest(".language-menu")) {
+        languageDropdown.hidden = true;
+    }
+});
+
+updateLanguageFlag(
+    localStorage.getItem("lang") || "en"
+);
+
+
 
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
