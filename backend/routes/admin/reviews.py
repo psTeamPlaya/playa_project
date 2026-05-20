@@ -1,7 +1,7 @@
 import redis
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional, List, Dict, Any
-from backend.db import get_db
+from backend.db import get_db, redis_session
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
@@ -12,7 +12,7 @@ from backend.models.user import User
 
 router = APIRouter(prefix="/reviews", tags=["Admin Reviews"])
 
-r_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
+r_client = redis_session
 
 @router.get("") 
 async def get_reviews_for_admin(
