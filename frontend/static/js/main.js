@@ -207,6 +207,7 @@ const alertsFeedback = document.getElementById("alertsFeedback");
 const alertsList = document.getElementById("alertsList");
 
 let actividadSeleccionada = "";
+let availableActivities = [];
 let dateTimeController;
 let quantityController;
 let dynamicFiltersController;
@@ -289,7 +290,7 @@ function updateLanguageOptionFlags() {
     document.querySelectorAll(".language-option").forEach((button) => {
         const flagEl = button.querySelector(".language-option-flag");
         if (!flagEl) return;
-        flagEl.textContent = languageFlags[button.dataset.lang] || "🌐";
+        flagEl.textContent = "";
         button.classList.toggle("is-active", button.dataset.lang === currentLang());
         button.setAttribute("aria-pressed", button.dataset.lang === currentLang() ? "true" : "false");
     });
@@ -314,10 +315,7 @@ document.querySelectorAll(".language-option").forEach(btn => {
     btn.addEventListener("click", async () => {
         const lang = btn.dataset.lang;
 
-        localStorage.setItem("lang", lang);
         await setLanguage(lang);
-        updateLanguageFlag(lang);
-        updateLanguageOptionFlags();
     });
 });
 
@@ -325,6 +323,24 @@ updateLanguageFlag(
     currentLang()
 );
 updateLanguageOptionFlags();
+
+window.addEventListener("app-language-change", () => {
+    updateLanguageFlag(currentLang());
+    updateLanguageOptionFlags();
+
+    if (availableActivities.length > 0) {
+        renderActivityCards(availableActivities);
+        if (actividadSeleccionada) {
+            seleccionarActividad(actividadSeleccionada, false);
+        }
+    }
+
+    if (lastRecommendationContext?.baseData) {
+        if (!reaplicarResultadosCacheados()) {
+            renderRecommendationResults(lastRecommendationContext.baseData);
+        }
+    }
+});
 
 
 
@@ -514,11 +530,13 @@ async function loadActivities() {
         }
 
         const activities = await response.json();
+        availableActivities = Array.isArray(activities) ? activities : [];
         renderActivityCards(activities);
-        return Array.isArray(activities) ? activities : [];
+        return availableActivities;
     }
     catch (error) {
         console.error("Error cargando actividades:", error);
+        availableActivities = [];
         activitiesGrid.innerHTML = `
             <div class="empty-state">
                 ${t("search.errors.activities_load")}
