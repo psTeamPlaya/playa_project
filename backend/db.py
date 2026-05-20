@@ -1,3 +1,5 @@
+import os
+import redis
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
@@ -28,3 +30,7 @@ def check_database_connection() -> bool:
         return True
     except Exception:
         return False
+    
+redis_port = os.getenv("REDIS_PORT", 6379)
+redis_host = os.getenv("REDIS_HOST", 'localhost')
+redis_session = redis.Redis(host=redis_host, port=int(redis_port), decode_responses=True)
