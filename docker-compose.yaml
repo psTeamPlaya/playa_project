@@ -5,7 +5,7 @@ services:
     image: redis:8.6-alpine
     container_name: redis_reports_container
     ports:
-      - "127.0.0.1:6379:6379" # Dostępny TYLKO dla Twojego komputera, bezpieczny
+      - "127.0.0.1:6379:6379"
     command: redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru
     restart: always
 
@@ -14,6 +14,9 @@ services:
       context: ./ai_worker
       dockerfile: DockerFile.ai_worker
     container_name: ai_worker_container
+    environment:
+      - REDIS_HOST=redis_reports
+      - REDIS_PORT=6379
     depends_on:
       - redis_reports
     restart: always

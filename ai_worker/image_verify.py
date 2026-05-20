@@ -1,3 +1,4 @@
+import os
 import io
 import json
 import base64
@@ -7,33 +8,39 @@ from PIL import Image
 import onnxruntime as ort
 from transformers import AutoTokenizer
 
-# ==========================================
-# 1. INICJALIZACJA MODELI (Czyste ścieżki z dysku)
-# ==========================================
-print("Uruchamianie Workera AI: Ładowanie plików ONNX prosto z dysku...")
 
-# Podajesz bezpośrednie, sztywne ścieżki do plików w kontenerze
+# ==========================================
+# 1. MODEL INITIALIZATION (Direct paths from disk)
+# ==========================================
+print("Starting AI Worker: Loading ONNX files directly from disk...", flush=True)
+
+# Direct, hardcoded paths to the files inside the container
 visual_model_path = "models/vision_model.onnx"
 text_model_path = "models/text_model.onnx"
 
-# Silnik ONNX po prostu je otwiera
-visual_session = ort.InferenceSession(visual_model_path, providers=['CPUExecutionProvider'])
-text_session = ort.InferenceSession(text_model_path, providers=['CPUExecutionProvider'])
+# The ONNX engine opens them using available providers
+providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+visual_session = ort.InferenceSession(visual_model_path, providers=providers)
+text_session = ort.InferenceSession(text_model_path, providers=providers)
 
-# Tokenizer też ładuje się lokalnie z zapisanego folderu
+# Tokenizer also loads locally from the saved directory
 tokenizer = AutoTokenizer.from_pretrained("models/tokenizer")
 
 IMAGE_MEAN = np.array([0.48145466, 0.4578275, 0.40821073])
 IMAGE_STD = np.array([0.26862954, 0.26130258, 0.27577711])
 
-redis_client = redis.Redis(host="localhost", port=6379, db=0)
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 
-print("Worker AI gotowy. Zero zbędnych bibliotek w pamięci!")
+print(f"Connecting to Redis at: {REDIS_HOST}:{REDIS_PORT}", flush=True)
+redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
+
+print("AI Worker ready. Zero redundant libraries in memory!", flush=True)
+
 
 # ==========================================
-# DALSZA CZĘŚĆ PĘTLI WHILE TRUE POZOSTAJE BEZ ZMIAN...
+# 2. HELPER FUNCTIONS FOR IMAGE PROCESSING
 # ==========================================
-
 
 def preprocess_image_for_clip(image_bytes: bytes) -> np.ndarray:
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
@@ -48,65 +55,86 @@ def softmax(x):
     e_x = np.exp(x - np.max(x))
     return e_x / e_x.sum(axis=-1, keepdims=True)
 
+
 # ==========================================
-# 3. GŁÓWNA PĘTLA NASŁUCHUJĄCA REDISA
+# 3. MAIN REDIS LISTENING LOOP
 # ==========================================
+def calculate_embeds(labels):
+    text_inputs = tokenizer(labels, padding=True, return_tensors="np")
+    text_outputs = text_session.run(None, {
+        "input_ids": text_inputs["input_ids"].astype(np.int64)
+    })
+    text_embeds = text_outputs[0]
+    if text_embeds.ndim > 2:
+        text_embeds = text_embeds.mean(axis=1)
+    return (text_embeds / np.linalg.norm(text_embeds, axis=-1, keepdims=True)).astype(np.float32)
+
+
+
+safety_labels = ["appropriate normal photo", "explicit nudity or pornographic content"]
+safety_embeds = calculate_embeds(safety_labels)
+
+
+location_labels = ["beach outside", "computer screen", "indoor room", "street or city"]
+location_embeds = calculate_embeds(location_labels)
+
+
+weather_labels = ["sunny clear weather", "cloudy rainy bad weather", "sunset or sunrise"]
+weather_embeds = calculate_embeds(weather_labels)
+
+def calculate_most_probable_label(image_embeds, text_embeds, labels):
+        logits = np.dot(image_embeds, text_embeds.T) * 100.0
+        probs = softmax(logits)[0]
+
+        best_idx = probs.argmax()
+        print(f"[AI Result]: Recognized '{labels[best_idx]}' with {probs[best_idx]*100:.1f}% confidence", flush=True)
+        return best_idx, probs
+
 while True:
     try:
-        # brpop blokuje wątek i czeka aż w kolejce pojawi się element. 
-        # Dzięki temu skrypt zużywa 0% procesora, kiedy nikt nie wysyła zdjęć.
+        # brpop blocks the thread and waits until an item appears in the queue.
+        # This keeps CPU usage at 0% when no photos are being sent.
         queue_name, task_data = redis_client.brpop("beach_photos_queue")
         
-        # Dekodowanie JSON-a
+        # Decode JSON data
         task = json.loads(task_data.decode("utf-8"))
         
-        user_lat = task["user_lat"]
-        user_lon = task["user_lon"]
-        beach_lat = task["beach_lat"]
-        beach_lon = task["beach_lon"]
+        beach_id = task["beach_id"]
         
-        # Dekodowanie obrazu z formatu Base64 z powrotem do bajtów
+        # Decode the image from Base64 format back to bytes
         photo_bytes = base64.b64decode(task["photo_base64"])
 
-
-        # 2. Image Features (ONNX)
+        # 3.1. Image Features (ONNX)
         input_image = preprocess_image_for_clip(photo_bytes)
         image_outputs = visual_session.run(None, {"pixel_values": input_image})
         image_embeds = image_outputs[0]
         if image_embeds.ndim > 2:
             image_embeds = image_embeds.mean(axis=1)
 
-        # 3. Text Features (ONNX)
-        labels = [
-            "beautiful beach",
-            "beach with bad weather",
-            "computer screen or monitor",  
-            "room indoors"                  
-        ]
-        
-        text_inputs = tokenizer(labels, padding=True, return_tensors="np")
-        text_outputs = text_session.run(None, {
-            "input_ids": text_inputs["input_ids"].astype(np.int64)
-        })
-        text_embeds = text_outputs[0]
-        if text_embeds.ndim > 2:
-            text_embeds = text_embeds.mean(axis=1)
-
-        # 4. Kosinusowe podobieństwo
+        # 3.3. Cosine Similarity
         image_embeds = (image_embeds / np.linalg.norm(image_embeds, axis=-1, keepdims=True)).astype(np.float32)
-        text_embeds = (text_embeds / np.linalg.norm(text_embeds, axis=-1, keepdims=True)).astype(np.float32)
 
-        logits = np.dot(image_embeds, text_embeds.T) * 100.0
-        probs = softmax(logits)[0]
+        best_idx, probs = calculate_most_probable_label(image_embeds, location_embeds, location_labels)
+        if best_idx in [0] and probs[best_idx] > 0.60:
+            print("[Success]: Photo verified.", flush=True)
+            
+            beach_key = f"beach_photos:{beach_id}"
 
-        best_idx = probs.argmax()
-        print(f"[AI Wynik]: Rozpoznano '{labels[best_idx]}' z pewnością {probs[best_idx]*100:.1f}%")
+            photo_data = {
+                "timestamp": task.get("timestamp"),
+                "photo": task["photo_base64"]
+            }
 
-        if best_idx in [0, 1] and probs[best_idx] > 0.60:
-            print("[Sukces]: Zdjęcie pomyślnie zweryfikowało obecność na plaży.")
-            # TUTAJ: Wykonaj kod zapisu do swojej bazy danych SQL/NoSQL, żeby zmienić status fotki
+            redis_client.sadd(beach_key, json.dumps(photo_data))
+
+            # Disapear after 
+            redis_client.expire(beach_key, 3600*3)
         else:
-            print("[Odrzucono]: Wykryto oszustwo (ekran komputera/wnętrze pokoju).")
+            print("[Rejected]: Spoofing detected (computer screen/room interior).", flush=True)
+        
+        calculate_most_probable_label(image_embeds,safety_embeds,safety_labels)
+
+        calculate_most_probable_label(image_embeds,weather_embeds, weather_labels)
 
     except Exception as e:
-        print(f"Błąd przetwarzania zadania w workerze: {e}")
+        print(f"Error processing task in worker: {e}", flush=True)

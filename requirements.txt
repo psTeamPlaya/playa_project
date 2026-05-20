@@ -8,3 +8,6 @@ python-dotenv
 jinja2
 requests
 fastapi-mail>=1.6.2
+python-multipart
+redis
+pillow
