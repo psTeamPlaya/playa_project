@@ -116,9 +116,12 @@ while True:
 
         # 3.3. Cosine Similarity
         image_embeds = (image_embeds / np.linalg.norm(image_embeds, axis=-1, keepdims=True)).astype(np.float32)
+        
+        weather_best_idx, weather_probs = calculate_most_probable_label(image_embeds,weather_embeds, weather_labels)
+        location_best_idx, location_probs = calculate_most_probable_label(image_embeds, location_embeds, location_labels)
+        safety_best_idx, safety_probs = calculate_most_probable_label(image_embeds, safety_embeds, safety_labels)
+        if location_best_idx in [0] and location_probs[location_best_idx] > 0.60 and not (safety_best_idx in [1] and safety_probs[safety_best_idx] > 0.90):
 
-        best_idx, probs = calculate_most_probable_label(image_embeds, location_embeds, location_labels)
-        if best_idx in [0] and probs[best_idx] > 0.60:
             print("[Success]: Photo verified.", flush=True)
             
             beach_key = f"beach_photos:{beach_id}"
@@ -128,7 +131,9 @@ while True:
             photo_data = {
                 "timestamp": int(raw_timestamp),
                 "photo": photo_base64,
-                "photo_hash": photo_hash
+                "photo_hash": photo_hash,
+                "weather": weather_labels[weather_best_idx],
+                "weather_prob": weather_probs[weather_best_idx]
             }
             print(int(raw_timestamp))
             expire_at = int(time.time()) 
@@ -137,10 +142,6 @@ while True:
             redis_client.expire(beach_key, 10800)
         else:
             print("[Rejected]: Spoofing detected (computer screen/room interior).", flush=True)
-        
-        calculate_most_probable_label(image_embeds,safety_embeds,safety_labels)
-
-        calculate_most_probable_label(image_embeds,weather_embeds, weather_labels)
 
     except Exception as e:
         print(f"Error processing task in worker: {e}", flush=True)
