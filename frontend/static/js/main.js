@@ -33,7 +33,7 @@ import { initResultsMap } from "./results/results-map.js";
 import { initReviewsModule } from "./reviews/reviews.js";
 import { initReviewPhotoModal } from "./review-photo/review-photo.js";
 
-import { initLanguage, setLanguage } from "/static/js/languages/i18n.js";
+import { initLanguage, setLanguage, t } from "/static/js/languages/i18n.js";
 
 initLanguage();
 
@@ -581,7 +581,7 @@ function renderRecommendationResults(data, { shouldScroll = false } = {}) {
 
     ocultarAvisoSolar();
     // statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
-    statusEl.textContent = t("recommendations_found", {
+    statusEl.textContent = t("results.recommendations_found", {
         count: data.resultados.length,
         activity: actividadSeleccionada.replace("_", " "),
     });

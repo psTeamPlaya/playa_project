@@ -79,9 +79,15 @@
     "temp": "Temp. (°C)",
     "temp_min": "Temperatura ambiente minima",
     "temp_max": "Temperatura ambiente máxima",
+    "water_temp": "Temp. agua (°C)",
     "waves": "Olas (m)",
     "waves_min": "Oleaje mínimo",
-    "waves_max": "Oleaje máximo"
+    "waves_max": "Oleaje máximo",
+    "rain": "Lluvia (%)",
+    "tide": "Marea",
+    "low_tide": "baja",
+    "high_tide": "alta",
+    "medium_tide": "media"
   },
   "services": {
     "title": "Servicios",
@@ -205,7 +211,10 @@
     "database": "Base de datos"
   },
   "results": {
-    "recommendations_found": "Se han encontrado {{count}} recomendaciones para {{activity}}."
+    "recommendations_found": "Se han encontrado {{count}} recomendaciones para {{activity}}.",
+    "no_results": "No hay resultados para esa b\u00fasqueda.",
+    "score": "Score",
+    "recommendation_explanation": "Explicación de la recomendación"
   },
   "errors": {
     "not_able_fetch_activities": "No se pudieron cargar las actividades.",
