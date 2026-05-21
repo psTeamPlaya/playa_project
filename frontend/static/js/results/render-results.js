@@ -151,7 +151,7 @@ function mapBeachType(type) {
     const map = {
         arena: "sand",
         piedra: "stone",
-        "piscina natural": "natural_pool"
+        piscina_natural: "natural_pool"
     };
 
     return map[type] ?? "sand";
