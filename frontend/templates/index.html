@@ -5,10 +5,12 @@
 <head>
 
   <meta charset="UTF-8" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <meta name="referrer" content="no-referrer-when-downgrade">
 
-  <title data-i18n="titles.app_title">Mi día de Playa</title>
+  <title>Mi día de Playa</title>
 
   <link rel="icon" type="img/png" href="/static/img/favicon.png" sizes="128x128">
 
@@ -287,7 +289,9 @@
         </div>
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="nubosidad">
-          <div data-i18n="weather.cloudiness" class="dynamic-filter-title">Nubosidad</div>
+
+          <div class="dynamic-filter-title">Nubosidad</div>
+
           <div class="dynamic-filter-slider">
 
             <div class="range-values">
@@ -299,16 +303,19 @@
             </div>
 
             <div class="dual-range" id="cloudRangeTrack">
-              <input data-i18n-aria="weather.cloud_min" type="range" id="filterCloudMin" min="0" max="100" step="1"
-                value="0" aria-label="Nubosidad minima">
-              <input data-i18n-aria="weather.cloud_max" type="range" id="filterCloudMax" min="0" max="100" step="1"
-                value="20" aria-label="Nubosidad maxima">
+
+              <input type="range" id="filterCloudMin" min="0" max="100" step="1" value="0" aria-label="Nubosidad minima">
+
+              <input type="range" id="filterCloudMax" min="0" max="100" step="1" value="20" aria-label="Nubosidad maxima">
+
             </div>
 
           </div>
 
           <div class="dynamic-filter-actions-row">
-            <button data-i18n="common.reset" class="filter-chip-button" id="filterCloudReset" type="button">
+
+            <button class="filter-chip-button" id="filterCloudReset" type="button">
+
               reset
 
             </button>
@@ -316,12 +323,16 @@
             <label class="filter-option filter-compact-option filter-toggle-button">
 
               <input type="checkbox" id="filterCloudDisabled">
-              <span data-i18n="search.activate_filter" class="filter-toggle-text">Activar filtro</span>
+
+              <span class="filter-toggle-text">Desactivar filtro</span>
+
             </label>
 
           </div>
 
         </fieldset>
+
+        
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="viento">
 
@@ -338,16 +349,19 @@
             </div>
 
             <div class="dual-range" id="windRangeTrack">
-              <input data-i18n-aria="weather.wind_min" type="range" id="filterWindMin" min="0" max="60" step="1"
-                value="0" aria-label="Viento minimo">
-              <input data-i18n-aria="weather.wind_max" type="range" id="filterWindMax" min="0" max="60" step="1"
-                value="15" aria-label="Viento maximo">
+
+              <input type="range" id="filterWindMin" min="0" max="60" step="1" value="0" aria-label="Viento minimo">
+
+              <input type="range" id="filterWindMax" min="0" max="60" step="1" value="15" aria-label="Viento maximo">
+
             </div>
 
           </div>
 
           <div class="dynamic-filter-actions-row">
-            <button data-i18n="common.reset" class="filter-chip-button" id="filterWindReset" type="button">
+
+            <button class="filter-chip-button" id="filterWindReset" type="button">
+
               reset
 
             </button>
@@ -355,12 +369,16 @@
             <label class="filter-option filter-compact-option filter-toggle-button">
 
               <input type="checkbox" id="filterWindDisabled">
-              <span data-i18n="search.activate_filter" class="filter-toggle-text">Activar filtro</span>
+
+              <span class="filter-toggle-text">Desactivar filtro</span>
+
             </label>
 
           </div>
 
         </fieldset>
+
+        
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="temperatura">
 
@@ -377,16 +395,19 @@
           </div>
 
             <div class="dual-range" id="temperatureRangeTrack">
-              <input data-i18n-aria="weather.temp_min" type="range" id="filterTemperatureMin" min="0" max="45" step="1"
-                value="20" aria-label="Temperatura ambiente minima">
-              <input data-i18n-aria="weather.temp_max" type="range" id="filterTemperatureMax" min="0" max="45" step="1"
-                value="29" aria-label="Temperatura ambiente maxima">
+
+            <input type="range" id="filterTemperatureMin" min="0" max="45" step="1" value="20" aria-label="Temperatura ambiente minima">
+
+            <input type="range" id="filterTemperatureMax" min="0" max="45" step="1" value="29" aria-label="Temperatura ambiente maxima">
+
             </div>
 
           </div>
 
           <div class="dynamic-filter-actions-row">
-            <button data-i18n="common.reset" class="filter-chip-button" id="filterTemperatureReset" type="button">
+
+            <button class="filter-chip-button" id="filterTemperatureReset" type="button">
+
               reset
 
             </button>
@@ -394,7 +415,9 @@
             <label class="filter-option filter-compact-option filter-toggle-button">
 
               <input type="checkbox" id="filterTemperatureDisabled">
-              <span data-i18n="search.activate_filter" class="filter-toggle-text">Activar filtro</span>
+
+              <span class="filter-toggle-text">Desactivar filtro</span>
+
             </label>
 
           </div>
@@ -404,24 +427,33 @@
 
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="oleaje">
-          <div data-i18n="weather.waves" class="dynamic-filter-title">Olas(m)</div>
+
+          <div class="dynamic-filter-title">Olas(m)</div>
+
           <div class="dynamic-filter-slider">
 
             <div class="range-values">
-              <span><strong id="waveMinValue">0</strong> m</span>
-              <span><strong id="waveMaxValue">1</strong> m</span>
-            </div>
+
+            <span><strong id="waveMinValue">0</strong> m</span>
+
+            <span><strong id="waveMaxValue">1</strong> m</span>
+
+          </div>
+
             <div class="dual-range" id="waveRangeTrack">
-              <input data-i18n-aria="weather.waves_min" type="range" id="filterWaveMin" min="0" max="5" step="0.1"
-                value="0" aria-label="Oleaje minimo">
-              <input data-i18n-aria="weather.waves_max" type="range" id="filterWaveMax" min="0" max="5" step="0.1"
-                value="1" aria-label="Oleaje maximo">
+
+            <input type="range" id="filterWaveMin" min="0" max="5" step="0.1" value="0" aria-label="Oleaje minimo">
+
+            <input type="range" id="filterWaveMax" min="0" max="5" step="0.1" value="1" aria-label="Oleaje maximo">
+
             </div>
 
           </div>
 
           <div class="dynamic-filter-actions-row">
-            <button data-i18n="common.reset" class="filter-chip-button" id="filterWaveReset" type="button">
+
+            <button class="filter-chip-button" id="filterWaveReset" type="button">
+
               reset
 
             </button>
@@ -429,7 +461,9 @@
             <label class="filter-option filter-compact-option filter-toggle-button">
 
               <input type="checkbox" id="filterWaveDisabled">
-              <span data-i18n="search.activate_filter" class="filter-toggle-text">Activar filtro</span>
+
+              <span class="filter-toggle-text">Desactivar filtro</span>
+
             </label>
 
           </div>
@@ -451,10 +485,7 @@
 
         <div class="empty-state" data-i18n="search.loading_activities">Cargando actividades disponibles...</div>
 
-          <div class="activity-card" data-activity="surf">
-            <span class="activity-icon">🏄</span>
-            <span data-i18n="activities.surfing" class="activity-name">Surf</span>
-          </div>
+      </div>
 
     </section>
 
@@ -646,7 +677,10 @@
 
   </div>
 
-  <button data-i18n="search.search_beaches" class="btn-primary floating-search-button" id="floatingBuscarBtn" type="button" aria-hidden="true">
+
+
+  <button class="btn-primary floating-search-button" id="floatingBuscarBtn" type="button" aria-hidden="true">
+
     Buscar playas recomendadas
 
   </button>
@@ -659,7 +693,8 @@
 
       <button id="closeMap" type="button" aria-label="Cerrar mapa">&times;</button>
       <div id="map" style="height: 400px;"></div>
-      <button data-i18n="search.location.select" id="confirmLocation" class="btn-primary" type="button">Seleccionar ubicacion</button>
+
+      <button id="confirmLocation" class="btn-primary" type="button">Seleccionar ubicación</button>
     </div>
 
   </div>
@@ -672,8 +707,11 @@
 
       <button id="closeResultsMap" type="button" aria-label="Cerrar mapa de recomendaciones">&times;</button>
       <div class="results-map-header">
-        <h3 data-i18n="titles.in_map_title">Mapa de playas recomendadas</h3>
-        <p data-i18n="titles.in_map_description">Consulta el ranking y score de cada playa directamente en el mapa.</p>
+
+        <h3>Mapa de playas recomendadas</h3>
+
+        <p>Consulta el ranking y score de cada playa directamente en el mapa.</p>
+
       </div>
 
       <div id="resultsMap" style="height: 420px;"></div>
@@ -687,32 +725,44 @@
   <div class="modal-backdrop" id="loginModal" hidden>
 
     <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
-      <button class="modal-close" id="closeLoginModal" type="button" aria-label="Cerrar">×</button>
-      <h2 data-i18n="auth.login" id="loginModalTitle">Iniciar sesion</h2>
+
+      <button class="modal-close" id="closeLoginModal" type="button" aria-label="Cerrar">&times;</button>
+      <h2 id="loginModalTitle">Iniciar sesión</h2>
+
 
       <form id="loginModalForm">
 
         <div class="field auth-field">
-          <label data-i18n="auth.email" for="loginEmail">Correo o usuario</label>
-          <input data-i18n-placeholder="placeholders.email" id="loginEmail" type="text" placeholder="tu@correo.com o admin" required>
+
+          <label for="loginEmail">Correo o usuario</label>
+
+          <input id="loginEmail" type="text" placeholder="tu@correo.com o admin" required>
+
         </div>
 
 
 
         <div class="field auth-field">
-          <label data-i18n="auth.password" for="loginPassword">Contraseña</label>
-          <input  id="loginPassword" type="password" placeholder="********" required>
+
+          <label for="loginPassword">Contraseña</label>
+
+          <input id="loginPassword" type="password" placeholder="********" required>
+
         </div>
 
 
 
         <div class="field auth-field" id="confirmPasswordGroup" style="display: none;">
-          <label data-i18n="auth.confirm_password" for="confirmPassword">Confirmar contraseña</label>
+
+          <label for="confirmPassword">Confirmar contraseña</label>
           <input id="confirmPassword" type="password" placeholder="********">
 
         </div>
 
-        <button data-i18n="auth.enter" class="btn-primary auth-submit" id="authSubmitBtn" type="submit">Entrar a mi cuenta</button>
+
+
+        <button class="btn-primary auth-submit" id="authSubmitBtn" type="submit">Entrar a mi cuenta</button>
+
       </form>
 
 
@@ -722,8 +772,10 @@
 
 
       <div class="auth-register-row">
-        <span data-i18n="auth.no_account_question" id="authModeHint">¿Sin cuenta?</span>
-        <button data-i18n="auth.register" class="btn-secondary" id="toggleAuthModeBtn" type="button">Registrarse</button>
+
+        <span id="authModeHint">¿Sin cuenta?</span>
+        <button class="btn-secondary" id="toggleAuthModeBtn" type="button">Registrarse</button>
+
       </div>
 
     </div>
@@ -738,7 +790,9 @@
 
       <button class="favorites-modal-close" id="closeFavoritesModal" type="button" aria-label="Cerrar">&times;</button>
       <div class="favorites-modal-header">
-        <h2 data-i18n="titles.favorite_beaches" id="favoritesModalTitle">Mis playas favoritas</h2>
+
+        <h2 id="favoritesModalTitle">Mis playas favoritas</h2>
+
       </div>
 
       <div id="favoritesResultsContainer" class="results-grid favorites-results-grid">
@@ -1118,7 +1172,8 @@
 
 
       <div class="config-list" id="configFilterList">
-      </div>
+
+        </div>
 
 
 
@@ -1373,39 +1428,6 @@
 
   </div>  
 
-    <div class="reviews-admin-modal">
-
-      <button class="modal-close" id="closeReviewManagementModal" type="button">&times;</button>
-      <div class="reviews-admin-layout">
-
-        <!-- IZQUIERDA: playas -->
-
-  <script type="module" src="/static/js/main.js?v=admin-catalog-20260520-5"></script>
-
-          <h3>Playas</h3>
-
-          <div id="reviewsBeachList" class="reviews-beach-list"></div>
-
-        </aside>
-
-        
-
-        <!-- DERECHA: reseñas -->
-
-        <section class="reviews-admin-content">
-
-          <h3>Reseñas</h3>
-
-          <div id="reviewsAdminList" class="reviews-list"></div>
-
-        </section>
-
-      </div>
-
-    </div>
-
-  </div>  
-
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <script src="https://unpkg.com/virtual-scroller@1.16.4/bundle/virtual-scroller-dom.js"></script>
@@ -1421,3 +1443,12 @@
 </body>
 
 </html>
+
+
+
+
+
+
+
+
+
