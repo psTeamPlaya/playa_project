@@ -274,6 +274,7 @@ const staticFilterInputs = [
 ];
 
 function updateLanguageFlag(lang) {
+    const currentLanguageFlag = document.getElementById("currentLanguageFlag");
     currentLanguageFlag.textContent =
         languageFlags[lang] || "🌍";
 }
@@ -293,19 +294,20 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("click", () => {
         dropdown.classList.remove("open");
     });
-});
 
-document.querySelectorAll(".language-option").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const lang = btn.dataset.lang;
-
-        setLanguage(lang);
-
-        updateLanguageFlag(lang);
-
-        languageDropdown.hidden = true;
+    document.querySelectorAll(".language-option").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const lang = btn.dataset.lang;
+    
+            setLanguage(lang);
+    
+            updateLanguageFlag(lang);
+    
+            languageDropdown.hidden = true;
+        });
     });
 });
+
 
 document.addEventListener("click", (e) => {
     if (!e.target.closest(".language-menu")) {
@@ -1016,23 +1018,23 @@ async function buscarRecomendaciones() {
     ocultarAvisoSolar();
 
     if (!actividadSeleccionada) {
-        statusEl.textContent = t("search.warings.no_activity");
+        statusEl.textContent = t("search.warnings.no_activity");
         return;
     }
     if (!fecha) {
-        statusEl.textContent = t("search.warings.no_date");
+        statusEl.textContent = t("search.warnings.no_date");
         return;
     }
-    if (!hora) {
-        statusEl.textContent = t("search.warings.no_time");
+    if (!horaInicio || !horaFin) {
+        statusEl.textContent = t("search.warnings.no_time");
         return;
     }
     if (fecha < formatearFechaLocal(new Date())) {
-        statusEl.textContent = t("search.warings.past_date");
+        statusEl.textContent = t("search.warnings.past_date");
         return;
     }
-    if (dateTimeController?.esFechaHoy(fecha) && dateTimeController?.esHoraPasadaParaHoy(hora)) {
-        statusEl.textContent = t("search.warings.past_time");
+    if (dateTimeController?.esFechaHoy(fecha) && dateTimeController?.esHoraPasadaParaHoy(horaInicio)) {
+        statusEl.textContent = t("search.warnings.past_time");
         dateTimeController?.asegurarHoraValidaSeleccionada({ silent: true });
         guardarHorarioRecordado();
         return;
