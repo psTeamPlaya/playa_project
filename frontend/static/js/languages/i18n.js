@@ -23,6 +23,10 @@ export async function setLanguage(lang) {
     }
 
     localStorage.setItem("lang", lang);
+    
+    document.dispatchEvent(new CustomEvent("app-language-change", {
+         detail: { lang }
+     }));
 }
 
 function getNestedValue(obj, path) {
