@@ -45,7 +45,16 @@
       "when": "2. ¿Cuándo quieres ir a la playa?",
       "where": "3. Elige tu ubicación"
     },
-    "empty_results": "Por ahora no hay ninguna recomendacion de playas."
+    "empty_results": "Por ahora no hay ninguna recomendacion de playas.",
+    "warnings": {
+      "no_activity": "Debes seleccionar una actividad.",
+      "no_date": "Debes seleccionar una fecha.",
+      "no_time": "Debes seleccionar una hora.",
+      "past_date": "No puedes seleccionar una fecha pasada.",
+      "past_time": "No puedes seleccionar una hora pasada para el d\u00eda de hoy.",
+      "missing_location": "Introduce informacion de localizacion."
+    },
+    "searching": "Buscando recomendaciones..."
   },
   "activities": {
     "title": "Actividades",
@@ -57,7 +66,8 @@
     "snorkeling": "Bucear",
     "walking": "Pasear",
     "fishing": "Pescar",
-    "kayaking": "Kayak"
+    "kayaking": "Kayak",
+    "no_activities_available": "No hay actividades disponibles en este momento."
   },
   "weather": {
     "cloudiness": "Nubosidad",
@@ -184,5 +194,25 @@
     "title": "Reseñas de playas",
     "downloading_reviews": "Cargando reseñas...",
     "add_review": "Añadir reseña"
+  },
+  "metric_card": {
+    "available": "Disponible",
+    "without_data": "Sin datos",
+    "records_found": "{{count}} registros encontrados",
+    "no_records_for_datetime": "No hay registros para esa fecha y hora",
+    "query_metrics": "Métrica de consulta",
+    "query_metrics_description": "Tiempo medido para recuperar condiciones desde la base de datos.",
+    "database": "Base de datos"
+  },
+  "results": {
+    "recommendations_found": "Se han encontrado {{count}} recomendaciones para {{activity}}."
+  },
+  "errors": {
+    "not_able_fetch_activities": "No se pudieron cargar las actividades.",
+    "API": "Ha ocurrido un error al consultar la API.",
+    "results_load_error": "No se pudieron cargar los resultados."
+  },
+  "alerts": {
+    "sign_in": "Inicia sesion para gestionar favoritas."
   }
 }
