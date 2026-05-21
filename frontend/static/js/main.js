@@ -1,5 +1,5 @@
 import { authFetch } from "./api/auth-fetch.js";
-import { initAdminUI } from "./admin/admin-ui.js";
+import { initAdminUI } from "./admin/admin-ui.js?v=20260520-5";
 import { fetchRecommendations } from "./api/recommendations-api.js";
 import { initAuthModal } from "./auth/auth-modal.js";
 import { initSessionUI } from "./auth/session-ui.js";
@@ -15,7 +15,7 @@ import {
 } from "./filters/static-filters.js";
 import { selectedCoords } from "./localization.js";
 import { initPreferencesUI } from "./preferences/preferences-ui.js";
-import { initAlertsUI } from "./preferences/alerts-ui.js";
+import { initAlertsUI } from "./preferences/alerts-ui.js?v=20260520-5";
 import {
     obtenerActividadInicial as getInitialActivity,
     obtenerHorarioInicial as getInitialSchedule,
@@ -55,14 +55,15 @@ const buscarBtn = document.getElementById("buscarBtn");
 const floatingBuscarBtn = document.getElementById("floatingBuscarBtn");
 const statusEl = document.getElementById("status");
 const resultsContainer = document.getElementById("resultsContainer");
-const sourceMetricsContainer = document.getElementById("sourceMetricsContainer");
 const favoritesResultsContainer = document.getElementById("favoritesResultsContainer");
 const recommendedBeachesSection = document.getElementById("recommendedBeachesSection");
-const hourWheel = document.getElementById("hourWheel");
+const horaInicioSelect = document.getElementById("horaInicio");
+const horaFinSelect = document.getElementById("horaFin");
 const sunAlertEl = document.getElementById("sunAlert");
 const loginModalEl = document.getElementById("loginModal");
 const authActionBtn = document.getElementById("authActionBtn");
 const authActionIcon = document.getElementById("authActionIcon");
+const authActionLabel = document.getElementById("authActionLabel");
 const closeLoginModalBtn = document.getElementById("closeLoginModal");
 const loginModalForm = document.getElementById("loginModalForm");
 const loginEmailInput = document.getElementById("loginEmail");
@@ -84,7 +85,17 @@ const openAlertsModalBtn = document.getElementById("openAlertsModalBtn");
 const rememberActivityPreference = document.getElementById("rememberActivityPreference");
 const rememberSchedulePreference = document.getElementById("rememberSchedulePreference");
 const appHeader = document.getElementById("appHeader");
+const heroBrand = document.getElementById("heroBrand");
+const authContainer = document.getElementById("authContainer");
+const appShell = document.querySelector(".app-shell");
+const appMain = document.querySelector(".app-main");
 const filtersSidebar = document.getElementById("filtersSidebar");
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const mobileMenuBackdrop = document.getElementById("mobileMenuBackdrop");
+const mobileMenuDrawer = document.getElementById("mobileMenuDrawer");
+const mobileMenuCloseBtn = document.getElementById("mobileMenuCloseBtn");
+const mobileAuthMount = document.getElementById("mobileAuthMount");
+const mobileFiltersMount = document.getElementById("mobileFiltersMount");
 const disableStaticFilters = document.getElementById("disableStaticFilters");
 const disableDynamicFilters = document.getElementById("disableDynamicFilters");
 const filterSandBeach = document.getElementById("filterSandBeach");
@@ -134,6 +145,7 @@ const beachManagementModal = document.getElementById("beachManagementModal");
 const closeBeachManagementModal = document.getElementById("closeBeachManagementModal");
 const beachManagementList = document.getElementById("beachManagementList");
 const beachManagementFeedback = document.getElementById("beachManagementFeedback");
+const beachSearchInput = document.getElementById("beachSearchInput");
 const beachManagementForm = document.getElementById("beachManagementForm");
 const newBeachBtn = document.getElementById("newBeachBtn");
 const resetBeachFormBtn = document.getElementById("resetBeachFormBtn");
@@ -163,12 +175,20 @@ const serviceCatalogFeedback = document.getElementById("serviceCatalogFeedback")
 const serviceCatalogList = document.getElementById("serviceCatalogList");
 const alertsModal = document.getElementById("alertsModal");
 const closeAlertsModal = document.getElementById("closeAlertsModal");
+const openAlertsEditorBtn = document.getElementById("openAlertsEditorBtn");
+const closeAlertsEditorBtn = document.getElementById("closeAlertsEditorBtn");
+const alertsEditorBackdrop = document.getElementById("alertsEditorBackdrop");
+const alertsEditorTitle = document.getElementById("alertsEditorTitle");
+const alertsEditorCopy = document.getElementById("alertsEditorCopy");
 const alertsForm = document.getElementById("alertsForm");
 const alertsEditingIdInput = document.getElementById("alertsEditingId");
 const cancelAlertEditBtn = document.getElementById("cancelAlertEditBtn");
 const saveCurrentAlertBtn = document.getElementById("saveCurrentAlertBtn");
 const alertsActivitySelect = document.getElementById("alertsActivitySelect");
 const alertsBeachSelect = document.getElementById("alertsBeachSelect");
+const alertWeekdayCheckboxes = Array.from(document.querySelectorAll('input[name="alertWeekdays"]'));
+const alertStartHourInput = document.getElementById("alertStartHour");
+const alertEndHourInput = document.getElementById("alertEndHour");
 const alertMinTemperatureInput = document.getElementById("alertMinTemperature");
 const alertMaxTemperatureInput = document.getElementById("alertMaxTemperature");
 const alertMinWindInput = document.getElementById("alertMinWind");
@@ -181,6 +201,7 @@ const alertsFeedback = document.getElementById("alertsFeedback");
 const alertsList = document.getElementById("alertsList");
 
 let actividadSeleccionada = "";
+let availableActivities = [];
 let dateTimeController;
 let quantityController;
 let dynamicFiltersController;
@@ -191,6 +212,8 @@ let adminUIController;
 let resultsMapController;
 let alertsUIController;
 let lastRecommendationContext = null;
+const mobileMenuMediaQuery = window.matchMedia("(max-width: 800px)");
+const mobileMenuCloseTimeoutRef = { current: null };
 
 const DEFAULT_ACTIVITY = "tomar_sol";
 const DEFAULT_QUANTITY = "3";
@@ -205,6 +228,27 @@ const ACTIVITY_ICON_MAP = {
     kayak: "\u{1F6F6}",
     kitesurf: "\u{1FA81}",
     paddle_surf: "\u{1F6F6}",
+};
+const ACTIVITY_IMAGE_MAP = {
+    bodyboard: "/static/img/bodyboard.png",
+    kitesurf: "/static/img/kitesurf.png",
+    paddle_surf: "/static/img/paddle-surf.png",
+    voley_playa: "/static/img/voleyplaya.png",
+    windsurf: "/static/img/windsurf.png",
+};
+const ACTIVITY_I18N_MAP = {
+    tomar_sol: "activities.sunbathing",
+    nadar: "activities.swimming",
+    surf: "activities.surfing",
+    windsurf: "activities.wind_surfing",
+    kitesurf: "activities.kitesurfing",
+    bucear: "activities.snorkeling",
+    caminar: "activities.walking",
+    pescar: "activities.fishing",
+    kayak: "activities.kayaking",
+    paddle_surf: "activities.paddle_surfing",
+    bodyboard: "activities.bodyboarding",
+    voley_playa: "activities.beach_volleyball",
 };
 
 const staticFilterElements = {
@@ -282,78 +326,138 @@ function limpiarResultadosPorCambioDeFiltros() {
     ocultarAvisoSolar();
 }
 
+function updateLanguageOptionFlags() {
+    document.querySelectorAll(".language-option").forEach((button) => {
+        const flagEl = button.querySelector(".language-option-flag");
+        if (!flagEl) return;
+        flagEl.textContent = "";
+        button.classList.toggle("is-active", button.dataset.lang === currentLang());
+        button.setAttribute("aria-pressed", button.dataset.lang === currentLang() ? "true" : "false");
+    });
+}
+
+function currentLang() {
+    const savedLang = localStorage.getItem("lang");
+    if (savedLang) {
+        return savedLang;
+    }
+
+    if (navigator.language.startsWith("cs")) {
+        return "cs";
+    }
+    if (navigator.language.startsWith("de")) {
+        return "de";
+    }
+    if (navigator.language.startsWith("en")) {
+        return "en";
+    }
+    return "es";
+}
+
+document.querySelectorAll(".language-option").forEach(btn => {
+    btn.addEventListener("click", async () => {
+        const lang = btn.dataset.lang;
+
+        await setLanguage(lang);
+    });
+});
+
+updateLanguageFlag(
+    currentLang()
+);
+updateLanguageOptionFlags();
+
+window.addEventListener("app-language-change", () => {
+    updateLanguageFlag(currentLang());
+    updateLanguageOptionFlags();
+
+    if (availableActivities.length > 0) {
+        renderActivityCards(availableActivities);
+        if (actividadSeleccionada) {
+            seleccionarActividad(actividadSeleccionada, false);
+        }
+    }
+
+    if (lastRecommendationContext?.baseData) {
+        if (!reaplicarResultadosCacheados()) {
+            renderRecommendationResults(lastRecommendationContext.baseData);
+        }
+    }
+});
+
+
+
+function esVistaMovil() {
+    return mobileMenuMediaQuery.matches;
+}
+
+function sincronizarUbicacionMenuMovil() {
+    if (!authContainer || !filtersSidebar || !heroBrand || !appShell || !appMain) {
+        return;
+    }
+
+    if (esVistaMovil()) {
+        if (authContainer.parentElement !== mobileAuthMount) {
+            mobileAuthMount?.appendChild(authContainer);
+        }
+        if (filtersSidebar.parentElement !== mobileFiltersMount) {
+            mobileFiltersMount?.appendChild(filtersSidebar);
+        }
+        return;
+    }
+
+    if (authContainer.parentElement !== heroBrand) {
+        heroBrand.appendChild(authContainer);
+    }
+    if (filtersSidebar.parentElement !== appShell) {
+        appShell.insertBefore(filtersSidebar, appMain);
+    }
+}
+
+function cerrarMenuMovil({ inmediato = false } = {}) {
+    if (!mobileMenuBackdrop) {
+        return;
+    }
+
+    clearTimeout(mobileMenuCloseTimeoutRef.current);
+    preferencesUIController?.cerrarPanelPreferencias();
+    mobileMenuBackdrop.classList.remove("is-open");
+    document.body.classList.remove("mobile-menu-open");
+    mobileMenuBtn?.setAttribute("aria-expanded", "false");
+
+    if (inmediato) {
+        mobileMenuBackdrop.hidden = true;
+        return;
+    }
+
+    mobileMenuCloseTimeoutRef.current = setTimeout(() => {
+        mobileMenuBackdrop.hidden = true;
+    }, 220);
+}
+
+function abrirMenuMovil() {
+    if (!esVistaMovil() || !mobileMenuBackdrop) {
+        return;
+    }
+
+    sincronizarUbicacionMenuMovil();
+    clearTimeout(mobileMenuCloseTimeoutRef.current);
+    mobileMenuBackdrop.hidden = false;
+    requestAnimationFrame(() => {
+        mobileMenuBackdrop.classList.add("is-open");
+    });
+    document.body.classList.add("mobile-menu-open");
+    mobileMenuBtn?.setAttribute("aria-expanded", "true");
+}
+
+function limpiarResultadosPorCambioDeFiltros() {
+    resultsContainer.innerHTML = "";
+    statusEl.textContent = "";
+    ocultarAvisoSolar();
+}
+
 function resetRecommendationContext() {
     lastRecommendationContext = null;
-}
-
-function clearSourceMetrics() {
-    if (!sourceMetricsContainer) {
-        return;
-    }
-
-    sourceMetricsContainer.hidden = true;
-    sourceMetricsContainer.innerHTML = "";
-}
-
-function formatElapsedMs(value) {
-    const numericValue = Number(value);
-    return Number.isFinite(numericValue) ? `${numericValue.toFixed(2)} ms` : "N/D";
-}
-
-function renderSourceMetricCard(label, metric = {}) {
-    const isAvailable = Boolean(metric.available);
-    const statusClassName = isAvailable ? "is-available" : "is-unavailable";
-    const statusText = isAvailable ? t("metric_card.available") : t("metric_card.without_data");
-    const records = Number.isFinite(Number(metric.records)) ? Number(metric.records) : 0;
-    const detailText = metric.error
-        ? metric.error
-        : (isAvailable
-            ? t("metric_card.records_found", { count: records })
-            : t("metric_card.no_records_for_datetime")
-        );
-
-    return `
-        <article class="source-metric-card">
-            <div class="source-metric-top">
-                <h3>${label}</h3>
-                <span class="source-metric-status ${statusClassName}">${statusText}</span>
-            </div>
-            <div class="source-metric-time">${formatElapsedMs(metric.elapsed_ms)}</div>
-            <p class="source-metric-detail">${detailText}</p>
-        </article>
-    `;
-}
-
-function renderSourceMetrics(metrics) {
-    if (!sourceMetricsContainer) {
-        return;
-    }
-
-    if (!metrics?.db) {
-        clearSourceMetrics();
-        return;
-    }
-
-    /*     sourceMetricsContainer.innerHTML = `
-            <div class="source-metrics-header">
-                <h3>Métrica de consulta</h3>
-                <p>Tiempo medido para recuperar condiciones desde la base de datos.</p>
-            </div>
-            <div class="source-metrics-grid">
-                ${renderSourceMetricCard("Base de datos", metrics.db)}
-            </div>
-        `;
-     */
-    sourceMetricsContainer.innerHTML = `
-        <div class="source-metrics-header">
-            <h3>${t("metric_card.query_metrics")}</h3>
-            <p>${t("metric_card.query_metrics_description")}</p>
-        </div>
-        <div class="source-metrics-grid">
-            ${renderSourceMetricCard(t("metric_card.database"), metrics.db)}
-        </div>
-    `;
-    sourceMetricsContainer.hidden = false;
 }
 
 function getCurrentSearchSignature() {
@@ -362,7 +466,8 @@ function getCurrentSearchSignature() {
     return {
         actividad: actividadSeleccionada,
         fecha: fechaInput?.value || "",
-        hora: dateTimeController?.getHoraSeleccionada() || "",
+        horaInicio: dateTimeController?.getHoraInicioSeleccionada() || "",
+        horaFin: dateTimeController?.getHoraFinSeleccionada() || "",
         rango: radioSeleccionado ? radioSeleccionado.value : "50",
         coords: selectedCoords ? [...selectedCoords] : null
     };
@@ -383,7 +488,8 @@ function canReuseRecommendationContext() {
     return (
         lastRecommendationContext.actividad === currentSignature.actividad
         && lastRecommendationContext.fecha === currentSignature.fecha
-        && lastRecommendationContext.hora === currentSignature.hora
+        && lastRecommendationContext.horaInicio === currentSignature.horaInicio
+        && lastRecommendationContext.horaFin === currentSignature.horaFin
         && lastRecommendationContext.rango === currentSignature.rango
         && hasSameCoords(lastRecommendationContext.coords, currentSignature.coords)
     );
@@ -413,6 +519,26 @@ function getActivityIcon(activityName = "") {
     return ACTIVITY_ICON_MAP[activityName] || "\u{1F3D6}\uFE0F";
 }
 
+function getActivityIconMarkup(activityName = "") {
+    const iconImage = ACTIVITY_IMAGE_MAP[activityName];
+    if (iconImage) {
+        return `<img class="activity-icon-image" src="${iconImage}" alt="" aria-hidden="true">`;
+    }
+
+    return getActivityIcon(activityName);
+}
+
+function getActivityDisplayLabel(activity = {}) {
+    const activityName = activity?.name || "";
+    const translationKey = ACTIVITY_I18N_MAP[activityName];
+
+    if (translationKey) {
+        return t(translationKey);
+    }
+
+    return activity?.label || activityName.replaceAll("_", " ");
+}
+
 function renderActivityCards(activities = []) {
     if (!activitiesGrid) {
         return;
@@ -429,8 +555,8 @@ function renderActivityCards(activities = []) {
 
     activitiesGrid.innerHTML = activities.map((activity) => `
         <div class="activity-card" data-activity="${activity.name}">
-            <span class="activity-icon">${getActivityIcon(activity.name)}</span>
-            <span class="activity-name">${activity.label}</span>
+            <span class="activity-icon">${getActivityIconMarkup(activity.name)}</span>
+            <span class="activity-name">${getActivityDisplayLabel(activity)}</span>
         </div>
     `).join("");
 }
@@ -447,11 +573,13 @@ async function loadActivities() {
         }
 
         const activities = await response.json();
+        availableActivities = Array.isArray(activities) ? activities : [];
         renderActivityCards(activities);
-        return Array.isArray(activities) ? activities : [];
+        return availableActivities;
     }
     catch (error) {
         console.error("Error cargando actividades:", error);
+        availableActivities = [];
         activitiesGrid.innerHTML = `
             <div class="empty-state">
                 ${t("errors.not_able_fetch_activities")}
@@ -464,11 +592,13 @@ async function loadActivities() {
 
 function guardarHorarioRecordado() {
     const fechaSeleccionada = dateTimeController?.getFecha() || fechaInput.value;
-    const horaSeleccionada = dateTimeController?.getHoraSeleccionada() || "";
+    const horaInicioSeleccionada = dateTimeController?.getHoraInicioSeleccionada() || "";
+    const horaFinSeleccionada = dateTimeController?.getHoraFinSeleccionada() || "";
     saveRememberedSchedule({
         rememberSchedulePreference,
         fechaSeleccionada,
-        horaSeleccionada
+        horaInicioSeleccionada,
+        horaFinSeleccionada
     });
 }
 
@@ -566,7 +696,6 @@ function cumpleFiltros(playa, filtros) {
 }
 
 function renderRecommendationResults(data, { shouldScroll = false } = {}) {
-    renderSourceMetrics(data.comparativa_consulta);
     pintarResultados(data.resultados);
     resultsMapController?.setResults(data.resultados);
     if (shouldScroll) {
@@ -575,7 +704,25 @@ function renderRecommendationResults(data, { shouldScroll = false } = {}) {
 
     if (data.aviso_sol?.mensaje) {
         mostrarAvisoSolar(data.aviso_sol.mensaje);
-        statusEl.textContent = "";
+        if (data.aviso_sol.bloqueante) {
+            statusEl.textContent = "";
+            return;
+        }
+    }
+    else {
+        ocultarAvisoSolar();
+    }
+    const horaInicio = data.hora_inicio || data.hora || "";
+    const horaFin = data.hora_fin || data.hora || "";
+    const activityLabel = getActivityDisplayLabel({ name: actividadSeleccionada });
+
+    if (horaInicio && horaFin) {
+        statusEl.textContent = t("search.status.found_interval", {
+            count: data.resultados.length,
+            activity: activityLabel,
+            start: horaInicio,
+            end: horaFin
+        });
         return;
     }
 
@@ -583,7 +730,7 @@ function renderRecommendationResults(data, { shouldScroll = false } = {}) {
     // statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
     statusEl.textContent = t("results.recommendations_found", {
         count: data.resultados.length,
-        activity: actividadSeleccionada.replace("_", " "),
+        activity: activityLabel
     });
 }
 
@@ -642,7 +789,8 @@ function initControllers() {
         fechaInput,
         fechaShell,
         fechaDisplay,
-        hourWheel,
+        horaInicioSelect,
+        horaFinSelect,
         onScheduleChange: manejarCambioHorario
     });
 
@@ -688,12 +836,20 @@ function initControllers() {
         openAlertsModalBtn,
         alertsModal,
         closeAlertsModalBtn: closeAlertsModal,
+        openAlertsEditorBtn,
+        closeAlertsEditorBtn,
+        alertsEditorBackdrop,
+        alertsEditorTitle,
+        alertsEditorCopy,
         alertsForm,
         alertsEditingIdInput,
         cancelAlertEditBtn,
         saveCurrentAlertBtn,
         alertsActivitySelect,
         alertsBeachSelect,
+        alertWeekdayCheckboxes,
+        alertStartHourInput,
+        alertEndHourInput,
         alertMinTemperatureInput,
         alertMaxTemperatureInput,
         alertMinWindInput,
@@ -731,6 +887,7 @@ function initControllers() {
         preferencesPanel,
         authActionBtn,
         authActionIcon,
+        authActionLabel,
         filtersSidebar,
         preferencesLogoutBtn,
         onOpenPreferences: () => preferencesUIController?.abrirPanelPreferencias(),
@@ -767,6 +924,7 @@ function initControllers() {
         closeBeachManagementModal,
         beachManagementList,
         beachManagementFeedback,
+        beachSearchInput,
         beachManagementForm,
         newBeachBtn,
         resetBeachFormBtn,
@@ -853,7 +1011,8 @@ function initActivityEvents() {
 
 async function buscarRecomendaciones() {
     const fecha = fechaInput.value;
-    const hora = dateTimeController?.getHoraSeleccionada() || "";
+    const horaInicio = dateTimeController?.getHoraInicioSeleccionada() || "";
+    const horaFin = dateTimeController?.getHoraFinSeleccionada() || "";
     ocultarAvisoSolar();
 
     if (!actividadSeleccionada) {
@@ -886,7 +1045,8 @@ async function buscarRecomendaciones() {
         const recommendationResult = await fetchRecommendations({
             actividad: actividadSeleccionada,
             fecha,
-            hora,
+            horaInicio,
+            horaFin,
             rango,
             cantidad: 0,
             selectedCoords,
@@ -904,7 +1064,8 @@ async function buscarRecomendaciones() {
         lastRecommendationContext = {
             actividad: actividadSeleccionada,
             fecha,
-            hora,
+            horaInicio,
+            horaFin,
             rango,
             cantidad,
             coords: selectedCoords ? [...selectedCoords] : null,
@@ -1027,6 +1188,7 @@ function initAuthEvents() {
 function initLayoutEvents() {
     document.addEventListener("keydown", (event) => {
         if (event.key !== "Escape") return;
+        cerrarMenuMovil();
         if (loginModalEl && !loginModalEl.hidden) {
             authModalController?.cerrarModalLogin();
         }
@@ -1039,7 +1201,44 @@ function initLayoutEvents() {
         adminUIController?.closeModals();
     });
 
-    window.addEventListener("resize", actualizarAlturaHeader);
+    window.addEventListener("resize", () => {
+        actualizarAlturaHeader();
+        if (!esVistaMovil()) {
+            cerrarMenuMovil({ inmediato: true });
+        }
+        sincronizarUbicacionMenuMovil();
+    });
+
+    mobileMenuMediaQuery.addEventListener("change", () => {
+        if (!esVistaMovil()) {
+            cerrarMenuMovil({ inmediato: true });
+        }
+        sincronizarUbicacionMenuMovil();
+    });
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener("click", () => {
+            if (mobileMenuBackdrop?.hidden) {
+                abrirMenuMovil();
+                return;
+            }
+            cerrarMenuMovil();
+        });
+    }
+
+    if (mobileMenuCloseBtn) {
+        mobileMenuCloseBtn.addEventListener("click", () => {
+            cerrarMenuMovil();
+        });
+    }
+
+    if (mobileMenuBackdrop) {
+        mobileMenuBackdrop.addEventListener("click", (event) => {
+            if (event.target === mobileMenuBackdrop) {
+                cerrarMenuMovil();
+            }
+        });
+    }
 
     if (appHeader && "ResizeObserver" in window) {
         const headerObserver = new ResizeObserver(actualizarAlturaHeader);
@@ -1048,6 +1247,7 @@ function initLayoutEvents() {
 }
 
 async function initInitialState() {
+    sincronizarUbicacionMenuMovil();
     actualizarAlturaHeader();
     configurarBotonBusquedaFlotante();
 

@@ -1,16 +1,24 @@
+import { t } from "../languages/i18n.js";
+
 const SERVICE_LABELS = {
-    restaurantes: "\u{1F37D}\uFE0F Restaurantes",
-    comida_para_llevar: "\u{1F96A} Comida para llevar",
-    balnearios: "\u{1F6BF} Balneario",
-    balneario: "\u{1F6BF} Balneario",
-    zona_deportiva: "\u{1F3D0} Zona deportiva",
-    escuela_surf: "\u{1F3C4} Escuela de surf",
-    escuela_windsurf: "\u{1F32C}\uFE0F Escuela de windsurf",
-    pet_friendly: "\u{1F43E} Pet-friendly"
+    restaurantes: ["\u{1F37D}\uFE0F", "services.restaurant"],
+    comida_para_llevar: ["\u{1F96A}", "services.take_away_food"],
+    balnearios: ["\u{1F6BF}", "services.spa"],
+    balneario: ["\u{1F6BF}", "services.spa"],
+    zona_deportiva: ["\u{1F3D0}", "services.sport_zone"],
+    escuela_surf: ["\u{1F3C4}", "services.surf_school"],
+    escuela_windsurf: ["\u{1F32C}\uFE0F", "services.windsurf_school"],
+    pet_friendly: ["\u{1F43E}", "services.pet_friendly"]
 };
 
 export function getServiceLabel(serviceName = "") {
-    return SERVICE_LABELS[serviceName] || serviceName;
+    const config = SERVICE_LABELS[serviceName];
+    if (!config) {
+        return serviceName;
+    }
+
+    const [icon, key] = config;
+    return `${icon} ${t(key)}`;
 }
 
 export function formatearServicios(servicios = {}) {
@@ -21,6 +29,10 @@ export function formatearServicios(servicios = {}) {
 }
 
 export function formatearMarea(condiciones = {}) {
+    if (typeof condiciones.tide_status === "string" && condiciones.tide_status.trim()) {
+        return condiciones.tide_status;
+    }
+
     if (typeof condiciones.marea === "string" && condiciones.marea.trim()) {
         return condiciones.marea;
     }
@@ -34,10 +46,10 @@ export function formatearMarea(condiciones = {}) {
         return "---";
     }
     if (tideValue <= -0.10) {
-        return "baja";
+        return t("tide.low");
     }
     if (tideValue >= 0.10) {
-        return "alta";
+        return t("tide.high");
     }
-    return "media";
+    return t("tide.medium");
 }

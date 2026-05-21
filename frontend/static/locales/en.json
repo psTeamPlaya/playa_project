@@ -15,15 +15,24 @@
     "see_map": "View map",
     "in_map_title": "Map of recommended beaches",
     "in_map_description": "Check the ranking and score of each beach directly on the map."
+    "language": "Language"
+
   },
   "common": {
     "reset": "Reset",
     "date": "Date",
     "time": "Time",
+    "time_end": "End time",
     "submit": "Submit",
     "cancel": "Cancel",
     "close": "Close",
     "add": "Add"
+  },
+  "mobile": {
+    "title": "Menu",
+    "subtitle": "Access and filters",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu"
   },
   "search": {
     "search_beaches": "Search recommended beaches",
@@ -68,6 +77,11 @@
     "fishing": "Fishing",
     "kayaking": "Kayaking",
     "no_activities_available": "No activities are available at the moment."
+    "paddle_surfing": "Paddle surfing",
+    "bodyboarding": "Bodyboarding",
+    "beach_volleyball": "Beach volleyball",
+    "downloading": "Downloading available activities..."
+
   },
   "weather": {
     "cloudiness": "Cloudiness",
@@ -97,7 +111,9 @@
     "accessibility": "Accessibility",
     "sport_zone": "Sports area",
     "pet_friendly": "Pet-friendly",
-    "spa": "Spa"
+    "spa": "Spa",
+    "surf_school": "Surf school",
+    "windsurf_school": "Windsurf school"
   },
   "beach_types": {
     "sand": "Sand",
@@ -119,6 +135,34 @@
     "no_account_question": "No account?",
     "or_continue_with": "or continue with",
     "access": "Access"
+    "create_account": "Create account",
+    "already_have_account": "Already have an account?",
+    "signing_in": "Signing in...",
+    "signing_in_google": "Signing in with Google...",
+    "creating_account": "Creating account...",
+    "account_created": "Account created. You can now sign in.",
+    "errors": {
+      "email_password_required": "You must provide an email and password.",
+      "passwords_mismatch": "Passwords do not match.",
+      "generic": "The operation could not be completed.",
+      "google_login": "Google sign-in could not be completed."
+    }
+  },
+  "favorites": {
+    "loading": "Loading favorite beaches...",
+    "fetch_error": "Favorite beaches could not be retrieved.",
+    "load_error": "Your favorite beaches could not be loaded.",
+    "empty": "You have not saved any favorite beaches yet.",
+    "remove": "Remove from favorites",
+    "login_required": "Log in to view your favorite beaches.",
+    "remove_error": "The beach could not be removed from favorites."
+  },
+  "map": {
+    "location_unavailable": "Location unavailable",
+    "ranking": "Ranking",
+    "close": "Close map",
+    "close_recommendations": "Close recommended beaches map",
+    "select_location": "Select location"
   },
   "admin": {
     "management": {
@@ -166,6 +210,9 @@
       "email_alerts_description": "Set an alert by choosing activity, beach and conditions you want to monitor.",
       "my_alerts": "My alerts",
       "my_alerts_description": "Here you can review, edit or delete any of your saved alerts.",
+      "add_alert": "Add alert",
+      "new_alert": "New alert",
+      "new_alert_description": "Configure the activity, the beach, and the conditions to monitor.",
       "activity": "Activity",
       "select_activity": "Select an activity",
       "beach": "Beach",

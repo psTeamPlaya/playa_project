@@ -15,15 +15,23 @@
     "see_map": "Ver mapa",
     "in_map_title": "Mapa de playas recomendadas",
     "in_map_description": "Consulta el ranking y score de cada playa directamente en el mapa."
+    "language": "Idioma"
   },
   "common": {
     "reset": "Reset",
     "date": "Fecha",
     "time": "Hora",
+    "time_end": "Hora de fin,
     "submit": "Enviar",
     "cancel": "Cancelar",
     "close": "Cerrar",
     "add": "Añadir"
+  },
+  "mobile": {
+    "title": "Menú",
+    "subtitle": "Acceso y filtros",
+    "open_menu": "Abrir menú",
+    "close_menu": "Cerrar menú"
   },
   "search": {
     "search_beaches": "Buscar playas recomendadas",
@@ -68,6 +76,10 @@
     "fishing": "Pescar",
     "kayaking": "Kayak",
     "no_activities_available": "No hay actividades disponibles en este momento."
+    "paddle_surfing": "Paddle surf",
+    "bodyboarding": "Bodyboard",
+    "beach_volleyball": "Vóley playa",
+    "downloading": "Cargando actividades disponibles..."
   },
   "weather": {
     "cloudiness": "Nubosidad",
@@ -100,7 +112,9 @@
     "accessibility": "Accesibilidad",
     "sport_zone": "Zona deportiva",
     "pet_friendly": "Pet-friendly",
-    "spa": "Balneario"
+    "spa": "Balneario",
+    "surf_school": "Escuela de surf",
+    "windsurf_school": "Escuela de windsurf"
   },
   "beach_types": {
     "sand": "Arena",
@@ -134,6 +148,34 @@
     "no_account_question": "¿Sin cuenta?",
     "or_continue_with": "o continúa con",
     "access": "Acceder"
+    "create_account": "Crear cuenta",
+    "already_have_account": "¿Ya tienes cuenta?",
+    "signing_in": "Accediendo...",
+    "signing_in_google": "Accediendo con Google...",
+    "creating_account": "Creando cuenta...",
+    "account_created": "Cuenta creada. Ya puedes iniciar sesión.",
+    "errors": {
+      "email_password_required": "Debes indicar correo y contraseña.",
+      "passwords_mismatch": "Las contraseñas no coinciden.",
+      "generic": "No se pudo completar la operación.",
+      "google_login": "No se pudo iniciar sesión con Google."
+    }
+  },
+  "favorites": {
+    "loading": "Cargando playas favoritas...",
+    "fetch_error": "No se pudieron obtener las favoritas.",
+    "load_error": "No se pudieron cargar tus playas favoritas.",
+    "empty": "Todavía no has guardado playas favoritas.",
+    "remove": "Quitar de favoritas",
+    "login_required": "Inicia sesión para ver tus playas favoritas.",
+    "remove_error": "No se pudo quitar la playa de favoritas."
+  },
+  "map": {
+    "location_unavailable": "Ubicación no disponible",
+    "ranking": "Ranking",
+    "close": "Cerrar mapa",
+    "close_recommendations": "Cerrar mapa de recomendaciones",
+    "select_location": "Seleccionar ubicación"
   },
   "admin": {
     "management": {
@@ -160,7 +202,7 @@
       "longitude": "Longitud",
       "location_on_map": "Ubicación en mapa",
       "choose_on_map": "Elegir en mapa",
-      "map_help": "                  Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.",
+      "map_help": " Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.",
       "map_label": "Mapa para seleccionar ubicación de la playa",
       "image": "Imagen",
       "description": "Descripción",
@@ -181,6 +223,9 @@
       "email_alerts_description": "Configura una alerta indicando la actividad, la playa y las condiciones que quieres vigilar.",
       "my_alerts": "Mis alertas",
       "my_alerts_description": "Desde aquí puedes revisar, editar o borrar cualquiera de tus alertas guardadas.",
+      "add_alert": "Añadir alerta",
+      "new_alert": "Nueva alerta",
+      "new_alert_description": "Configura la actividad, la playa y las condiciones a vigilar.",
       "activity": "Actividad",
       "select_activity": "Selecciona una actividad",
       "beach": "Playa",

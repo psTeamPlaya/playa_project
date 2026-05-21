@@ -137,11 +137,11 @@ def obtener_aviso_luz_solar(
     playas: list[dict[str, Any]],
     fecha: str,
     hora: str,
+    hora_fin: str | None,
     timezone: str,
     timeout_seconds: int,
-) -> dict[str, str] | None:
-
-    if actividad != "tomar_sol":
+) -> dict[str, Any] | None:
+    if actividad != "tomar_sol" or not playas:
         return None
 
     if not playas:
@@ -166,6 +166,8 @@ def obtener_aviso_luz_solar(
     hora_consulta = datetime.fromisoformat(
         f"{fecha}T{hora}"
     )
+    hora_consulta = datetime.fromisoformat(f"{fecha}T{hora}")
+    hora_fin_consulta = datetime.fromisoformat(f"{fecha}T{hora_fin}") if hora_fin else hora_consulta
 
     if hora_consulta < sunrise_dt:
 
@@ -175,10 +177,8 @@ def obtener_aviso_luz_solar(
 
         return {
             "tipo": "antes_amanecer",
-            "mensaje": (
-                "A esa hora todavía no ha salido el sol. "
-                f"El sol saldrá a las {sunrise_text} horas"
-            ),
+            "mensaje": f"A esa hora todavía no ha salido el sol. El sol saldrá a las {sunrise_text} horas",
+            "bloqueante": True,
         }
 
     if hora_consulta >= sunset_dt:
@@ -189,9 +189,19 @@ def obtener_aviso_luz_solar(
 
         return {
             "tipo": "despues_atardecer",
+            "mensaje": f"El sol se pondrá a las {sunset_text} horas",
+            "bloqueante": True,
+        }
+
+    if hora_fin and hora_fin_consulta > sunset_dt:
+        sunset_text = _formatear_hora(sunset_dt)
+        return {
+            "tipo": "fin_despues_atardecer",
             "mensaje": (
-                f"El sol se pondrá a las {sunset_text} horas"
+                f"La hora de fin supera la puesta de sol. "
+                f"A partir de las {sunset_text} horas ya no habrá sol."
             ),
+            "bloqueante": False,
         }
 
     return None

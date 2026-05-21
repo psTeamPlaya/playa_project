@@ -19,7 +19,8 @@ export async function getFavoriteBeachIds() {
 export function buildRecommendationsParams({
     actividad,
     fecha,
-    hora,
+    horaInicio,
+    horaFin,
     rango,
     cantidad,
     selectedCoords,
@@ -28,7 +29,8 @@ export function buildRecommendationsParams({
     const params = new URLSearchParams({
         actividad,
         fecha,
-        hora,
+        hora_inicio: horaInicio,
+        hora_fin: horaFin,
         radio_km: rango,
         top_n: String(cantidad)
     });
@@ -49,7 +51,8 @@ export function buildRecommendationsParams({
 export async function fetchRecommendations({
     actividad,
     fecha,
-    hora,
+    horaInicio,
+    horaFin,
     rango,
     cantidad,
     selectedCoords,
@@ -58,7 +61,8 @@ export async function fetchRecommendations({
     const params = buildRecommendationsParams({
         actividad,
         fecha,
-        hora,
+        horaInicio,
+        horaFin,
         rango,
         cantidad,
         selectedCoords,

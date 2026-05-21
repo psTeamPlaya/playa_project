@@ -16,7 +16,14 @@ from backend.models.service import Service
 from backend.models.user import User
 from backend.models.user_audit_log import UserAuditLog
 from backend.models.variable import Variable
+from backend.schemas.alert import UserAlertCreate, UserAlertResponse
 from backend.schemas.user import UserAuditLogResponse, UserResponse
+from backend.user_alerts import (
+    create_alert_for_user,
+    delete_alert_for_user,
+    list_alerts_for_user,
+    update_alert_for_user,
+)
 from backend.user_audit import (
     USER_AUDIT_BAN,
     USER_AUDIT_DELETE,
@@ -53,7 +60,7 @@ ACTIVITY_ALIASES = {
     "piscina natural": "piscina_natural",
 }
 
-EXCLUDED_ADMIN_ACTIVITIES = {"piscina_natural"}
+EXCLUDED_ADMIN_ACTIVITIES = {"piscina_natural", "playa_para_mascotas"}
 
 
 class AdminBeachPayload(BaseModel):
@@ -461,11 +468,62 @@ def remove_service_from_metadata(metadata: list[dict], service_name: str) -> lis
     return updated
 
 
+def get_user_or_404(user_id: int, db: Session) -> User:
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return user
+
+
 @router.get("/users", response_model=list[UserResponse])
 def list_users(
     db: Session = Depends(get_db),
 ):
     return db.query(User).order_by(User.is_admin.desc(), User.email.asc()).all()
+
+
+@router.get("/users/{user_id}/alerts", response_model=list[UserAlertResponse])
+def list_admin_user_alerts(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    get_user_or_404(user_id, db)
+    return list_alerts_for_user(user_id, db)
+
+
+@router.post("/users/{user_id}/alerts", response_model=UserAlertResponse)
+def create_admin_user_alert(
+    user_id: int,
+    payload: UserAlertCreate,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    get_user_or_404(user_id, db)
+    return create_alert_for_user(user_id, payload, db)
+
+
+@router.put("/users/{user_id}/alerts/{alert_id}", response_model=UserAlertResponse)
+def update_admin_user_alert(
+    user_id: int,
+    alert_id: int,
+    payload: UserAlertCreate,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    get_user_or_404(user_id, db)
+    return update_alert_for_user(alert_id, user_id, payload, db)
+
+
+@router.delete("/users/{user_id}/alerts/{alert_id}")
+def delete_admin_user_alert(
+    user_id: int,
+    alert_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    get_user_or_404(user_id, db)
+    return delete_alert_for_user(alert_id, user_id, db)
 
 
 @router.get("/users/history", response_model=list[UserAuditLogResponse])
