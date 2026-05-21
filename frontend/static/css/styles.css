@@ -79,6 +79,7 @@ header {
 .hero h1 {
     margin: 0;
     font-size: clamp(1.6rem, 4vw, 3rem);
+    margin-left: 7rem;
 }
 
 .hero p {
@@ -1220,9 +1221,8 @@ button {
     vertical-align: -0.15em;
     position: absolute;
     top: 12px;
-    /* right: 66px; */
+    /* right: 18px; */
     position: absolute;
-    top: 31px;
 }
 
 ::before {}
@@ -3055,6 +3055,9 @@ button {
     justify-content: flex-end;
     gap: 0.45rem;
     width: 100%;
+    position: absolute;
+    top: 74px;
+    right: -17px;
 }
 
 .language-option[data-lang="es"] .language-option-flag {
@@ -3067,6 +3070,10 @@ button {
 
 .language-option[data-lang="cs"] .language-option-flag {
     background-image: url("/static/img/flag-cz.svg");
+}
+
+.language-option[data-lang="de"] .language-option-flag {
+    background-image: url("/static/img/flag-de.svg");
 }
 
 /* ------------------------------------------------- */

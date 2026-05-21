@@ -1,0 +1,196 @@
+{
+  "titles": {
+    "app_title": "Mein Tag am Strand",
+    "preferences": "Einstellungen",
+    "favorite_beaches": "Meine Lieblingsstrände",
+    "downloading_favs": "Lieblingsstrände werden geladen...",
+    "filters": "Filter",
+    "my_filters": "Meine Filter",
+    "configure_alerts": "Benachrichtigungen konfigurieren",
+    "beaches": "Strände",
+    "weather": "Wetter",
+    "alerts": "Benachrichtigungen",
+    "beach_type": "Strandtyp",
+    "results": "Empfohlene Strände",
+    "see_map": "Karte anzeigen",
+    "in_map_title": "Karte der empfohlenen Strände",
+    "in_map_description": "Prüfe Rang und Bewertung jedes Strands direkt auf der Karte.",
+    "language": "Sprache"
+  },
+  "common": {
+    "reset": "Zurücksetzen",
+    "date": "Datum",
+    "time": "Uhrzeit",
+    "submit": "Senden",
+    "cancel": "Abbrechen",
+    "close": "Schließen"
+  },
+  "mobile": {
+    "title": "Menü",
+    "subtitle": "Zugang und Filter",
+    "open_menu": "Menü öffnen",
+    "close_menu": "Menü schließen"
+  },
+  "search": {
+    "search_beaches": "Empfohlene Strände suchen",
+    "reset_filters": "Statische Filter zurücksetzen",
+    "disable_dynamic_filters": "Dynamische Filter deaktivieren",
+    "enable_dynamic_filters": "Dynamische Filter aktivieren",
+    "deactivate_filter": "Filter deaktivieren",
+    "activate_filter": "Filter aktivieren",
+    "quantity": "Anzahl",
+    "quantity_label": "Anzahl der Empfehlungen",
+    "quantity_aria": "Anzahl der empfohlenen Strände",
+    "loading_activities": "Verfügbare Aktivitäten werden geladen...",
+    "no_activities": "Zurzeit sind keine Aktivitäten verfügbar.",
+    "start_time": "Startzeit",
+    "end_time": "Endzeit",
+    "location": {
+      "title": "Stadt / Standort",
+      "my_location": "📍 Mein Standort",
+      "choose_location": "🗺️ Standort wählen",
+      "range": "Suchradius:",
+      "select": "Standort auswählen"
+    },
+    "questions": {
+      "actividad": "1. Was möchtest du an deinem Strandtag machen?",
+      "when": "2. Wann möchtest du an den Strand gehen?",
+      "where": "3. Wähle deinen Standort"
+    },
+    "status": {
+      "searching": "Empfehlungen werden gesucht...",
+      "found": "{count} Empfehlungen wurden für {activity} gefunden.",
+      "found_interval": "{count} Empfehlungen wurden für {activity} zwischen {start} und {end} gefunden."
+    },
+    "errors": {
+      "activity_required": "Du musst eine Aktivität auswählen.",
+      "date_required": "Du musst ein Datum auswählen.",
+      "time_range_required": "Du musst eine Start- und Endzeit auswählen.",
+      "past_date": "Du kannst kein vergangenes Datum auswählen.",
+      "past_start_time": "Für heute kannst du keine Startzeit in der Vergangenheit auswählen.",
+      "end_before_start": "Die Endzeit muss nach der Startzeit liegen.",
+      "missing_location": "Bitte gib Standortinformationen ein.",
+      "api_error": "Beim Abfragen der API ist ein Fehler aufgetreten.",
+      "results_load": "Die Ergebnisse konnten nicht geladen werden.",
+      "activities_load": "Die Aktivitäten konnten nicht geladen werden.",
+      "activities_load_status": "Die verfügbaren Aktivitäten konnten nicht geladen werden."
+    },
+    "empty_results": "Derzeit gibt es keine Strandempfehlungen."
+  },
+  "activities": {
+    "sunbathing": "Sonnenbaden",
+    "swimming": "Schwimmen",
+    "surfing": "Surfen",
+    "wind_surfing": "Windsurfen",
+    "kitesurfing": "Kitesurfen",
+    "snorkeling": "Schnorcheln",
+    "walking": "Spazieren",
+    "fishing": "Angeln",
+    "kayaking": "Kajak",
+    "paddle_surfing": "Paddle-Surfen",
+    "bodyboarding": "Bodyboarding",
+    "beach_volleyball": "Beachvolleyball"
+  },
+  "weather": {
+    "cloudiness": "Bewölkung",
+    "cloud_min": "Minimale Bewölkung",
+    "cloud_max": "Maximale Bewölkung",
+    "wind": "Wind (km/h)",
+    "wind_min": "Minimaler Wind",
+    "wind_max": "Maximaler Wind",
+    "temp": "Temp. (°C)",
+    "temp_min": "Minimale Lufttemperatur",
+    "temp_max": "Maximale Lufttemperatur",
+    "waves": "Wellen (m)",
+    "waves_min": "Minimale Wellenhöhe",
+    "waves_max": "Maximale Wellenhöhe"
+  },
+  "services": {
+    "title": "Dienstleistungen",
+    "restaurant": "Restaurant",
+    "take_away_food": "Essen zum Mitnehmen",
+    "showers": "Duschen",
+    "toilets": "Toiletten",
+    "parking": "Parkplatz",
+    "lifeguard": "Rettungsschwimmer",
+    "accessibility": "Barrierefreiheit",
+    "sport_zone": "Sportbereich",
+    "pet_friendly": "Haustierfreundlich",
+    "spa": "Wellness",
+    "surf_school": "Surfschule",
+    "windsurf_school": "Windsurfschule"
+  },
+  "beach_types": {
+    "sand": "Sand",
+    "stone": "Stein",
+    "natural_pool": "Natürlicher Pool"
+  },
+  "placeholders": {
+    "city": "Z. B. Las Palmas",
+    "email": "deine@email.de oder admin"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren",
+    "email": "E-Mail oder Benutzername",
+    "password": "Passwort",
+    "confirm_password": "Passwort bestätigen",
+    "enter": "Zu meinem Konto",
+    "no_account_question": "Noch kein Konto?",
+    "create_account": "Konto erstellen",
+    "already_have_account": "Hast du bereits ein Konto?",
+    "signing_in": "Anmeldung läuft...",
+    "signing_in_google": "Anmeldung mit Google...",
+    "creating_account": "Konto wird erstellt...",
+    "account_created": "Konto erstellt. Du kannst dich jetzt anmelden.",
+    "errors": {
+      "email_password_required": "Du musst eine E-Mail und ein Passwort angeben.",
+      "passwords_mismatch": "Die Passwörter stimmen nicht überein.",
+      "generic": "Der Vorgang konnte nicht abgeschlossen werden.",
+      "google_login": "Die Anmeldung mit Google konnte nicht abgeschlossen werden."
+    }
+  },
+  "favorites": {
+    "loading": "Lieblingsstrände werden geladen...",
+    "fetch_error": "Die Lieblingsstrände konnten nicht abgerufen werden.",
+    "load_error": "Deine Lieblingsstrände konnten nicht geladen werden.",
+    "empty": "Du hast noch keine Lieblingsstrände gespeichert.",
+    "remove": "Aus Favoriten entfernen",
+    "login_required": "Melde dich an, um deine Lieblingsstrände zu sehen.",
+    "remove_error": "Der Strand konnte nicht aus den Favoriten entfernt werden."
+  },
+  "results": {
+    "score": "Bewertung",
+    "recommendation_explanation": "Empfehlungserklärung",
+    "interval": "Zeitfenster",
+    "tide": "Gezeiten",
+    "beach_type": "Typ",
+    "avg_air_temp": "Durchschn. Lufttemp.",
+    "avg_wave": "Durchschn. Wellenhöhe",
+    "avg_wind": "Durchschn. Windgeschw.",
+    "avg_water_temp": "Durchschn. Wassertemp.",
+    "avg_cloud": "Durchschn. Bewölkung",
+    "avg_rain": "Durchschn. Regenwahrsch.",
+    "view_beach_photos": "Strandfotos ansehen"
+  },
+  "map": {
+    "location_unavailable": "Standort nicht verfügbar",
+    "ranking": "Rang",
+    "close": "Karte schließen",
+    "close_recommendations": "Karte der empfohlenen Strände schließen",
+    "select_location": "Standort auswählen"
+  },
+  "tide": {
+    "low": "Niedrig",
+    "medium": "Mittel",
+    "high": "Hoch"
+  },
+  "admin": {
+    "management": {
+      "users": "Benutzerverwaltung",
+      "beaches": "Strandverwaltung",
+      "reviews": "Bewertungsverwaltung"
+    }
+  }
+}

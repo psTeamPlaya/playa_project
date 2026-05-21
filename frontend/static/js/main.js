@@ -48,6 +48,7 @@ const languageFlags = {
     es: getFlagEmoji("ES"),
     en: getFlagEmoji("GB"),
     cs: getFlagEmoji("CZ"),
+    de: getFlagEmoji("DE"),
 };
 
 const activityCards = document.querySelectorAll(".activity-card");
@@ -304,6 +305,9 @@ function currentLang() {
 
     if (navigator.language.startsWith("cs")) {
         return "cs";
+    }
+    if (navigator.language.startsWith("de")) {
+        return "de";
     }
     if (navigator.language.startsWith("en")) {
         return "en";

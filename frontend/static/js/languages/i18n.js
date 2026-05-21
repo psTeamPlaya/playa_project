@@ -163,6 +163,8 @@ export async function initLanguage() {
 
     const browserLang = navigator.language.startsWith("cs")
         ? "cs"
+        : navigator.language.startsWith("de")
+            ? "de"
         : navigator.language.startsWith("en")
             ? "en"
             : "es";
