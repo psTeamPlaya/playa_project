@@ -30,7 +30,7 @@ import {
 } from "./search/date-time.js";
 import { initQuantity } from "./search/quantity.js";
 import { initResultsMap } from "./results/results-map.js";
-import { initReviewsModule }  from "./reviews/reviews.js";
+import { initReviewsModule } from "./reviews/reviews.js";
 import { initReviewPhotoModal } from "./review-photo/review-photo.js";
 
 import { initLanguage, setLanguage } from "/static/js/languages/i18n.js";
@@ -303,11 +303,14 @@ function formatElapsedMs(value) {
 function renderSourceMetricCard(label, metric = {}) {
     const isAvailable = Boolean(metric.available);
     const statusClassName = isAvailable ? "is-available" : "is-unavailable";
-    const statusText = isAvailable ? "Disponible" : "Sin datos";
+    const statusText = isAvailable ? t("metric_card.available") : t("metric_card.without_data");
     const records = Number.isFinite(Number(metric.records)) ? Number(metric.records) : 0;
     const detailText = metric.error
         ? metric.error
-        : (isAvailable ? `${records} registros encontrados` : "No hay registros para esa fecha y hora");
+        : (isAvailable
+            ? t("metric_card.records_found", { count: records })
+            : t("metric_card.no_records_for_datetime")
+        );
 
     return `
         <article class="source-metric-card">
@@ -331,13 +334,23 @@ function renderSourceMetrics(metrics) {
         return;
     }
 
+    /*     sourceMetricsContainer.innerHTML = `
+            <div class="source-metrics-header">
+                <h3>Métrica de consulta</h3>
+                <p>Tiempo medido para recuperar condiciones desde la base de datos.</p>
+            </div>
+            <div class="source-metrics-grid">
+                ${renderSourceMetricCard("Base de datos", metrics.db)}
+            </div>
+        `;
+     */
     sourceMetricsContainer.innerHTML = `
         <div class="source-metrics-header">
-            <h3>Métrica de consulta</h3>
-            <p>Tiempo medido para recuperar condiciones desde la base de datos.</p>
+            <h3>${t("metric_card.query_metrics")}</h3>
+            <p>${t("metric_card.query_metrics_description")}</p>
         </div>
         <div class="source-metrics-grid">
-            ${renderSourceMetricCard("Base de datos", metrics.db)}
+            ${renderSourceMetricCard(t("metric_card.database"), metrics.db)}
         </div>
     `;
     sourceMetricsContainer.hidden = false;
@@ -408,7 +421,7 @@ function renderActivityCards(activities = []) {
     if (!Array.isArray(activities) || activities.length === 0) {
         activitiesGrid.innerHTML = `
             <div class="empty-state">
-                No hay actividades disponibles en este momento.
+                ${t("activities.no_activities_available")}
             </div>
         `;
         return;
@@ -441,10 +454,10 @@ async function loadActivities() {
         console.error("Error cargando actividades:", error);
         activitiesGrid.innerHTML = `
             <div class="empty-state">
-                No se pudieron cargar las actividades.
+                ${t("errors.not_able_fetch_activities")}
             </div>
         `;
-        statusEl.textContent = "No se pudieron cargar las actividades disponibles.";
+        statusEl.textContent = t("errors.not_able_fetch_activities");
         return [];
     }
 }
@@ -567,7 +580,11 @@ function renderRecommendationResults(data, { shouldScroll = false } = {}) {
     }
 
     ocultarAvisoSolar();
-    statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
+    // statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
+    statusEl.textContent = t("recommendations_found", {
+        count: data.resultados.length,
+        activity: actividadSeleccionada.replace("_", " "),
+    });
 }
 
 function reaplicarResultadosCacheados() {
@@ -693,20 +710,20 @@ function initControllers() {
 
     authModalController = initAuthModal({
         loginModalEl,
-    closeLoginModalBtn,
-    loginModalForm,
-    loginEmailInput,
-    loginPasswordInput,
-    confirmPasswordInput,
-    confirmPasswordGroup,
-    loginErrorMessageEl,
-    authSubmitBtn,
-    authModeHint,
-    toggleAuthModeBtn,
-    onAuthSuccess: async () => {
-        await sessionUIController?.loadCurrentUser();
-        sessionUIController?.actualizarBotonesSesion();
-    }
+        closeLoginModalBtn,
+        loginModalForm,
+        loginEmailInput,
+        loginPasswordInput,
+        confirmPasswordInput,
+        confirmPasswordGroup,
+        loginErrorMessageEl,
+        authSubmitBtn,
+        authModeHint,
+        toggleAuthModeBtn,
+        onAuthSuccess: async () => {
+            await sessionUIController?.loadCurrentUser();
+            sessionUIController?.actualizarBotonesSesion();
+        }
     });
 
     sessionUIController = initSessionUI({
@@ -840,28 +857,28 @@ async function buscarRecomendaciones() {
     ocultarAvisoSolar();
 
     if (!actividadSeleccionada) {
-        statusEl.textContent = "Debes seleccionar una actividad.";
+        statusEl.textContent = t("search.warings.no_activity");
         return;
     }
     if (!fecha) {
-        statusEl.textContent = "Debes seleccionar una fecha.";
+        statusEl.textContent = t("search.warings.no_date");
         return;
     }
     if (!hora) {
-        statusEl.textContent = "Debes seleccionar una hora.";
+        statusEl.textContent = t("search.warings.no_time");
         return;
     }
     if (fecha < formatearFechaLocal(new Date())) {
-        statusEl.textContent = "No puedes seleccionar una fecha pasada.";
+        statusEl.textContent = t("search.warings.past_date");
         return;
     }
     if (dateTimeController?.esFechaHoy(fecha) && dateTimeController?.esHoraPasadaParaHoy(hora)) {
-        statusEl.textContent = "No puedes seleccionar una hora pasada para el d\u00eda de hoy.";
+        statusEl.textContent = t("search.warings.past_time");
         dateTimeController?.asegurarHoraValidaSeleccionada({ silent: true });
         guardarHorarioRecordado();
         return;
     }
-    statusEl.textContent = "Buscando recomendaciones...";
+    statusEl.textContent = t("search.searching");
     try {
         const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
         const rango = radioSeleccionado ? radioSeleccionado.value : "50";
@@ -877,7 +894,7 @@ async function buscarRecomendaciones() {
         });
 
         if (!recommendationResult.ok && recommendationResult.reason === "missing-location") {
-            statusEl.textContent = "Introduce informacion de localizacion.";
+            statusEl.textContent = t("search.warnings.missing_location");
             return;
         }
 
@@ -904,12 +921,12 @@ async function buscarRecomendaciones() {
         console.error(error);
         resetRecommendationContext();
         clearSourceMetrics();
-        statusEl.textContent = "Ha ocurrido un error al consultar la API.";
+        statusEl.textContent = t("errors.API");
         resultsMapController?.setResults([]);
         resultsContainer.innerHTML = `
-          <div class="empty-state">
-            No se pudieron cargar los resultados.
-          </div>
+            <div class="empty-state">
+                ${t("errors.results_load_error")}
+            </div>
         `;
     }
 }
@@ -953,7 +970,7 @@ async function handleFavoriteToggle(event) {
     const beachId = Number(btn.dataset.id);
     const token = sessionStorage.getItem("token");
     if (!token) {
-        alert("Inicia sesion para gestionar favoritas.");
+        alert(t("alerts.sign_in"));
         return;
     }
     const isFavorite = btn.innerText === "\u2764\uFE0F";
