@@ -186,7 +186,7 @@ export function pintarResultados(resultados, container, options = {}) {
                             <div class="beach-location">${playa.ubicacion}</div>
                             <div class="beach-actions-row">
                                 <button type="button" class="rating-badge" data-id="${playa.beach_id}" data-rating-id="${playa.beach_id}">&#9733; ...</button>
-                                <button type="button" class="photos-badge" data-id="${playa.beach_id}" data-photos-id="${playa.beach_id}" title="${t("results.view_beach_photos")}">ðŸ–¼ï¸</button>
+                                <button type="button" class="photos-badge" data-id="${playa.beach_id}" data-photos-id="${playa.beach_id}" title="${t("results.view_beach_photos")}">📷</button>
                                 <div class="beach-actions-trailing">
                                     ${renderFavoriteButton(playa, resolvedOptions)}
                                     <span class="expand-hint expand-hint-inline" aria-hidden="true">+</span>
@@ -246,7 +246,7 @@ export function pintarResultados(resultados, container, options = {}) {
         const photoBtn = container.querySelector(`[data-photos-id="${playa.beach_id}"]`);
         if (!photoBtn) return;
 
-        photoBtn.innerHTML = `ðŸ–¼ï¸ (${photoData.photos_count || 0})`;
+        photoBtn.innerHTML = `📷 (${photoData.photos_count || 0})`;
     });
 
     configurarAnimacionDetalles(container);
