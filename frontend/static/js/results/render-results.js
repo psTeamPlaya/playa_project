@@ -1,15 +1,17 @@
-
+import { t } from "/static/js/languages/i18n.js";
 
 import { formatearMarea, formatearServicios } from "../shared/formatters.js";
 import "../review-photo/galllery-photos.js"
 
-const DEFAULT_OPTIONS = {
-    emptyMessage: "No hay resultados para esa b\u00fasqueda.",
+
+// const DEFAULT_OPTIONS = {
+const getDefaultOptions = () => ({
+    emptyMessage: t("results.no_results"),
     showScore: true,
     showMotivo: true,
     favoriteButtonLabel: null,
     favoriteButtonAriaLabel: null
-};
+});
 
 const ICONS = {
     beachType: "\u{1F3D6}\uFE0F",
@@ -35,7 +37,7 @@ function renderScore(playa, options) {
     }
     const score = Number(playa.score);
     const scoreText = Number.isFinite(score) ? score.toFixed(1) : "N/A";
-    return `<div class="score-badge">Score: ${scoreText}</div>`;
+    return `<div class="score-badge">${t("results.score")}: ${scoreText}</div>`;
 }
 
 function renderMotivo(playa, options) {
@@ -44,7 +46,7 @@ function renderMotivo(playa, options) {
     }
     return `
         <div class="motivo detalle-box">
-            <strong>Explicaci\u00f3n de la recomendaci\u00f3n:</strong> ${playa.motivo}
+            <strong>${t("results.recommendation_explanation")}:</strong> ${playa.motivo}
         </div>
     `;
 }
@@ -90,12 +92,37 @@ export function configurarAnimacionDetalles(container) {
     });
 }
 
+function mapBeachType(type) {
+    const map = {
+        arena: "sand",
+        piedra: "stone",
+        "piscina natural": "natural_pool"
+    };
+
+    return map[type] ?? "sand";
+}
+
+function mapTide(tide) {
+    const map = {
+        baja: "low_tide",
+        alta: "high_tide"
+    };
+
+    return map[tide] ?? tide;
+}
+
+
 export function pintarResultados(resultados, container, options = {}) {
     if (!container) {
         return;
     }
 
-    const resolvedOptions = { ...DEFAULT_OPTIONS, ...options };
+    // const resolvedOptions = { ...DEFAULT_OPTIONS, ...options };
+
+    const resolvedOptions = {
+        ...getDefaultOptions(),
+        ...options
+    };
 
     if (!resultados || resultados.length === 0) {
         container.innerHTML = `
@@ -139,14 +166,14 @@ export function pintarResultados(resultados, container, options = {}) {
                     <p class="beach-desc">${playa.descripcion}</p>
 
                     <div class="meta-list">
-                        <span class="chip">${ICONS.beachType} Tipo: ${playa.tipo}</span>
-                        <span class="chip">${ICONS.airTemp} Temp. aire: ${condiciones.air_temp ?? "N/A"} \u00baC</span>
-                        <span class="chip">${ICONS.wave} Oleaje: ${condiciones.wave_height ?? "N/A"} m</span>
-                        <span class="chip">${ICONS.wind} Viento: ${condiciones.wind_speed ?? "N/A"} km/h</span>
-                        <span class="chip">${ICONS.waterTemp} Agua: ${condiciones.water_temp ?? "N/A"} \u00baC</span>
-                        <span class="chip">${ICONS.cloud} Nubosidad: ${condiciones.cloud_cover ?? "N/A"}%</span>
-                        <span class="chip">${ICONS.rain} Lluvia: ${condiciones.rain_probability ?? "N/A"}%</span>
-                        <span class="chip">${ICONS.tide} Marea: ${formatearMarea(condiciones)}</span>
+                        <span class="chip">${ICONS.beachType} ${t("titles.beach_type")}: ${t(`beach_types.${mapBeachType(playa.tipo)}`)}</span>
+                        <span class="chip">${ICONS.airTemp} ${t("weather.temp")}: ${condiciones.air_temp ?? "N/A"} \u00baC</span>
+                        <span class="chip">${ICONS.wave} ${t("weather.waves")}: ${condiciones.wave_height ?? "N/A"} m</span>
+                        <span class="chip">${ICONS.wind} ${t("weather.wind")}: ${condiciones.wind_speed ?? "N/A"} km/h</span>
+                        <span class="chip">${ICONS.waterTemp} ${t("weather.water_temp")}: ${condiciones.water_temp ?? "N/A"} \u00baC</span>
+                        <span class="chip">${ICONS.cloud} ${t("weather.cloudiness")}: ${condiciones.cloud_cover ?? "N/A"}%</span>
+                        <span class="chip">${ICONS.rain} ${t("weather.rain")}: ${condiciones.rain_probability ?? "N/A"}%</span>
+                        <span class="chip">${ICONS.tide} ${t("weather.tide")}: ${t(`weather.${mapTide(formatearMarea(condiciones))}`)}</span>
                     </div>
 
                     ${renderMotivo(playa, resolvedOptions)}

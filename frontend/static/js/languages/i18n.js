@@ -31,10 +31,18 @@ function getNestedValue(obj, path) {
   }, obj);
 }
 
-export function t(key) {
-  return getNestedValue(translations, key)
-    || getNestedValue(fallbackTranslations, key)
-    || key;
+export function t(key, params = {}) {
+  let value =
+    getNestedValue(translations, key) ||
+    getNestedValue(fallbackTranslations, key) ||
+    key;
+
+  // simple interpolation ({{var}} for parameters)
+  Object.entries(params).forEach(([k, v]) => {
+    value = value.replaceAll(`{{${k}}}`, v);
+  });
+
+  return value;
 }
 
 function translatePage() {
