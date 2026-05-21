@@ -140,6 +140,7 @@ export function actualizarFiltroDinamicoUI(filtro) {
     const toggleText = toggleLabel?.querySelector(".filter-toggle-text");
     if (toggleText) {
         toggleText.textContent = desactivado ? t("search.activate_filter") : t("search.deactivate_filter");
+        toggleText.textContent = desactivado ? t("search.activate_filter") : t("search.deactivate_filter");
     }
     if (toggleLabel) {
         toggleLabel.classList.toggle("is-active", desactivado);
@@ -163,6 +164,8 @@ export function actualizarToggleFiltrosDinamicos(disableDynamicFilters, dynamicF
 
     const desactivados = estanTodosLosFiltrosDinamicosDesactivados(dynamicFilters);
     disableDynamicFilters.textContent = desactivados
+        ? t("search.enable_dynamic_filters")
+        : t("search.disable_dynamic_filters");
         ? t("search.enable_dynamic_filters")
         : t("search.disable_dynamic_filters");
     disableDynamicFilters.setAttribute("aria-pressed", desactivados ? "true" : "false");
