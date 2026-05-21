@@ -14,7 +14,7 @@
     "results": "Recommended beaches",
     "see_map": "View map",
     "in_map_title": "Map of recommended beaches",
-    "in_map_description": "Check the ranking and score of each beach directly on the map."
+    "in_map_description": "Check the ranking and score of each beach directly on the map.",
     "language": "Language"
 
   },
@@ -76,7 +76,7 @@
     "walking": "Walking",
     "fishing": "Fishing",
     "kayaking": "Kayaking",
-    "no_activities_available": "No activities are available at the moment."
+    "no_activities_available": "No activities are available at the moment.",
     "paddle_surfing": "Paddle surfing",
     "bodyboarding": "Bodyboarding",
     "beach_volleyball": "Beach volleyball",
@@ -134,7 +134,7 @@
     "enter": "Access my account",
     "no_account_question": "No account?",
     "or_continue_with": "or continue with",
-    "access": "Access"
+    "access": "Access",
     "create_account": "Create account",
     "already_have_account": "Already have an account?",
     "signing_in": "Signing in...",
