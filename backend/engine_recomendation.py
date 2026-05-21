@@ -920,6 +920,54 @@ def calcular_score(condicion, actividad, pesos: dict[str, float] | None = None):
     return total / suma_pesos if suma_pesos else 0
 
 
+def obtener_pesos_actividad(actividad: str) -> dict[str, float]:
+    actividad_normalizada = _activity_slug(actividad)
+    if not actividad_normalizada:
+        return {}
+
+    session = SessionLocal()
+    try:
+        activity = next(
+            (
+                item
+                for item in session.query(Activity).all()
+                if _activity_slug(item.name) == actividad_normalizada
+            ),
+            None,
+        )
+        if activity is None:
+            return PESOS_ACTIVIDAD.get(actividad_normalizada, {})
+
+        pesos_db = {
+            variable.name: float(weight.weight)
+            for weight, variable in (
+                session.query(ActivityVariableWeight, Variable)
+                .join(Variable, Variable.id == ActivityVariableWeight.variable_id)
+                .filter(ActivityVariableWeight.activity_id == activity.id)
+                .all()
+            )
+            if weight.weight is not None and float(weight.weight) > 0
+        }
+        return pesos_db or PESOS_ACTIVIDAD.get(actividad_normalizada, {})
+    except Exception as exc:
+        logger.warning("No se pudieron cargar pesos de actividad desde DB: %s", exc)
+        return PESOS_ACTIVIDAD.get(actividad_normalizada, {})
+    finally:
+        session.close()
+
+
+def calcular_score_final(
+    condicion,
+    actividad,
+    actividad_ideal: bool,
+    pesos: dict[str, float] | None = None,
+) -> float:
+    score = calcular_score(condicion, actividad, pesos)
+    if actividad_ideal:
+        score += BONUS_ACTIVIDAD_IDEAL
+    return clamp(score)
+
+
 def filtrar(playa, conditions, filtros: dict):
     # -------------------------
     # Filtros de tipo de playa
@@ -992,6 +1040,66 @@ def filtrar(playa, conditions, filtros: dict):
             return False
 
     return True
+
+
+def _formatear_factor_recomendacion(variable: str, valor: float) -> str:
+    label = FACTOR_LABELS.get(variable, variable)
+    unit = FACTOR_UNITS.get(variable, "")
+    value_text = _format_condition_value_for_display(variable, valor)
+    return f"{label} de {value_text}{f' {unit}' if unit else ''}"
+
+
+def generar_motivo_intervalo(
+    actividad,
+    cond,
+    *,
+    pesos: dict[str, float] | None = None,
+    actividad_ideal: bool = False,
+):
+    pesos = pesos if pesos is not None else obtener_pesos_actividad(actividad)
+    hours_count = int(cond.get("hours_count") or 1)
+    horas_consideradas = list(cond.get("horas_consideradas") or [])
+
+    variables_ordenadas = [
+        variable
+        for variable, _ in sorted(pesos.items(), key=lambda item: item[1], reverse=True)
+        if isinstance(cond.get(variable), (int, float))
+    ]
+    if not variables_ordenadas:
+        variables_ordenadas = [
+            variable
+            for variable in (
+                "air_temp",
+                "wind_speed",
+                "wave_height",
+                "rain_probability",
+                "cloud_cover",
+                "uv_index",
+            )
+            if isinstance(cond.get(variable), (int, float))
+        ]
+
+    factores = [
+        _formatear_factor_recomendacion(variable, cond[variable])
+        for variable in variables_ordenadas[:3]
+    ]
+    if not factores:
+        return "Condiciones evaluadas para la actividad."
+
+    if hours_count > 1 and len(horas_consideradas) >= 2:
+        tramo = f"entre las {horas_consideradas[0]} y las {horas_consideradas[-1]}"
+    elif horas_consideradas:
+        tramo = f"a las {horas_consideradas[0]}"
+    else:
+        tramo = "en ese momento"
+
+    descripcion = factores[0] if len(factores) == 1 else ", ".join(factores[:-1]) + f" y {factores[-1]}"
+    motivo = f"Se recomienda {tramo} por {descripcion}"
+    if actividad_ideal:
+        motivo += ". AdemÃ¡s, la playa encaja especialmente bien con la actividad seleccionada."
+    else:
+        motivo += "."
+    return motivo
 
 
 def recomendar_playas(
