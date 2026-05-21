@@ -1,6 +1,5 @@
 import { authFetch } from "../api/auth-fetch.js";
 
-
 const FILTER_FIELDS = [
     ["min_temperatura_ambiente", "Temperatura mín.", "ºC"],
     ["max_temperatura_ambiente", "Temperatura máx.", "ºC"],
@@ -11,6 +10,8 @@ const FILTER_FIELDS = [
     ["min_altura_oleaje", "Oleaje mín.", "m"],
     ["max_altura_oleaje", "Oleaje máx.", "m"],
 ];
+const WEEKDAY_LABELS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const WEEKDAY_SHORT_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 function escapeHtml(value = "") {
     return String(value)
@@ -38,16 +39,61 @@ function parseOptionalNumber(value) {
     return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeWeekdays(filters = {}) {
+    const weekdays = filters.dias_semana ?? filters.dia_semana;
+    if (weekdays === undefined || weekdays === null || weekdays === "") {
+        return [];
+    }
+
+    const rawValues = Array.isArray(weekdays) ? weekdays : [weekdays];
+    return rawValues
+        .map((value) => Number(value))
+        .filter((value, index, values) => Number.isInteger(value) && value >= 0 && value <= 6 && values.indexOf(value) === index)
+        .sort((left, right) => left - right);
+}
+
+function formatAlertSchedule(filters = {}) {
+    const parts = [];
+
+    const weekdays = normalizeWeekdays(filters);
+    if (weekdays.length > 0) {
+        const weekdayLabels = weekdays
+            .map((weekday) => WEEKDAY_SHORT_LABELS[weekday])
+            .filter(Boolean);
+        if (weekdayLabels.length > 0) {
+            parts.push(`Días: ${weekdayLabels.join(", ")}`);
+        }
+    }
+
+    const hasStartHour = filters.hora_inicio !== undefined && filters.hora_inicio !== null && filters.hora_inicio !== "";
+    const hasEndHour = filters.hora_fin !== undefined && filters.hora_fin !== null && filters.hora_fin !== "";
+    if (hasStartHour && hasEndHour) {
+        const startHour = String(Number(filters.hora_inicio)).padStart(2, "0");
+        const endHour = String(Number(filters.hora_fin)).padStart(2, "0");
+        parts.push(`Horario: ${startHour}:00-${endHour}:00`);
+    }
+
+    return parts.join(" · ");
+}
+
 export function initAlertsUI({
     openAlertsModalBtn,
     alertsModal,
     closeAlertsModalBtn,
+    openAlertsEditorBtn,
+    closeAlertsEditorBtn,
+    alertsEditorBackdrop,
+    alertsEditorTitle,
+    alertsEditorCopy,
     alertsForm,
     alertsEditingIdInput,
     cancelAlertEditBtn,
     saveCurrentAlertBtn,
     alertsActivitySelect,
     alertsBeachSelect,
+    alertWeekdayCheckboxes,
+    alertStartHourInput,
+    alertEndHourInput,
     alertMinTemperatureInput,
     alertMaxTemperatureInput,
     alertMinWindInput,
@@ -64,6 +110,7 @@ export function initAlertsUI({
     let activityOptions = [];
     let beachOptions = [];
     let catalogsLoaded = false;
+    let lastLoadedAlerts = [];
 
     function setFeedback(message = "", isError = false) {
         if (!alertsFeedback) {
@@ -75,14 +122,8 @@ export function initAlertsUI({
         alertsFeedback.classList.toggle("success", Boolean(message && !isError));
     }
 
-    function closeModal() {
-        if (alertsModal) {
-            alertsModal.hidden = true;
-        }
-    }
-
     async function fetchJson(url, options = {}) {
-        const response = options.method ? await authFetch(url, options) : await fetch(url, options);
+        const response = await authFetch(url, options);
         if (!response.ok) {
             const payload = await response.json().catch(() => ({}));
             throw new Error(payload.detail || "No se pudo completar la operación.");
@@ -94,8 +135,48 @@ export function initAlertsUI({
         return Number(alertsEditingIdInput?.value || 0) || null;
     }
 
-    function isEditing() {
-        return Boolean(getEditingId());
+    function isEditorOpen() {
+        return alertsForm ? !alertsForm.hidden : false;
+    }
+
+    function updateEditorCopy(isEditing) {
+        if (alertsEditorTitle) {
+            alertsEditorTitle.textContent = isEditing ? "Editar alerta" : "Nueva alerta";
+        }
+        if (alertsEditorCopy) {
+            alertsEditorCopy.textContent = isEditing
+                ? "Actualiza la actividad, la playa o las condiciones de esta alerta."
+                : "Configura la actividad, la playa y las condiciones a vigilar.";
+        }
+    }
+
+    function closeEditor({ reset = false, preservePreferredActivity = true } = {}) {
+        if (alertsForm) {
+            alertsForm.hidden = true;
+        }
+        if (alertsEditorBackdrop) {
+            alertsEditorBackdrop.hidden = true;
+        }
+        if (reset) {
+            resetForm({ preservePreferredActivity });
+        }
+    }
+
+    function openEditor({ isEditing = false } = {}) {
+        updateEditorCopy(isEditing);
+        if (alertsEditorBackdrop) {
+            alertsEditorBackdrop.hidden = false;
+        }
+        if (alertsForm) {
+            alertsForm.hidden = false;
+        }
+    }
+
+    function closeModal() {
+        closeEditor({ reset: true, preservePreferredActivity: false });
+        if (alertsModal) {
+            alertsModal.hidden = true;
+        }
     }
 
     function resetForm({ preservePreferredActivity = true } = {}) {
@@ -172,7 +253,17 @@ export function initAlertsUI({
     }
 
     function buildFiltersPayload() {
+        const selectedWeekdays = Array.isArray(alertWeekdayCheckboxes)
+            ? alertWeekdayCheckboxes
+                .filter((checkbox) => checkbox?.checked)
+                .map((checkbox) => Number(checkbox.value))
+                .filter((value) => Number.isInteger(value))
+            : [];
+
         const filters = {
+            dias_semana: selectedWeekdays.length > 0 ? selectedWeekdays : null,
+            hora_inicio: parseOptionalNumber(alertStartHourInput?.value),
+            hora_fin: parseOptionalNumber(alertEndHourInput?.value),
             min_temperatura_ambiente: parseOptionalNumber(alertMinTemperatureInput?.value),
             max_temperatura_ambiente: parseOptionalNumber(alertMaxTemperatureInput?.value),
             min_velocidad_viento: parseOptionalNumber(alertMinWindInput?.value),
@@ -189,6 +280,16 @@ export function initAlertsUI({
     }
 
     function validateFilters(filters) {
+        const hasStartHour = filters.hora_inicio !== undefined;
+        const hasEndHour = filters.hora_fin !== undefined;
+        if (hasStartHour !== hasEndHour) {
+            throw new Error("Debes indicar la hora de inicio y la hora de fin del rango horario.");
+        }
+
+        if (hasStartHour && hasEndHour && filters.hora_inicio > filters.hora_fin) {
+            throw new Error("La hora de inicio no puede ser mayor que la hora de fin.");
+        }
+
         const ranges = [
             ["Temperatura", filters.min_temperatura_ambiente, filters.max_temperatura_ambiente],
             ["Viento", filters.min_velocidad_viento, filters.max_velocidad_viento],
@@ -216,6 +317,21 @@ export function initAlertsUI({
         }
         if (alertsBeachSelect) {
             alertsBeachSelect.value = String(alert.beach_id || "");
+        }
+        const selectedWeekdays = new Set(normalizeWeekdays(alert.filters));
+        if (Array.isArray(alertWeekdayCheckboxes)) {
+            alertWeekdayCheckboxes.forEach((checkbox) => {
+                if (!checkbox) {
+                    return;
+                }
+                checkbox.checked = selectedWeekdays.has(Number(checkbox.value));
+            });
+        }
+        if (alertStartHourInput) {
+            alertStartHourInput.value = alert.filters?.hora_inicio ?? "";
+        }
+        if (alertEndHourInput) {
+            alertEndHourInput.value = alert.filters?.hora_fin ?? "";
         }
         if (alertMinTemperatureInput) {
             alertMinTemperatureInput.value = alert.filters?.min_temperatura_ambiente ?? "";
@@ -248,6 +364,7 @@ export function initAlertsUI({
             saveCurrentAlertBtn.textContent = "Guardar cambios";
         }
         setFeedback(`Editando alerta para ${alert.beach_label || alert.activity_label}.`, false);
+        openEditor({ isEditing: true });
     }
 
     function renderAlerts(alerts = []) {
@@ -258,18 +375,29 @@ export function initAlertsUI({
         if (!Array.isArray(alerts) || alerts.length === 0) {
             alertsList.innerHTML = `
                 <div class="empty-state">
-                    No tienes alertas guardadas.
+                    <p>No tienes alertas guardadas.</p>
                 </div>
             `;
             return;
         }
+
+        const formatAlertSummary = (filters = {}) => {
+            const scheduleText = formatAlertSchedule(filters);
+            const conditionsText = formatAlertFilters(filters);
+            const parts = [scheduleText];
+            if (!scheduleText || conditionsText !== "Sin condiciones extra") {
+                parts.push(conditionsText);
+            }
+            const uniqueParts = parts.filter((part, index) => parts.indexOf(part) === index);
+            return uniqueParts.join(" · ");
+        };
 
         alertsList.innerHTML = alerts.map((alert) => `
             <article class="alerts-list-card">
                 <div class="alerts-list-card-body">
                     <strong>${escapeHtml(alert.activity_label)}</strong>
                     <div>${escapeHtml(alert.beach_label || "Playa guardada")}</div>
-                    <small>${escapeHtml(formatAlertFilters(alert.filters))}</small>
+                    <small>${escapeHtml(formatAlertSummary(alert.filters))}</small>
                     <small>
                         ${alert.last_notified_match
                             ? `Último aviso: ${new Date(alert.last_notified_match).toLocaleString("es-ES")}`
@@ -277,6 +405,9 @@ export function initAlertsUI({
                     </small>
                 </div>
                 <div class="alerts-list-card-actions">
+                    <button class="btn-secondary alert-send-email-btn" type="button" data-alert-id="${alert.id}">
+                        Enviar email
+                    </button>
                     <button class="btn-secondary alert-edit-btn" type="button" data-alert-id="${alert.id}">
                         Editar
                     </button>
@@ -290,8 +421,15 @@ export function initAlertsUI({
 
     async function loadAlerts() {
         const alerts = await fetchJson("/api/users/me/alerts");
-        renderAlerts(alerts);
-        return alerts;
+        lastLoadedAlerts = Array.isArray(alerts) ? alerts : [];
+        renderAlerts(lastLoadedAlerts);
+        return lastLoadedAlerts;
+    }
+
+    function openCreateEditor() {
+        resetForm();
+        setFeedback("");
+        openEditor({ isEditing: false });
     }
 
     async function openModal() {
@@ -302,6 +440,7 @@ export function initAlertsUI({
 
         await ensureCatalogsLoaded();
         resetForm();
+        closeEditor();
         setFeedback("");
         if (alertsModal) {
             alertsModal.hidden = false;
@@ -338,8 +477,8 @@ export function initAlertsUI({
                     filters,
                 }),
             });
+            closeEditor({ reset: true });
             setFeedback(editingId ? "Alerta actualizada correctamente." : "Alerta guardada correctamente.", false);
-            resetForm();
             await loadAlerts();
         } catch (error) {
             setFeedback(error.message, true);
@@ -352,7 +491,7 @@ export function initAlertsUI({
                 method: "DELETE",
             });
             if (getEditingId() === Number(alertId)) {
-                resetForm({ preservePreferredActivity: false });
+                closeEditor({ reset: true, preservePreferredActivity: false });
             }
             setFeedback("Alerta eliminada.", false);
             await loadAlerts();
@@ -361,24 +500,57 @@ export function initAlertsUI({
         }
     }
 
+    async function sendAlertEmail(alertId) {
+        try {
+            await fetchJson(`/api/users/me/alerts/${alertId}/send-email`, {
+                method: "POST",
+            });
+            setFeedback("Email enviado correctamente.", false);
+            await loadAlerts();
+        } catch (error) {
+            setFeedback(error.message, true);
+        }
+    }
+
     async function editAlert(alertId) {
-        const alerts = await loadAlerts();
-        const selectedAlert = alerts.find((alert) => Number(alert.id) === Number(alertId));
+        const selectedAlert = lastLoadedAlerts.find((alert) => Number(alert.id) === Number(alertId));
         if (!selectedAlert) {
-            setFeedback("No se pudo cargar la alerta para editarla.", true);
+            const alerts = await loadAlerts();
+            const reloadedAlert = alerts.find((alert) => Number(alert.id) === Number(alertId));
+            if (!reloadedAlert) {
+                setFeedback("No se pudo cargar la alerta para editarla.", true);
+                return;
+            }
+            populateFormForEdit(reloadedAlert);
             return;
         }
+
         populateFormForEdit(selectedAlert);
     }
 
     openAlertsModalBtn?.addEventListener("click", openModal);
     closeAlertsModalBtn?.addEventListener("click", closeModal);
+    openAlertsEditorBtn?.addEventListener("click", openCreateEditor);
+    closeAlertsEditorBtn?.addEventListener("click", () => {
+        closeEditor({ reset: true });
+        setFeedback("");
+    });
+    alertsEditorBackdrop?.addEventListener("click", () => {
+        closeEditor({ reset: true });
+        setFeedback("");
+    });
     cancelAlertEditBtn?.addEventListener("click", () => {
-        resetForm();
+        closeEditor({ reset: true });
         setFeedback("");
     });
     alertsForm?.addEventListener("submit", saveAlert);
     alertsList?.addEventListener("click", async (event) => {
+        const sendEmailButton = event.target.closest(".alert-send-email-btn");
+        if (sendEmailButton) {
+            await sendAlertEmail(sendEmailButton.dataset.alertId);
+            return;
+        }
+
         const editButton = event.target.closest(".alert-edit-btn");
         if (editButton) {
             await editAlert(editButton.dataset.alertId);
@@ -398,5 +570,6 @@ export function initAlertsUI({
             populateActivitySelect();
             populateBeachSelect();
         },
+        isEditorOpen,
     };
 }

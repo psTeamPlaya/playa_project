@@ -1,1 +1,3 @@
-TODO: nueva rama para trabajar con ReDIS (BBDD)
+TODO: nueva rama para trabajar con ReDIS (BBDD).
+TODO: buscar info sobre playas ideales para bodyboard, windsurf, kitesurf y paddle-surf.
+TODO: añadir los servicios a los filtros estáticos

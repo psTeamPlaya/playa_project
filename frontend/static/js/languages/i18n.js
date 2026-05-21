@@ -69,15 +69,17 @@ export async function initLanguage() {
     const saved = localStorage.getItem("lang");
 
     if (saved) {
-        setLanguage(saved);
+        await setLanguage(saved);
         return;
     }
 
     const browserLang = navigator.language.startsWith("cs")
         ? "cs"
+        : navigator.language.startsWith("de")
+            ? "de"
         : navigator.language.startsWith("en")
             ? "en"
             : "es";
 
-    setLanguage(browserLang);
+    await setLanguage(browserLang);
 }

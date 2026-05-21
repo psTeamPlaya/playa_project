@@ -296,3 +296,259 @@ def test_recomendar_playas_carga_pesos_una_vez_por_peticion(monkeypatch):
 
     assert len(resultados) == 3
     assert calls == ["tomar_sol"]
+
+
+def test_resolver_intervalo_horario_rechaza_fin_no_posterior():
+    try:
+        engine_recomendation.resolver_intervalo_horario(
+            hora_inicio="14:00",
+            hora_fin="10:00",
+        )
+    except ValueError as exc:
+        assert str(exc) == "La hora de fin debe ser posterior a la hora de inicio."
+    else:
+        raise AssertionError("Se esperaba un ValueError para un rango horario inválido.")
+
+
+def test_recomendar_playas_agrega_condiciones_de_todo_el_intervalo():
+    playas = [
+        {
+            "id": 1,
+            "nombre": "Playa Serena",
+            "ubicacion": "Sur",
+            "latitud": 28.0,
+            "longitud": -15.0,
+            "descripcion": "Condiciones estables",
+            "tipo": "arena",
+            "servicios": {},
+            "actividades_ideales": ["tomar_sol"],
+        },
+        {
+            "id": 2,
+            "nombre": "Playa Ventosa",
+            "ubicacion": "Norte",
+            "latitud": 28.2,
+            "longitud": -15.2,
+            "descripcion": "Más viento",
+            "tipo": "arena",
+            "servicios": {},
+            "actividades_ideales": [],
+        },
+    ]
+    condiciones = [
+        {"beach_id": 1, "fecha": "2026-05-07", "hora": "10:00", "air_temp": 25, "wind_speed": 8, "cloud_cover": 10, "rain_probability": 0, "wave_height": 0.6, "uv_index": 6},
+        {"beach_id": 1, "fecha": "2026-05-07", "hora": "11:00", "air_temp": 26, "wind_speed": 7, "cloud_cover": 12, "rain_probability": 0, "wave_height": 0.5, "uv_index": 7},
+        {"beach_id": 1, "fecha": "2026-05-07", "hora": "12:00", "air_temp": 27, "wind_speed": 6, "cloud_cover": 8, "rain_probability": 0, "wave_height": 0.4, "uv_index": 7},
+        {"beach_id": 2, "fecha": "2026-05-07", "hora": "10:00", "air_temp": 24, "wind_speed": 18, "cloud_cover": 15, "rain_probability": 5, "wave_height": 1.4, "uv_index": 6},
+        {"beach_id": 2, "fecha": "2026-05-07", "hora": "11:00", "air_temp": 24, "wind_speed": 19, "cloud_cover": 18, "rain_probability": 10, "wave_height": 1.5, "uv_index": 6},
+        {"beach_id": 2, "fecha": "2026-05-07", "hora": "12:00", "air_temp": 25, "wind_speed": 20, "cloud_cover": 20, "rain_probability": 10, "wave_height": 1.6, "uv_index": 6},
+    ]
+
+    resultados = engine_recomendation.recomendar_playas(
+        actividad="tomar_sol",
+        fecha="2026-05-07",
+        hora="10:00",
+        hora_inicio="10:00",
+        hora_fin="12:00",
+        lat_usuario=None,
+        lon_usuario=None,
+        radio_km=None,
+        top_n=0,
+        filtros={},
+        playas_override=playas,
+        condiciones_override=condiciones,
+    )
+
+    assert [resultado["nombre"] for resultado in resultados] == ["Playa Serena", "Playa Ventosa"]
+    assert resultados[0]["condiciones"]["hora_inicio"] == "10:00"
+    assert resultados[0]["condiciones"]["hora_fin"] == "12:00"
+    assert resultados[0]["condiciones"]["horas_consideradas"] == ["10:00", "11:00", "12:00"]
+    assert resultados[0]["condiciones"]["air_temp"] == 26.0
+    assert "10:00" in resultados[0]["motivo"]
+
+
+def test_recomendar_playas_excluye_playas_sin_cobertura_completa_del_intervalo():
+    playas = [
+        {
+            "id": 1,
+            "nombre": "Playa Completa",
+            "ubicacion": "Sur",
+            "latitud": 28.0,
+            "longitud": -15.0,
+            "descripcion": "Completa",
+            "tipo": "arena",
+            "servicios": {},
+            "actividades_ideales": [],
+        },
+        {
+            "id": 2,
+            "nombre": "Playa Incompleta",
+            "ubicacion": "Norte",
+            "latitud": 28.1,
+            "longitud": -15.1,
+            "descripcion": "Sin todas las horas",
+            "tipo": "arena",
+            "servicios": {},
+            "actividades_ideales": [],
+        },
+    ]
+    condiciones = [
+        {"beach_id": 1, "fecha": "2026-05-07", "hora": "10:00", "air_temp": 24, "wind_speed": 8, "cloud_cover": 10, "rain_probability": 0, "wave_height": 0.5, "uv_index": 6},
+        {"beach_id": 1, "fecha": "2026-05-07", "hora": "11:00", "air_temp": 25, "wind_speed": 9, "cloud_cover": 12, "rain_probability": 0, "wave_height": 0.6, "uv_index": 6},
+        {"beach_id": 2, "fecha": "2026-05-07", "hora": "10:00", "air_temp": 25, "wind_speed": 9, "cloud_cover": 12, "rain_probability": 0, "wave_height": 0.6, "uv_index": 6},
+    ]
+
+    resultados = engine_recomendation.recomendar_playas(
+        actividad="tomar_sol",
+        fecha="2026-05-07",
+        hora="10:00",
+        hora_inicio="10:00",
+        hora_fin="11:00",
+        lat_usuario=None,
+        lon_usuario=None,
+        radio_km=None,
+        top_n=0,
+        filtros={},
+        playas_override=playas,
+        condiciones_override=condiciones,
+    )
+
+    assert [resultado["nombre"] for resultado in resultados] == ["Playa Completa"]
+
+
+def test_formatear_factor_recomendacion_redondea_al_mas_proximo():
+    motivo_temperatura = engine_recomendation._formatear_factor_recomendacion("air_temp", 19.76)
+    assert motivo_temperatura.startswith("temperatura media de 20")
+    assert engine_recomendation._formatear_factor_recomendacion("wind_speed", 14.49) == "viento medio de 14 km/h"
+    assert engine_recomendation._formatear_factor_recomendacion("wave_height", 1.12) == "oleaje medio de 1 m"
+    assert engine_recomendation._formatear_factor_recomendacion("wave_height", 1.13) == "oleaje medio de 1.25 m"
+
+
+def test_infer_tide_status_detecta_marea_subiendo():
+    condiciones = [
+        {"sea_level_height_msl": -0.42},
+        {"sea_level_height_msl": -0.21},
+        {"sea_level_height_msl": 0.04},
+    ]
+
+    assert engine_recomendation.infer_tide_status(condiciones) == "subiendo"
+
+
+def test_infer_tide_status_detecta_marea_bajando():
+    condiciones = [
+        {"sea_level_height_msl": 0.28},
+        {"sea_level_height_msl": 0.06},
+        {"sea_level_height_msl": -0.18},
+    ]
+
+    assert engine_recomendation.infer_tide_status(condiciones) == "bajando"
+
+
+def test_infer_tide_status_detecta_pleamar_en_el_intervalo():
+    condiciones = [
+        {"sea_level_height_msl": 0.12},
+        {"sea_level_height_msl": 0.31},
+        {"sea_level_height_msl": 0.15},
+    ]
+
+    assert engine_recomendation.infer_tide_status(condiciones) == "pleamar"
+
+
+def test_infer_tide_status_detecta_bajamar_en_el_intervalo():
+    condiciones = [
+        {"sea_level_height_msl": -0.18},
+        {"sea_level_height_msl": -0.39},
+        {"sea_level_height_msl": -0.22},
+    ]
+
+    assert engine_recomendation.infer_tide_status(condiciones) == "bajamar"
+
+
+def test_agregar_condiciones_por_playa_infiere_tide_status_desde_tide_numerico_de_bd():
+    condiciones = [
+        {"beach_id": 1, "hora": "10:00", "tide": -0.42},
+        {"beach_id": 1, "hora": "11:00", "tide": -0.18},
+        {"beach_id": 1, "hora": "12:00", "tide": 0.09},
+    ]
+
+    agregadas = engine_recomendation.agregar_condiciones_por_playa(
+        condiciones,
+        ["10:00", "11:00", "12:00"],
+    )
+
+    assert agregadas[1]["tide_status"] == "subiendo"
+
+
+def test_infer_tide_events_devuelve_pleamar_y_bajamar_del_intervalo():
+    condiciones = [
+        {"hora": "10:00", "sea_level_height_msl": -0.18},
+        {"hora": "11:00", "sea_level_height_msl": 0.34},
+        {"hora": "12:00", "sea_level_height_msl": 0.05},
+        {"hora": "13:00", "sea_level_height_msl": -0.39},
+        {"hora": "14:00", "sea_level_height_msl": -0.12},
+    ]
+
+    eventos = engine_recomendation.infer_tide_events(condiciones)
+
+    assert eventos == [
+        {"label": "Pleamar", "hour": "11:00"},
+        {"label": "Bajamar", "hour": "13:00"},
+    ]
+
+
+def test_agregar_condiciones_por_playa_expone_todos_los_eventos_de_marea_del_tramo():
+    condiciones = [
+        {"beach_id": 1, "hora": "10:00", "tide": -0.18},
+        {"beach_id": 1, "hora": "11:00", "tide": 0.34},
+        {"beach_id": 1, "hora": "12:00", "tide": 0.05},
+        {"beach_id": 1, "hora": "13:00", "tide": -0.39},
+        {"beach_id": 1, "hora": "14:00", "tide": -0.12},
+    ]
+
+    agregadas = engine_recomendation.agregar_condiciones_por_playa(
+        condiciones,
+        ["10:00", "11:00", "12:00", "13:00", "14:00"],
+    )
+
+    assert agregadas[1]["tide_events"] == [
+        {"label": "Pleamar", "hour": "11:00"},
+        {"label": "Bajamar", "hour": "13:00"},
+    ]
+
+
+def test_infer_next_tide_event_devuelve_hora_de_pleamar_cuando_marea_sube():
+    condiciones = [
+        {"hora": "10:00", "sea_level_height_msl": -0.35},
+        {"hora": "11:00", "sea_level_height_msl": -0.12},
+        {"hora": "12:00", "sea_level_height_msl": 0.08},
+        {"hora": "13:00", "sea_level_height_msl": 0.26},
+        {"hora": "14:00", "sea_level_height_msl": 0.41},
+        {"hora": "15:00", "sea_level_height_msl": 0.22},
+    ]
+
+    evento = engine_recomendation.infer_next_tide_event(
+        condiciones,
+        "12:00",
+        "subiendo",
+    )
+
+    assert evento == {"label": "Pleamar", "hour": "14:00"}
+
+
+def test_infer_next_tide_event_devuelve_hora_de_bajamar_cuando_marea_baja():
+    condiciones = [
+        {"hora": "10:00", "sea_level_height_msl": 0.32},
+        {"hora": "11:00", "sea_level_height_msl": 0.14},
+        {"hora": "12:00", "sea_level_height_msl": -0.04},
+        {"hora": "13:00", "sea_level_height_msl": -0.27},
+        {"hora": "14:00", "sea_level_height_msl": -0.43},
+        {"hora": "15:00", "sea_level_height_msl": -0.18},
+    ]
+
+    evento = engine_recomendation.infer_next_tide_event(
+        condiciones,
+        "12:00",
+        "bajando",
+    )
+
+    assert evento == {"label": "Bajamar", "hour": "14:00"}

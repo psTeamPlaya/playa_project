@@ -1,12 +1,14 @@
 import { authFetch } from "../api/auth-fetch.js";
 import { abrirConfiguradorInicial, aplicarVisibilidadFiltros } from "../preferences/preferences-ui.js";
 import { iniciarAsistente } from "../preferences/onboarding-ui.js";
+import { t } from "../languages/i18n.js";
 
 export function initSessionUI({
     preferencesUserInfo,
     preferencesPanel,
     authActionBtn,
     authActionIcon,
+    authActionLabel,
     filtersSidebar,
     preferencesLogoutBtn,
     onOpenPreferences,
@@ -110,13 +112,15 @@ export function initSessionUI({
         if (!authActionBtn || !authActionIcon) return;
         if (estaLogueado) {
             authActionBtn.hidden = false;
-            authActionBtn.setAttribute("aria-label", "Preferencias");
+            authActionBtn.setAttribute("aria-label", t("titles.preferences"));
             authActionIcon.className = "bi bi-person-circle";
+            if (authActionLabel) authActionLabel.textContent = t("titles.preferences");
             return;
         }
         authActionIcon.className = "bi bi-box-arrow-in-right";
         authActionBtn.hidden = false;
-        authActionBtn.setAttribute("aria-label", "Acceder");
+        authActionBtn.setAttribute("aria-label", t("auth.login"));
+        if (authActionLabel) authActionLabel.textContent = t("auth.login");
         onClosePreferences?.();
     }
 

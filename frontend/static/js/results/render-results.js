@@ -1,7 +1,6 @@
 import { t } from "/static/js/languages/i18n.js";
-
+import "../review-photo/galllery-photos.js";
 import { formatearMarea, formatearServicios } from "../shared/formatters.js";
-import "../review-photo/galllery-photos.js"
 
 
 // const DEFAULT_OPTIONS = {
@@ -49,6 +48,62 @@ function renderMotivo(playa, options) {
             <strong>${t("results.recommendation_explanation")}:</strong> ${playa.motivo}
         </div>
     `;
+}
+
+function renderIntervalChip(condiciones = {}) {
+    const horaInicio = condiciones.hora_inicio;
+    const horaFin = condiciones.hora_fin;
+    const hoursCount = Number(condiciones.hours_count || 1);
+
+    if (!horaInicio || !horaFin || hoursCount <= 1) {
+        return "";
+    }
+
+    return `<span class="chip">${t("results.interval")}: ${horaInicio} - ${horaFin}</span>`;
+}
+
+function renderTideEventChips(condiciones = {}) {
+    const events = Array.isArray(condiciones.tide_events) ? condiciones.tide_events : [];
+
+    if (events.length > 0) {
+        return events
+            .filter((event) => event?.label && event?.hour)
+            .map((event) => `<span class="chip">\u23F0 ${event.label}: ${event.hour}</span>`)
+            .join("");
+    }
+
+    const label = condiciones.tide_next_event_label;
+    const hour = condiciones.tide_next_event_hour;
+    if (!label || !hour) {
+        return "";
+    }
+
+    return `<span class="chip">\u23F0 ${label}: ${hour}</span>`;
+}
+
+function renderTideChips(condiciones = {}) {
+    return `
+        <span class="chip">${ICONS.tide} ${t("results.tide")}: ${formatearMarea(condiciones)}</span>
+        ${renderTideEventChips(condiciones)}
+    `;
+}
+
+function roundToNearestQuarter(value) {
+    return Math.round(Number(value) * 4) / 4;
+}
+
+function formatConditionValue(value, { quarterStep = false } = {}) {
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue)) {
+        return "N/A";
+    }
+
+    if (quarterStep) {
+        const roundedValue = roundToNearestQuarter(numericValue);
+        return `${roundedValue}`;
+    }
+
+    return `${Math.round(numericValue)}`;
 }
 
 function renderFavoriteButton(playa, options) {
@@ -147,7 +202,7 @@ export function pintarResultados(resultados, container, options = {}) {
                             <div class="beach-location">${playa.ubicacion}</div>
                             <div class="beach-actions-row">
                                 <button type="button" class="rating-badge" data-id="${playa.beach_id}" data-rating-id="${playa.beach_id}">&#9733; ...</button>
-                                <button type="button" class="photos-badge" data-id="${playa.beach_id}" data-photos-id="${playa.beach_id}" title="Ver fotos de la playa">🖼️</button>
+                                <button type="button" class="photos-badge" data-id="${playa.beach_id}" data-photos-id="${playa.beach_id}" title="${t("results.view_beach_photos")}">ðŸ–¼ï¸</button>
                                 <div class="beach-actions-trailing">
                                     ${renderFavoriteButton(playa, resolvedOptions)}
                                     <span class="expand-hint expand-hint-inline" aria-hidden="true">+</span>
@@ -166,6 +221,7 @@ export function pintarResultados(resultados, container, options = {}) {
                     <p class="beach-desc">${playa.descripcion}</p>
 
                     <div class="meta-list">
+                        ${renderIntervalChip(condiciones)}
                         <span class="chip">${ICONS.beachType} ${t("titles.beach_type")}: ${t(`beach_types.${mapBeachType(playa.tipo)}`)}</span>
                         <span class="chip">${ICONS.airTemp} ${t("weather.temp")}: ${condiciones.air_temp ?? "N/A"} \u00baC</span>
                         <span class="chip">${ICONS.wave} ${t("weather.waves")}: ${condiciones.wave_height ?? "N/A"} m</span>
@@ -174,6 +230,7 @@ export function pintarResultados(resultados, container, options = {}) {
                         <span class="chip">${ICONS.cloud} ${t("weather.cloudiness")}: ${condiciones.cloud_cover ?? "N/A"}%</span>
                         <span class="chip">${ICONS.rain} ${t("weather.rain")}: ${condiciones.rain_probability ?? "N/A"}%</span>
                         <span class="chip">${ICONS.tide} ${t("weather.tide")}: ${t(`weather.${mapTide(formatearMarea(condiciones))}`)}</span>
+                        ${renderTideChips(condiciones)}
                     </div>
 
                     ${renderMotivo(playa, resolvedOptions)}
@@ -206,10 +263,8 @@ export function pintarResultados(resultados, container, options = {}) {
         const photoBtn = container.querySelector(`[data-photos-id="${playa.beach_id}"]`);
         if (!photoBtn) return;
 
-        photoBtn.innerHTML = `🖼️ (${photoData.photos_count || 0})`;
+        photoBtn.innerHTML = `ðŸ–¼ï¸ (${photoData.photos_count || 0})`;
     });
-
-    configurarAnimacionDetalles(container);
 
     configurarAnimacionDetalles(container);
 }

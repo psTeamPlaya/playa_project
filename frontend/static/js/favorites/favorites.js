@@ -1,6 +1,7 @@
-import { pintarResultados } from "../results/render-results.js";
 import { authFetch } from "../api/auth-fetch.js";
+import { t } from "../languages/i18n.js";
 import { cerrarPanelPreferencias } from "../preferences/preferences-ui.js";
+import { pintarResultados } from "../results/render-results.js";
 import { formatearFechaLocal, obtenerHoraTexto } from "../search/date-time.js";
 
 const favoritesLabel = document.getElementById("favoritesLabel");
@@ -35,7 +36,7 @@ function openFavoritesModal() {
 
     favoritesModal.hidden = false;
     document.body.classList.add("favorites-modal-open");
-    renderEmptyState("Cargando playas favoritas...");
+    renderEmptyState(t("favorites.loading"));
     closePreferencePanel();
     loadFavoriteBeaches();
 }
@@ -73,7 +74,7 @@ async function loadFavoriteBeaches() {
         const response = await authFetch(`/api/favorites?fecha=${fecha}&hora=${hora}`);
 
         if (!response.ok) {
-            throw new Error("No se pudieron obtener las favoritas.");
+            throw new Error(t("favorites.fetch_error"));
         }
 
         const data = await response.json();
@@ -81,7 +82,7 @@ async function loadFavoriteBeaches() {
     }
     catch (error) {
         console.error(error);
-        renderEmptyState("No se pudieron cargar tus playas favoritas.");
+        renderEmptyState(t("favorites.load_error"));
     }
 }
 
@@ -91,16 +92,16 @@ function renderFavoriteResults(resultados) {
     }
 
     if (!resultados || resultados.length === 0) {
-        renderEmptyState("Todavia no has guardado playas favoritas.");
+        renderEmptyState(t("favorites.empty"));
         return;
     }
 
     pintarResultados(resultados, favoritesResultsContainer, {
-        emptyMessage: "Todavia no has guardado playas favoritas.",
+        emptyMessage: t("favorites.empty"),
         showScore: false,
         showMotivo: false,
         favoriteButtonLabel: "\u2764\uFE0F",
-        favoriteButtonAriaLabel: "Quitar de favoritas"
+        favoriteButtonAriaLabel: t("favorites.remove")
     });
 }
 
@@ -120,7 +121,7 @@ if (showFavoritesBtn) {
         event.preventDefault();
 
         if (!sessionStorage.getItem("token")) {
-            alert("Inicia sesion para ver tus playas favoritas.");
+            alert(t("favorites.login_required"));
             closePreferencePanel();
             return;
         }
@@ -156,7 +157,7 @@ if (favoritesResultsContainer) {
         }
         catch (error) {
             console.error(error);
-            alert("No se pudo quitar la playa de favoritas.");
+            alert(t("favorites.remove_error"));
         }
     });
 }
@@ -168,4 +169,3 @@ document.addEventListener("keydown", (event) => {
 });
 
 window.toggleSearchUI = openFavoritesModal;
-

@@ -79,6 +79,7 @@ export function initAdminUI({
     closeBeachManagementModal,
     beachManagementList,
     beachManagementFeedback,
+    beachSearchInput,
     beachManagementForm,
     newBeachBtn,
     resetBeachFormBtn,
@@ -110,6 +111,7 @@ export function initAdminUI({
     onClosePreferences,
 }) {
     const state = {
+        users: [],
         activities: [],
         services: [],
         variables: [],
@@ -118,6 +120,7 @@ export function initAdminUI({
         serviceItems: [],
         beaches: [],
         selectedBeachId: null,
+        beachSearchTerm: "",
         map: null,
         mapMarker: null,
         activityWeightSourceKey: "",
@@ -127,6 +130,12 @@ export function initAdminUI({
     const DEFAULT_MAP_COORDS = [28.1235, -15.4363];
     const DEFAULT_MAP_ZOOM = 10;
     const DETAIL_MAP_ZOOM = 15;
+    const adminTabButtons = Array.from(
+        beachManagementModal?.querySelectorAll("[data-admin-tab-target]") || []
+    );
+    const adminTabPanels = Array.from(
+        beachManagementModal?.querySelectorAll("[data-admin-tab-panel]") || []
+    );
     const ACTIVITY_ALIASES = {
         "tomar sol": "tomar_sol",
         "nadar": "nadar",
@@ -144,6 +153,34 @@ export function initAdminUI({
         "kite surf": "kitesurf",
         "piscina natural": "piscina_natural",
     };
+    function setActiveAdminTab(tabName = "beaches") {
+        adminTabButtons.forEach((button) => {
+            const isActive = button.dataset.adminTabTarget === tabName;
+            button.classList.toggle("is-active", isActive);
+            button.setAttribute("aria-selected", isActive ? "true" : "false");
+            button.tabIndex = isActive ? 0 : -1;
+        });
+
+        adminTabPanels.forEach((panel) => {
+            const isActive = panel.dataset.adminTabPanel === tabName;
+            panel.classList.toggle("is-active", isActive);
+            panel.hidden = !isActive;
+        });
+    }
+
+    function focusAdminTabByOffset(currentButton, offset) {
+        if (!currentButton || adminTabButtons.length === 0) return;
+
+        const currentIndex = adminTabButtons.indexOf(currentButton);
+        if (currentIndex < 0) return;
+
+        const nextIndex = (currentIndex + offset + adminTabButtons.length) % adminTabButtons.length;
+        const nextButton = adminTabButtons[nextIndex];
+        nextButton?.focus();
+        if (nextButton?.dataset.adminTabTarget) {
+            setActiveAdminTab(nextButton.dataset.adminTabTarget);
+        }
+    }
 
     function updateAdminVisibility(user) {
         adminPreferencesGroup?.classList.toggle("hidden", !user?.is_admin);
@@ -152,6 +189,14 @@ export function initAdminUI({
     function parseCoordinate(value) {
         const parsed = Number(value);
         return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function normalizeSearchText(value = "") {
+        return String(value)
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim()
+            .toLowerCase();
     }
 
     function normalizeActivityName(name = "") {
@@ -389,8 +434,8 @@ export function initAdminUI({
                     <strong>${user.email}</strong>
                     <div class="admin-list-meta">${user.is_admin ? "Administrador" : user.is_banned ? "Usuario baneado" : "Usuario"}</div>
                 </div>
-                ${user.is_admin || user.id === currentUser?.id ? "" : `
-                    <div class="admin-inline-actions">
+                <div class="admin-inline-actions">
+                    ${user.is_admin || user.id === currentUser?.id ? "" : `
                         <button
                             class="btn-secondary admin-inline-button ${user.is_banned ? "admin-inline-button-danger" : ""}"
                             data-user-id="${user.id}"
@@ -408,8 +453,8 @@ export function initAdminUI({
                         >
                             Eliminar
                         </button>
-                    </div>
-                `}
+                    `}
+                </div>
             </article>
         `).join("");
     }
@@ -509,6 +554,7 @@ export function initAdminUI({
             fetchJson("/admin/users"),
             fetchJson("/admin/users/history"),
         ]);
+        state.users = users || [];
         renderUsers(users);
         renderUserHistory(history || []);
         setFeedback(userManagementFeedback, "");
@@ -521,7 +567,20 @@ export function initAdminUI({
             return;
         }
 
-        beachManagementList.innerHTML = state.beaches.map((beach) => `
+        const normalizedSearchTerm = normalizeSearchText(state.beachSearchTerm);
+        const filteredBeaches = normalizedSearchTerm.length >= 3
+            ? state.beaches.filter((beach) => {
+                const searchableText = normalizeSearchText(`${beach.name} ${beach.location || ""}`);
+                return searchableText.includes(normalizedSearchTerm);
+            })
+            : state.beaches;
+
+        if (!filteredBeaches.length) {
+            beachManagementList.innerHTML = '<div class="empty-state">No hay playas que coincidan con la búsqueda.</div>';
+            return;
+        }
+
+        beachManagementList.innerHTML = filteredBeaches.map((beach) => `
             <button
                 class="admin-list-card admin-beach-card ${state.selectedBeachId === beach.id ? "is-selected" : ""}"
                 data-beach-id="${beach.id}"
@@ -615,6 +674,11 @@ export function initAdminUI({
     async function openBeachesModal() {
         onClosePreferences?.();
         openModal(beachManagementModal);
+        setActiveAdminTab("beaches");
+        state.beachSearchTerm = "";
+        if (beachSearchInput) {
+            beachSearchInput.value = "";
+        }
         try {
             ensureBeachMap();
             await reloadAdminCatalogData();
@@ -774,6 +838,43 @@ export function initAdminUI({
     closeUserManagementModal?.addEventListener("click", () => closeModal(userManagementModal));
     closeBeachManagementModal?.addEventListener("click", () => closeModal(beachManagementModal));
 
+    adminTabButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            if (!button.dataset.adminTabTarget) return;
+            setActiveAdminTab(button.dataset.adminTabTarget);
+        });
+
+        button.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                event.preventDefault();
+                focusAdminTabByOffset(button, 1);
+                return;
+            }
+            if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                event.preventDefault();
+                focusAdminTabByOffset(button, -1);
+                return;
+            }
+            if (event.key === "Home") {
+                event.preventDefault();
+                const firstButton = adminTabButtons[0];
+                firstButton?.focus();
+                if (firstButton?.dataset.adminTabTarget) {
+                    setActiveAdminTab(firstButton.dataset.adminTabTarget);
+                }
+                return;
+            }
+            if (event.key === "End") {
+                event.preventDefault();
+                const lastButton = adminTabButtons[adminTabButtons.length - 1];
+                lastButton?.focus();
+                if (lastButton?.dataset.adminTabTarget) {
+                    setActiveAdminTab(lastButton.dataset.adminTabTarget);
+                }
+            }
+        });
+    });
+
     userManagementModal?.addEventListener("click", (event) => {
         if (event.target === userManagementModal) {
             closeModal(userManagementModal);
@@ -809,6 +910,10 @@ export function initAdminUI({
         if (!button) return;
         const beach = state.beaches.find((item) => String(item.id) === button.dataset.beachId);
         fillBeachForm(beach || null);
+    });
+    beachSearchInput?.addEventListener("input", () => {
+        state.beachSearchTerm = beachSearchInput.value || "";
+        renderBeachList();
     });
 
     beachManagementForm?.addEventListener("submit", submitBeachForm);
