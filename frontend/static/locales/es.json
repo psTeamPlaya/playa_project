@@ -22,6 +22,7 @@
     "time": "Hora",
     "submit": "Enviar",
     "cancel": "Cancelar",
+    "close": "Cerrar",
     "add": "Añadir"
   },
   "search": {
@@ -95,7 +96,16 @@
     "email": "tu@correo.com o admin",
     "image": "nombre_imagen.jpg",
     "activity": "Ej: paddle surf",
-    "service": "Ej: hamacas"
+    "service": "Ej: hamacas",
+    "temp_min": "Ej: 22",
+    "temp_max": "Ej: 30",
+    "wind_min": "Ej: 8",
+    "wind_max": "Ej: 20",
+    "cloud_min": "Ej: 0",
+    "cloud_max": "Ej: 25",
+    "waves_min": "Ej: 0.5",
+    "waves_max": "Ej: 1.5",
+    "review_comment": "Escribe tu reseña..."
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -145,5 +155,34 @@
       "service_catalog": "Catálogo de servicios",
       "service_catalog_description": "Gestiona los servicios globales que luego podrás marcar en cada playa."
     }
+  },
+  "settings": {
+    "personalize_filters": "Personaliza tu experiencia",
+    "personalize_filters_description": "Selecciona los filtros que deseas tener siempre a mano. Podrás cambiarlos luego en preferencias.",
+    "save": "Guardar mi configuración",
+    "alerts": {
+      "email_alerts": "Alertas por email",
+      "email_alerts_description": "Configura una alerta indicando la actividad, la playa y las condiciones que quieres vigilar.",
+      "my_alerts": "Mis alertas",
+      "my_alerts_description": "Desde aquí puedes revisar, editar o borrar cualquiera de tus alertas guardadas.",
+      "activity": "Actividad",
+      "select_activity": "Selecciona una actividad",
+      "beach": "Playa",
+      "select_beach": "Selecciona una playa",
+      "conditions": "Condiciones",
+      "save_alert": "Guardar alerta",
+      "cancel_editing": "Cancelar edición"
+    }
+  },
+  "onboarding": {
+    "step_1_of_3": "Paso 1 de 3",
+    "step_2_of_3": "Paso 2 de 3",
+    "step_3_of_3": "Paso 3 de 3",
+    "skip_all": "Omitir todo"
+  },
+  "reviews": {
+    "title": "Reseñas de playas",
+    "downloading_reviews": "Cargando reseñas...",
+    "add_review": "Añadir reseña"
   }
 }

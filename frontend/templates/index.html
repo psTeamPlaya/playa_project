@@ -892,9 +892,9 @@
 
     <div class="auth-modal config-modal">
 
-      <h2>Personaliza tu experiencia</h2>
+      <h2 data-i18n="settings.personalize_filters" >Personaliza tu experiencia</h2>
 
-      <p>Selecciona los filtros que deseas tener siempre a mano. Podrás cambiarlos luego en preferencias.</p>
+      <p data-i18n="settings.personalize_filters_description">Selecciona los filtros que deseas tener siempre a mano. Podrás cambiarlos luego en preferencias.</p>
 
 
 
@@ -903,7 +903,7 @@
 
 
 
-      <button class="btn-primary auth-submit" id="saveFilterConfigBtn">Guardar mi configuración</button>
+      <button data-i18n="settings.save" class="btn-primary auth-submit" id="saveFilterConfigBtn">Guardar mi configuración</button>
 
     </div>
 
@@ -913,17 +913,17 @@
 
     <div class="auth-modal alerts-modal" role="dialog" aria-modal="true" aria-labelledby="alertsModalTitle">
 
-      <button class="modal-close" id="closeAlertsModal" type="button" aria-label="Cerrar">&times;</button>
-      <h2 id="alertsModalTitle">Alertas por email</h2>
+      <button data-i18n-aria="common.close" class="modal-close" id="closeAlertsModal" type="button" aria-label="Cerrar">&times;</button>
+      <h2 data-i18n="settings.alerts.email_alerts" id="alertsModalTitle">Alertas por email</h2>
 
-      <p class="alerts-modal-copy">
+      <p data-i18n="settings.alerts.email_alerts_description" class="alerts-modal-copy">
         Configura una alerta indicando la actividad, la playa y las condiciones que quieres vigilar.
       </p>
 
       <section class="alerts-existing-section" aria-labelledby="alertsListTitle">
         <div class="alerts-existing-header">
-          <h3 id="alertsListTitle">Mis alertas</h3>
-          <p>Desde aquí puedes revisar, editar o borrar cualquiera de tus alertas guardadas.</p>
+          <h3 data-i18n="settings.alerts.my_alerts">Mis alertas</h3>
+          <p data-i18n="settings.alerts.my_alerts_description">Desde aquí puedes revisar, editar o borrar cualquiera de tus alertas guardadas.</p>
         </div>
 
         <div class="alerts-list" id="alertsList"></div>
@@ -934,70 +934,70 @@
 
         <div class="alerts-form-grid">
           <label class="field">
-            <span>Actividad</span>
+            <span data-i18n="settings.alerts.activity">Actividad</span>
             <select id="alertsActivitySelect" required>
-              <option value="">Selecciona una actividad</option>
+              <option data-i18n="settings.alerts.select_activity" value="">Selecciona una actividad</option>
             </select>
           </label>
 
           <label class="field">
-            <span>Playa</span>
+            <span data-i18n="settings.alerts.beach">Playa</span>
             <select id="alertsBeachSelect" required>
-              <option value="">Selecciona una playa</option>
+              <option data-i18n="settings.alerts.select_beach" value="">Selecciona una playa</option>
             </select>
           </label>
         </div>
 
         <div class="alerts-conditions">
-          <h3>Condiciones</h3>
+          <h3 data-i18n="settings.alerts.conditions">Condiciones</h3>
           <div class="alerts-form-grid">
             <label class="field">
-              <span>Temperatura mín. (ºC)</span>
-              <input id="alertMinTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 22">
+              <span data-i18n="weather.temp_min">Temperatura mín. (ºC)</span>
+              <input data-i18n-placeholder="placeholders.temp_min" id="alertMinTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 22">
             </label>
 
             <label class="field">
-              <span>Temperatura máx. (ºC)</span>
-              <input id="alertMaxTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 30">
+              <span data-i18n="weather.temp_max">Temperatura máx. (ºC)</span>
+              <input data-i18n-placeholder="placeholders.temp_max" id="alertMaxTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 30">
             </label>
 
             <label class="field">
-              <span>Viento mín. (km/h)</span>
-              <input id="alertMinWind" type="number" step="1" min="0" max="60" placeholder="Ej: 8">
+              <span data-i18n="weather.wind_min">Viento mín. (km/h)</span>
+              <input data-i18n-placeholder="placeholders.wind_min" id="alertMinWind" type="number" step="1" min="0" max="60" placeholder="Ej: 8">
             </label>
 
             <label class="field">
-              <span>Viento máx. (km/h)</span>
-              <input id="alertMaxWind" type="number" step="1" min="0" max="60" placeholder="Ej: 20">
+              <span data-i18n="weather.wind_max">Viento máx. (km/h)</span>
+              <input data-i18n-placeholder="placeholders.wind_max" id="alertMaxWind" type="number" step="1" min="0" max="60" placeholder="Ej: 20">
             </label>
 
             <label class="field">
-              <span>Nubosidad mín. (%)</span>
-              <input id="alertMinCloud" type="number" step="1" min="0" max="100" placeholder="Ej: 0">
+              <span data-i18n="weather.cloud_min">Nubosidad mín. (%)</span>
+              <input data-i18n-placeholder="placeholders.cloud_min" id="alertMinCloud" type="number" step="1" min="0" max="100" placeholder="Ej: 0">
             </label>
 
             <label class="field">
-              <span>Nubosidad máx. (%)</span>
-              <input id="alertMaxCloud" type="number" step="1" min="0" max="100" placeholder="Ej: 25">
+              <span data-i18n="weather.cloud_max">Nubosidad máx. (%)</span>
+              <input data-i18n-placeholder="placeholders.cloud_max" id="alertMaxCloud" type="number" step="1" min="0" max="100" placeholder="Ej: 25">
             </label>
 
             <label class="field">
-              <span>Oleaje mín. (m)</span>
-              <input id="alertMinWave" type="number" step="0.1" min="0" max="5" placeholder="Ej: 0.5">
+              <span data-i18n="weather.waves_min">Oleaje mín. (m)</span>
+              <input data-i18n-placeholder="placeholders.waves_min" id="alertMinWave" type="number" step="0.1" min="0" max="5" placeholder="Ej: 0.5">
             </label>
 
             <label class="field">
-              <span>Oleaje máx. (m)</span>
-              <input id="alertMaxWave" type="number" step="0.1" min="0" max="5" placeholder="Ej: 1.5">
+              <span data-i18n="weather.waves_max">Oleaje máx. (m)</span>
+              <input data-i18n-placeholder="placeholders.waves_max" id="alertMaxWave" type="number" step="0.1" min="0" max="5" placeholder="Ej: 1.5">
             </label>
           </div>
         </div>
 
         <div class="actions">
-          <button class="btn-primary auth-submit" id="saveCurrentAlertBtn" type="submit">
+          <button data-i18n="settings.alerts.save_alert" class="btn-primary auth-submit" id="saveCurrentAlertBtn" type="submit">
             Guardar alerta
           </button>
-          <button class="btn-secondary" id="cancelAlertEditBtn" type="button" hidden>
+          <button data-i18n="settings.alerts.cancel_editing" class="btn-secondary" id="cancelAlertEditBtn" type="button" hidden>
             Cancelar edición
           </button>
         </div>
@@ -1019,8 +1019,8 @@
 
       <div class="onboarding-footer">
 
-        <span id="onboarding-progress">Paso 1 de 3</span>
-        <button id="btn-skip-all" type="button">
+        <span data-i18n="onboarding.step_1_of_3" id="onboarding-progress">Paso 1 de 3</span>
+        <button data-i18n="onboarding.skip_all" id="btn-skip-all" type="button">
           Omitir todo
         </button>
       </div>
@@ -1034,12 +1034,12 @@
     <div class="auth-modal reviews-modal">
 
       <button class="modal-close" id="closeReviewsModal" type="button">&times;</button>
-      <h2>Reseñas de la playa</h2>
+      <h2 data-i18n="reviews.title">Reseñas de la playa</h2>
 
 
       <div id="reviewsList" class="reviews-list">
 
-        <div class="empty-state">Cargando reseñas...</div>
+        <div data-i18n="reviews.downloading_reviews" class="empty-state">Cargando reseñas...</div>
       </div>
 
 
@@ -1057,8 +1057,8 @@
 
 
 
-        <textarea id="reviewText" placeholder="Escribe tu reseña..."></textarea>
-        <button class="btn-primary" type="submit">Añadir reseña</button>
+        <textarea data-i18n-placeholder="placeholders.review_comment" id="reviewText" placeholder="Escribe tu reseña..."></textarea>
+        <button data-i18n="reviews.add_review" class="btn-primary" type="submit">Añadir reseña</button>
       </form>
 
     </div>
