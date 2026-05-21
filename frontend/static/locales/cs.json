@@ -184,7 +184,35 @@
   "tide": {
     "low": "Nízký",
     "medium": "Střední",
-    "high": "Vysoký"
+    "high": "Vysoký",
+    "rising": "Stoupající",
+    "falling": "Klesající",
+    "high_tide": "Příliv",
+    "low_tide": "Odliv"
+  },
+  "recommendation": {
+    "recommended_between": "Doporučeno mezi {start} a {end}",
+    "recommended_at": "Doporučeno v {time}",
+    "recommended_now": "Doporučeno v tuto dobu",
+    "because": "kvůli",
+    "and": "a",
+    "of": "",
+    "also_ideal": "Pláž se navíc obzvlášť dobře hodí pro vybranou aktivitu.",
+    "generic": "Podmínky vyhodnoceny pro vybranou aktivitu.",
+    "factors": {
+      "air_temp": "průměrná teplota vzduchu",
+      "wind_speed": "průměrná rychlost větru",
+      "wave_height": "průměrná výška vln",
+      "water_temp": "teplota vody",
+      "cloud_cover": "průměrná oblačnost",
+      "rain_probability": "průměrná pravděpodobnost deště",
+      "uv_index": "průměrný UV index"
+    }
+  },
+  "reviews": {
+    "loading": "Načítají se recenze...",
+    "load_error": "Chyba při načítání recenzí.",
+    "empty": "Zatím žádné recenze."
   },
   "admin": {
     "management": {
