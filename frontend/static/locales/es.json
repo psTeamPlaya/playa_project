@@ -14,14 +14,14 @@
     "results": "Playas recomendadas",
     "see_map": "Ver mapa",
     "in_map_title": "Mapa de playas recomendadas",
-    "in_map_description": "Consulta el ranking y score de cada playa directamente en el mapa."
+    "in_map_description": "Consulta el ranking y score de cada playa directamente en el mapa.",
     "language": "Idioma"
   },
   "common": {
     "reset": "Reset",
     "date": "Fecha",
     "time": "Hora",
-    "time_end": "Hora de fin,
+    "time_end": "Hora de fin",
     "submit": "Enviar",
     "cancel": "Cancelar",
     "close": "Cerrar",
@@ -75,7 +75,7 @@
     "walking": "Pasear",
     "fishing": "Pescar",
     "kayaking": "Kayak",
-    "no_activities_available": "No hay actividades disponibles en este momento."
+    "no_activities_available": "No hay actividades disponibles en este momento.",
     "paddle_surfing": "Paddle surf",
     "bodyboarding": "Bodyboard",
     "beach_volleyball": "Vóley playa",
@@ -147,7 +147,7 @@
     "enter": "Entrar a mi cuenta",
     "no_account_question": "¿Sin cuenta?",
     "or_continue_with": "o continúa con",
-    "access": "Acceder"
+    "access": "Acceder",
     "create_account": "Crear cuenta",
     "already_have_account": "¿Ya tienes cuenta?",
     "signing_in": "Accediendo...",
