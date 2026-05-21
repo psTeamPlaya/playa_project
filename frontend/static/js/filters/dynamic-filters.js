@@ -1,4 +1,5 @@
 import { t } from "/static/js/languages/i18n.js";
+import { formatTemperature, formatWindSpeed, refreshMeasurementLabels } from "../shared/units.js";
 
 export const WIND_FILTER_DEFAULTS = { min: 0, max: 15 };
 export const CLOUD_FILTER_DEFAULTS = { min: 0, max: 20 };
@@ -18,6 +19,7 @@ export function createDynamicFilters(elements) {
             resetBtn: elements.filterWindReset,
             defaults: WIND_FILTER_DEFAULTS,
             decimal: false,
+            displayFormatter: (value) => formatWindSpeed(value),
             paramMin: "min_velocidad_viento",
             paramMax: "max_velocidad_viento",
             timeoutId: null
@@ -48,6 +50,7 @@ export function createDynamicFilters(elements) {
             resetBtn: elements.filterTemperatureReset,
             defaults: TEMPERATURE_FILTER_DEFAULTS,
             decimal: false,
+            displayFormatter: (value) => formatTemperature(value),
             paramMin: "min_temperatura_ambiente",
             paramMax: "max_temperatura_ambiente",
             timeoutId: null
@@ -109,7 +112,12 @@ export function actualizarFiltroDinamicoUI(filtro) {
         filtro.maxInput.value = String(max);
     }
 
-    const formatear = (val) => filtro.decimal ? formatearValorDecimalFiltro(val) : String(val);
+    const formatear = (val) => {
+        if (typeof filtro.displayFormatter === "function") {
+            return filtro.displayFormatter(val);
+        }
+        return filtro.decimal ? formatearValorDecimalFiltro(val) : String(val);
+    };
 
     if (filtro.minLabel) filtro.minLabel.textContent = formatear(min);
     if (filtro.maxLabel) filtro.maxLabel.textContent = formatear(max);
@@ -194,6 +202,11 @@ export function initDynamicFilters({
     onFiltersChange
 }) {
     let dynamicFiltersLightTimeout;
+    const handleLanguageChange = () => {
+        refreshMeasurementLabels();
+        dynamicFilters.forEach(actualizarFiltroDinamicoUI);
+        actualizarToggleFiltrosDinamicos(disableDynamicFilters, dynamicFilters);
+    };
 
     dynamicFilters.forEach(filtro => {
         if (filtro.disabledCheck) {
@@ -239,8 +252,10 @@ export function initDynamicFilters({
         }
     });
 
+    refreshMeasurementLabels();
     dynamicFilters.forEach(actualizarFiltroDinamicoUI);
     actualizarToggleFiltrosDinamicos(disableDynamicFilters, dynamicFilters);
+    window.addEventListener("app-language-change", handleLanguageChange);
 
     return {
         dynamicFilters,
@@ -249,6 +264,7 @@ export function initDynamicFilters({
         desactivarFiltrosDinamicos: () => desactivarFiltrosDinamicos(dynamicFilters),
         estanTodosLosFiltrosDinamicosDesactivados: () => estanTodosLosFiltrosDinamicosDesactivados(dynamicFilters),
         actualizarToggleFiltrosDinamicos: () => actualizarToggleFiltrosDinamicos(disableDynamicFilters, dynamicFilters),
-        alternarFiltrosDinamicos: () => alternarFiltrosDinamicos(dynamicFilters, disableDynamicFilters)
+        alternarFiltrosDinamicos: () => alternarFiltrosDinamicos(dynamicFilters, disableDynamicFilters),
+        refreshUnits: handleLanguageChange
     };
 }

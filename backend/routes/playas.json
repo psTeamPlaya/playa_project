@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "nombre": "Las Canteras",
+    "ubicacion": "Las Palmas, Canarias, España",
+    "latitud": 28.145901,
+    "longitud": -15.431296,
+    "tipo": "arena",
+    "descripcion": "Playa urbana muy conocida, amplia y con gran disponibilidad de servicios.",
+    "actividades_ideales": [
+      {
+        "actividad": "bucear",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "caminar",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "kayak",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "nadar",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "paddle_surf",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "gestionado desde panel admin"
+      }
+    ],
+    "servicios": {
+      "balnearios": true,
+      "comida_para_llevar": true,
+      "hamacas": true,
+      "restaurantes": true,
+      "zona_deportiva": true,
+      "escuela_de_voleyplaya": true
+    },
+    "imagen": "las_canteras.jpg",
+    "accesibilidad": "alta"
+  }
+]

@@ -48,6 +48,10 @@ export function t(key, params = {}) {
   }, value);
 }
 
+export function getCurrentLanguage() {
+  return currentLang;
+}
+
 function setTextBySelector(selector, key) {
   const element = document.querySelector(selector);
   if (element) {
