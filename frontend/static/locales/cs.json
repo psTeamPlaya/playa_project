@@ -21,6 +21,8 @@
     "reset_filters": "Vymazat statické filtry",
     "disable_dynamic_filters": "Vypnout dynamické filtry",
     "enable_dynamic_filters": "Zapnout dynamické filtry",
+    "deactivate_filter": "Deaktivovat filtr",
+    "activate_filter": "Aktivovat filtr",
     "services": {
       "title": "Služby",
       "restaurant": "Restaurace",

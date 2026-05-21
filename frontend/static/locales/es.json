@@ -17,11 +17,12 @@
     "in_map_description": "Consulta el ranking y score de cada playa directamente en el mapa."
   },
   "common": {
-    "reset": "reset",
+    "reset": "Reset",
     "date": "Fecha",
     "time": "Hora",
     "submit": "Enviar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "add": "Añadir"
   },
   "search": {
     "search_beaches": "Buscar playas recomendadas",
@@ -46,6 +47,7 @@
     "empty_results": "Por ahora no hay ninguna recomendacion de playas."
   },
   "activities": {
+    "title": "Actividades",
     "sunbathing": "Tomar el sol",
     "swimming": "Nadar",
     "surfing": "Surf",
@@ -90,7 +92,10 @@
   },
   "placeholders": {
     "city": "Ej: Las Palmas",
-    "email": "tu@correo.com o admin"
+    "email": "tu@correo.com o admin",
+    "image": "nombre_imagen.jpg",
+    "activity": "Ej: paddle surf",
+    "service": "Ej: hamacas"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -100,13 +105,45 @@
     "password": "Contraseña",
     "confirm_password": "Confirmar contraseña",
     "enter": "Entrar a mi cuenta",
-    "no_account_question": "¿Sin cuenta?"
+    "no_account_question": "¿Sin cuenta?",
+    "or_continue_with": "o continúa con",
+    "access": "Acceder"
   },
   "admin": {
     "management": {
       "users": "Gestión de usuarios",
+      "users_description": "Panel básico para revisar usuarios, banearlos o eliminar cuentas no administradoras.",
       "beaches": "Gestión de playas",
+      "beaches_description": "Añade nuevas playas o modifica las existentes con sus actividades y servicios.",
       "reviews": "Gestión de reseñas"
+    },
+    "users": "Usuarios",
+    "recent_history_title": "Historial reciente",
+    "beach_management": {
+      "new_beach": "Nueva playa",
+      "edit_beach": "Editar playa",
+      "delete_beach": "Eliminar playa",
+      "save_beach": "Guardar playa",
+      "name": "Nombre",
+      "location": "Ubicación",
+      "accessibility": "Accesibilidad",
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja",
+      "latitude": "Latitud",
+      "longitude": "Longitud",
+      "location_on_map": "Ubicación en mapa",
+      "choose_on_map": "Elegir en mapa",
+      "map_help": "                  Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.",
+      "map_label": "Mapa para seleccionar ubicación de la playa",
+      "image": "Imagen",
+      "description": "Descripción",
+      "activity_catalog": "Catálogo de actividades",
+      "activity_catalog_description": "Crea o elimina actividades disponibles para asignarlas a las playas.",
+      "activity_weight": "Pesos de la actividad",
+      "activity_weight_description": "Define la importancia relativa de cada variable. No hace falta que sumen 1: se normalizan automáticamente.",
+      "service_catalog": "Catálogo de servicios",
+      "service_catalog_description": "Gestiona los servicios globales que luego podrás marcar en cada playa."
     }
   }
 }
