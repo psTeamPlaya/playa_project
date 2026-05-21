@@ -1,6 +1,7 @@
 import { t } from "../languages/i18n.js";
 import "../review-photo/galllery-photos.js";
 import { formatearMarea, formatearServicios } from "../shared/formatters.js";
+import { formatTemperature, formatWindSpeed, getTemperatureUnit, getWindSpeedUnit } from "../shared/units.js";
 
 const DEFAULT_OPTIONS = {
     emptyMessage: null,
@@ -200,10 +201,10 @@ export function pintarResultados(resultados, container, options = {}) {
                     <div class="meta-list">
                         ${renderIntervalChip(condiciones)}
                         <span class="chip">${ICONS.beachType} ${t("results.beach_type")}: ${playa.tipo}</span>
-                        <span class="chip">${ICONS.airTemp} ${t("results.avg_air_temp")}: ${formatConditionValue(condiciones.air_temp)} \u00baC</span>
+                        <span class="chip">${ICONS.airTemp} ${t("results.avg_air_temp")}: ${formatTemperature(condiciones.air_temp)} ${getTemperatureUnit()}</span>
                         <span class="chip">${ICONS.wave} ${t("results.avg_wave")}: ${formatConditionValue(condiciones.wave_height, { quarterStep: true })} m</span>
-                        <span class="chip">${ICONS.wind} ${t("results.avg_wind")}: ${formatConditionValue(condiciones.wind_speed)} km/h</span>
-                        <span class="chip">${ICONS.waterTemp} ${t("results.avg_water_temp")}: ${formatConditionValue(condiciones.water_temp)} \u00baC</span>
+                        <span class="chip">${ICONS.wind} ${t("results.avg_wind")}: ${formatWindSpeed(condiciones.wind_speed)} ${getWindSpeedUnit()}</span>
+                        <span class="chip">${ICONS.waterTemp} ${t("results.avg_water_temp")}: ${formatTemperature(condiciones.water_temp)} ${getTemperatureUnit()}</span>
                         <span class="chip">${ICONS.cloud} ${t("results.avg_cloud")}: ${formatConditionValue(condiciones.cloud_cover)}%</span>
                         <span class="chip">${ICONS.rain} ${t("results.avg_rain")}: ${formatConditionValue(condiciones.rain_probability)}%</span>
                         ${renderTideChips(condiciones)}

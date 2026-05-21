@@ -336,15 +336,15 @@
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="viento">
 
-          <div class="dynamic-filter-title">Viento(km/h)</div>
+          <div class="dynamic-filter-title" data-i18n="weather.wind">Viento(km/h)</div>
 
           <div class="dynamic-filter-slider">
 
             <div class="range-values">
 
-              <span><strong id="windMinValue">0</strong> km/h</span>
+              <span><strong id="windMinValue">0</strong> <span data-unit-label="wind-speed">km/h</span></span>
 
-              <span><strong id="windMaxValue">15</strong> km/h</span>
+              <span><strong id="windMaxValue">15</strong> <span data-unit-label="wind-speed">km/h</span></span>
 
             </div>
 
@@ -382,15 +382,15 @@
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="temperatura">
 
-          <div class="dynamic-filter-title">Temp.(&ordm;C)</div>
+          <div class="dynamic-filter-title" data-i18n="weather.temp">Temp.(&ordm;C)</div>
 
           <div class="dynamic-filter-slider">
 
             <div class="range-values">
 
-            <span><strong id="temperatureMinValue">20</strong> ºC</span>
+            <span><strong id="temperatureMinValue">20</strong> <span data-unit-label="temperature">&ordm;C</span></span>
 
-            <span><strong id="temperatureMaxValue">29</strong> ºC</span>
+            <span><strong id="temperatureMaxValue">29</strong> <span data-unit-label="temperature">&ordm;C</span></span>
 
           </div>
 
@@ -563,19 +563,19 @@
 
             <input type="radio" id="rango5" name="rango" value="5">
 
-            <label for="rango5">5 km</label>
+            <label for="rango5" data-distance-km="5">5 km</label>
 
 
 
             <input type="radio" id="rango15" name="rango" value="15">
 
-            <label for="rango15">15 km</label>
+            <label for="rango15" data-distance-km="15">15 km</label>
 
 
 
             <input type="radio" id="rango50" name="rango" value="50" checked>
 
-            <label for="rango50">50 km</label>
+            <label for="rango50" data-distance-km="50">50 km</label>
 
           </div>
 
@@ -1282,22 +1282,22 @@
             </label>
 
             <label class="field">
-              <span>Temperatura mín. (ºC)</span>
+              <span>Temperatura mín. (<span data-unit-label="temperature">&ordm;C</span>)</span>
               <input id="alertMinTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 22">
             </label>
 
             <label class="field">
-              <span>Temperatura máx. (ºC)</span>
+              <span>Temperatura máx. (<span data-unit-label="temperature">&ordm;C</span>)</span>
               <input id="alertMaxTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 30">
             </label>
 
             <label class="field">
-              <span>Viento mín. (km/h)</span>
+              <span>Viento mín. (<span data-unit-label="wind-speed">km/h</span>)</span>
               <input id="alertMinWind" type="number" step="1" min="0" max="60" placeholder="Ej: 8">
             </label>
 
             <label class="field">
-              <span>Viento máx. (km/h)</span>
+              <span>Viento máx. (<span data-unit-label="wind-speed">km/h</span>)</span>
               <input id="alertMaxWind" type="number" step="1" min="0" max="60" placeholder="Ej: 20">
             </label>
 

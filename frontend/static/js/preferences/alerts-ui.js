@@ -1,4 +1,13 @@
 import { authFetch } from "../api/auth-fetch.js";
+import {
+    convertTemperatureToMetric,
+    convertWindSpeedToMetric,
+    formatTemperature,
+    formatWindSpeed,
+    getTemperatureUnit,
+    getWindSpeedUnit,
+    refreshMeasurementLabels,
+} from "../shared/units.js";
 
 const FILTER_FIELDS = [
     ["min_temperatura_ambiente", "Temperatura mín.", "ºC"],
@@ -13,6 +22,17 @@ const FILTER_FIELDS = [
 const WEEKDAY_LABELS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const WEEKDAY_SHORT_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
+const FILTER_FIELD_FORMATTERS = {
+    min_temperatura_ambiente: { unit: () => getTemperatureUnit(), formatValue: (value) => formatTemperature(value) },
+    max_temperatura_ambiente: { unit: () => getTemperatureUnit(), formatValue: (value) => formatTemperature(value) },
+    min_velocidad_viento: { unit: () => getWindSpeedUnit(), formatValue: (value) => formatWindSpeed(value) },
+    max_velocidad_viento: { unit: () => getWindSpeedUnit(), formatValue: (value) => formatWindSpeed(value) },
+    min_nubosidad: { unit: () => "%", formatValue: (value) => String(Math.round(Number(value))) },
+    max_nubosidad: { unit: () => "%", formatValue: (value) => String(Math.round(Number(value))) },
+    min_altura_oleaje: { unit: () => "m", formatValue: (value) => String(Number(value)) },
+    max_altura_oleaje: { unit: () => "m", formatValue: (value) => String(Number(value)) },
+};
+
 function escapeHtml(value = "") {
     return String(value)
         .replaceAll("&", "&amp;")
@@ -25,7 +45,14 @@ function escapeHtml(value = "") {
 function formatAlertFilters(filters = {}) {
     const formatted = FILTER_FIELDS
         .filter(([key]) => filters[key] !== undefined && filters[key] !== null && filters[key] !== "")
-        .map(([key, label, unit]) => `${label}: ${filters[key]} ${unit}`.trim());
+        .map(([key, label, unit]) => {
+            const formatter = FILTER_FIELD_FORMATTERS[key];
+            if (!formatter) {
+                return `${label}: ${filters[key]} ${unit}`.trim();
+            }
+
+            return `${label}: ${formatter.formatValue(filters[key])} ${formatter.unit()}`.trim();
+        });
 
     return formatted.length > 0 ? formatted.join(" · ") : "Sin condiciones extra";
 }
@@ -37,6 +64,43 @@ function parseOptionalNumber(value) {
 
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
+}
+
+function setAlertInputValue(input, value, formatter = (currentValue) => currentValue) {
+    if (!input) {
+        return;
+    }
+
+    input.value = value === undefined || value === null || value === ""
+        ? ""
+        : formatter(value);
+}
+
+function refreshAlertMeasurementInputs({
+    alertMinTemperatureInput,
+    alertMaxTemperatureInput,
+    alertMinWindInput,
+    alertMaxWindInput,
+}) {
+    refreshMeasurementLabels();
+
+    const temperatureUnit = getTemperatureUnit();
+    const windUnit = getWindSpeedUnit();
+    const temperatureMin = temperatureUnit === "\u00B0F" ? "32" : "0";
+    const temperatureMax = temperatureUnit === "\u00B0F" ? "113" : "45";
+    const windMax = windUnit === "mph" ? "37" : "60";
+
+    [alertMinTemperatureInput, alertMaxTemperatureInput].forEach((input) => {
+        if (!input) return;
+        input.min = temperatureMin;
+        input.max = temperatureMax;
+    });
+
+    [alertMinWindInput, alertMaxWindInput].forEach((input) => {
+        if (!input) return;
+        input.min = "0";
+        input.max = windMax;
+    });
 }
 
 function normalizeWeekdays(filters = {}) {
@@ -191,6 +255,13 @@ export function initAlertsUI({
             saveCurrentAlertBtn.textContent = "Guardar alerta";
         }
 
+        refreshAlertMeasurementInputs({
+            alertMinTemperatureInput,
+            alertMaxTemperatureInput,
+            alertMinWindInput,
+            alertMaxWindInput,
+        });
+
         const preferred = preservePreferredActivity ? getPreferredActivityName?.() || "" : "";
         if (preferred && alertsActivitySelect && activityOptions.some((activity) => activity.name === preferred)) {
             alertsActivitySelect.value = preferred;
@@ -264,10 +335,10 @@ export function initAlertsUI({
             dias_semana: selectedWeekdays.length > 0 ? selectedWeekdays : null,
             hora_inicio: parseOptionalNumber(alertStartHourInput?.value),
             hora_fin: parseOptionalNumber(alertEndHourInput?.value),
-            min_temperatura_ambiente: parseOptionalNumber(alertMinTemperatureInput?.value),
-            max_temperatura_ambiente: parseOptionalNumber(alertMaxTemperatureInput?.value),
-            min_velocidad_viento: parseOptionalNumber(alertMinWindInput?.value),
-            max_velocidad_viento: parseOptionalNumber(alertMaxWindInput?.value),
+            min_temperatura_ambiente: convertTemperatureToMetric(parseOptionalNumber(alertMinTemperatureInput?.value)),
+            max_temperatura_ambiente: convertTemperatureToMetric(parseOptionalNumber(alertMaxTemperatureInput?.value)),
+            min_velocidad_viento: convertWindSpeedToMetric(parseOptionalNumber(alertMinWindInput?.value)),
+            max_velocidad_viento: convertWindSpeedToMetric(parseOptionalNumber(alertMaxWindInput?.value)),
             min_nubosidad: parseOptionalNumber(alertMinCloudInput?.value),
             max_nubosidad: parseOptionalNumber(alertMaxCloudInput?.value),
             min_altura_oleaje: parseOptionalNumber(alertMinWaveInput?.value),
@@ -333,18 +404,10 @@ export function initAlertsUI({
         if (alertEndHourInput) {
             alertEndHourInput.value = alert.filters?.hora_fin ?? "";
         }
-        if (alertMinTemperatureInput) {
-            alertMinTemperatureInput.value = alert.filters?.min_temperatura_ambiente ?? "";
-        }
-        if (alertMaxTemperatureInput) {
-            alertMaxTemperatureInput.value = alert.filters?.max_temperatura_ambiente ?? "";
-        }
-        if (alertMinWindInput) {
-            alertMinWindInput.value = alert.filters?.min_velocidad_viento ?? "";
-        }
-        if (alertMaxWindInput) {
-            alertMaxWindInput.value = alert.filters?.max_velocidad_viento ?? "";
-        }
+        setAlertInputValue(alertMinTemperatureInput, alert.filters?.min_temperatura_ambiente, (value) => formatTemperature(value));
+        setAlertInputValue(alertMaxTemperatureInput, alert.filters?.max_temperatura_ambiente, (value) => formatTemperature(value));
+        setAlertInputValue(alertMinWindInput, alert.filters?.min_velocidad_viento, (value) => formatWindSpeed(value));
+        setAlertInputValue(alertMaxWindInput, alert.filters?.max_velocidad_viento, (value) => formatWindSpeed(value));
         if (alertMinCloudInput) {
             alertMinCloudInput.value = alert.filters?.min_nubosidad ?? "";
         }
@@ -363,6 +426,12 @@ export function initAlertsUI({
         if (saveCurrentAlertBtn) {
             saveCurrentAlertBtn.textContent = "Guardar cambios";
         }
+        refreshAlertMeasurementInputs({
+            alertMinTemperatureInput,
+            alertMaxTemperatureInput,
+            alertMinWindInput,
+            alertMaxWindInput,
+        });
         setFeedback(`Editando alerta para ${alert.beach_label || alert.activity_label}.`, false);
         openEditor({ isEditing: true });
     }
@@ -560,6 +629,19 @@ export function initAlertsUI({
         const deleteButton = event.target.closest(".alert-delete-btn");
         if (deleteButton) {
             await deleteAlert(deleteButton.dataset.alertId);
+        }
+    });
+
+    window.addEventListener("app-language-change", () => {
+        refreshAlertMeasurementInputs({
+            alertMinTemperatureInput,
+            alertMaxTemperatureInput,
+            alertMinWindInput,
+            alertMaxWindInput,
+        });
+
+        if (alertsList && !alertsModal?.hidden) {
+            renderAlerts(lastLoadedAlerts);
         }
     });
 
