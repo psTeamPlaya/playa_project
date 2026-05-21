@@ -1,6 +1,12 @@
 import { t } from "../languages/i18n.js";
 import "../review-photo/galllery-photos.js";
-import { formatearMarea, formatearServicios } from "../shared/formatters.js";
+import {
+    formatearEtiquetaEventoMarea,
+    formatearMarea,
+    formatearMotivoRecomendacion,
+    formatearServicios,
+    formatearTipoPlaya,
+} from "../shared/formatters.js";
 import { formatTemperature, formatWindSpeed, getTemperatureUnit, getWindSpeedUnit } from "../shared/units.js";
 
 const DEFAULT_OPTIONS = {
@@ -44,7 +50,7 @@ function renderMotivo(playa, options) {
     }
     return `
         <div class="motivo detalle-box">
-            <strong>${t("results.recommendation_explanation")}:</strong> ${playa.motivo}
+            <strong>${t("results.recommendation_explanation")}:</strong> ${formatearMotivoRecomendacion(playa.motivo)}
         </div>
     `;
 }
@@ -67,7 +73,7 @@ function renderTideEventChips(condiciones = {}) {
     if (events.length > 0) {
         return events
             .filter((event) => event?.label && event?.hour)
-            .map((event) => `<span class="chip">\u23F0 ${event.label}: ${event.hour}</span>`)
+            .map((event) => `<span class="chip">\u23F0 ${formatearEtiquetaEventoMarea(event.label)}: ${event.hour}</span>`)
             .join("");
     }
 
@@ -77,7 +83,7 @@ function renderTideEventChips(condiciones = {}) {
         return "";
     }
 
-    return `<span class="chip">\u23F0 ${label}: ${hour}</span>`;
+    return `<span class="chip">\u23F0 ${formatearEtiquetaEventoMarea(label)}: ${hour}</span>`;
 }
 
 function renderTideChips(condiciones = {}) {
@@ -200,7 +206,7 @@ export function pintarResultados(resultados, container, options = {}) {
 
                     <div class="meta-list">
                         ${renderIntervalChip(condiciones)}
-                        <span class="chip">${ICONS.beachType} ${t("results.beach_type")}: ${playa.tipo}</span>
+                        <span class="chip">${ICONS.beachType} ${t("results.beach_type")}: ${formatearTipoPlaya(playa.tipo)}</span>
                         <span class="chip">${ICONS.airTemp} ${t("results.avg_air_temp")}: ${formatTemperature(condiciones.air_temp)} ${getTemperatureUnit()}</span>
                         <span class="chip">${ICONS.wave} ${t("results.avg_wave")}: ${formatConditionValue(condiciones.wave_height, { quarterStep: true })} m</span>
                         <span class="chip">${ICONS.wind} ${t("results.avg_wind")}: ${formatWindSpeed(condiciones.wind_speed)} ${getWindSpeedUnit()}</span>

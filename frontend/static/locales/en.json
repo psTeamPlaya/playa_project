@@ -184,7 +184,35 @@
   "tide": {
     "low": "Low",
     "medium": "Medium",
-    "high": "High"
+    "high": "High",
+    "rising": "Rising",
+    "falling": "Falling",
+    "high_tide": "High tide",
+    "low_tide": "Low tide"
+  },
+  "recommendation": {
+    "recommended_between": "Recommended between {start} and {end}",
+    "recommended_at": "Recommended at {time}",
+    "recommended_now": "Recommended at that time",
+    "because": "because of",
+    "and": "and",
+    "of": "of",
+    "also_ideal": "Also, this beach is a particularly good match for the selected activity.",
+    "generic": "Conditions evaluated for the selected activity.",
+    "factors": {
+      "air_temp": "average air temperature",
+      "wind_speed": "average wind speed",
+      "wave_height": "average wave height",
+      "water_temp": "water temperature",
+      "cloud_cover": "average cloudiness",
+      "rain_probability": "average rain probability",
+      "uv_index": "average UV index"
+    }
+  },
+  "reviews": {
+    "loading": "Loading reviews...",
+    "load_error": "Error loading reviews.",
+    "empty": "No reviews yet."
   },
   "admin": {
     "management": {

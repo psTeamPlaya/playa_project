@@ -2,4 +2,4 @@ TODO: nueva rama para trabajar con ReDIS (BBDD).
 TODO: buscar info sobre playas ideales para bodyboard, windsurf, kitesurf y paddle-surf.
 TODO: añadir los servicios a los filtros estáticos
 TODO: unidades de medida si idioma ingles.
-TODO: no guarda alertas para nestor.henriquez@gmail.com
+TODO: en el mapa donde se ven las playas del ranking encontradas, en vez de que aparezca el ranking de la playa, que aparezca también el nombre de la junto al ranking (results-map-marker)
