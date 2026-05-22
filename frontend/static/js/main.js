@@ -42,7 +42,8 @@ const languageFlags = {
     es: "🇪🇸",
     en: "🇬🇧",
     cs: "🇨🇿",
-    de: "🇩🇪"
+    de: "🇩🇪",
+    sv: "🇸🇪"
 };
 
 const activityCards = document.querySelectorAll(".activity-card");
