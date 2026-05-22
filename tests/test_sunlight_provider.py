@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from backend.sunlight_provider import obtener_aviso_luz_solar
+from backend.sunlight_provider import SunlightError, obtener_aviso_luz_solar
 
 
 def test_avisa_si_tomar_sol_es_antes_del_amanecer(monkeypatch):
@@ -101,3 +101,25 @@ def test_avisa_si_la_hora_fin_supera_la_puesta_de_sol(monkeypatch):
         "mensaje": "La hora de fin supera la puesta de sol. A partir de las 20:18 horas ya no habrá sol.",
         "bloqueante": False,
     }
+
+
+def test_usa_calculo_local_si_open_meteo_falla(monkeypatch):
+    def fake_fetch(*args, **kwargs):
+        raise SunlightError("rate limited")
+
+    monkeypatch.setattr("backend.sunlight_provider._fetch_sunrise_sunset", fake_fetch)
+
+    aviso = obtener_aviso_luz_solar(
+        actividad="tomar_sol",
+        playas=[{"latitud": 28.1235, "longitud": -15.4363}],
+        fecha="2026-05-22",
+        hora="22:00",
+        hora_fin="23:00",
+        timezone="Atlantic/Canary",
+        timeout_seconds=10,
+    )
+
+    assert aviso is not None
+    assert aviso["tipo"] == "despues_atardecer"
+    assert aviso["bloqueante"] is True
+    assert "El sol se pondr" in aviso["mensaje"]

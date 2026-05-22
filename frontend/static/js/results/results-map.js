@@ -7,17 +7,18 @@ function hasValidCoords(playa) {
     return Number.isFinite(Number(playa?.latitud)) && Number.isFinite(Number(playa?.longitud));
 }
 
-function createMarkerIcon(rank, score) {
+function createMarkerIcon(rank, beachName, score) {
     return L.divIcon({
         className: "results-map-marker-wrapper",
         html: `
             <div class="results-map-marker">
                 <span class="results-map-marker-rank">#${rank}</span>
+                <span class="results-map-marker-name">${beachName}</span>
                 <span class="results-map-marker-score">${score}</span>
             </div>
         `,
-        iconSize: [92, 34],
-        iconAnchor: [46, 17]
+        iconSize: [160, 34],
+        iconAnchor: [80, 17]
     });
 }
 
@@ -89,10 +90,11 @@ export function initResultsMap() {
             const lng = Number(playa.longitud);
             const rank = index + 1;
             const numericScore = Number(playa.score);
+            const beachName = playa.nombre || t("map.location_unavailable");
             const score = Number.isFinite(numericScore) ? numericScore.toFixed(1) : "N/A";
 
             const marker = L.marker([lat, lng], {
-                icon: createMarkerIcon(rank, score)
+                icon: createMarkerIcon(rank, beachName, score)
             });
 
             marker.bindPopup(buildPopup(playa, rank, score));
