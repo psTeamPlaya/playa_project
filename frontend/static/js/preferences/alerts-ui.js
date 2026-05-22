@@ -8,6 +8,7 @@ import {
     getWindSpeedUnit,
     refreshMeasurementLabels,
 } from "../shared/units.js";
+import { t } from "/static/js/languages/i18n.js";
 
 const FILTER_FIELDS = [
     ["min_temperatura_ambiente", "Temperatura mín.", "ºC"],
@@ -444,7 +445,7 @@ export function initAlertsUI({
         if (!Array.isArray(alerts) || alerts.length === 0) {
             alertsList.innerHTML = `
                 <div class="empty-state">
-                    <p>No tienes alertas guardadas.</p>
+                    <p data-i18n="settings.alerts.no_saved_alerts">${t('settings.alerts.no_saved_alerts')}</p>
                 </div>
             `;
             return;

@@ -712,7 +712,7 @@ function renderRecommendationResults(data, { shouldScroll = false } = {}) {
     const activityLabel = getActivityDisplayLabel({ name: actividadSeleccionada });
 
     if (horaInicio && horaFin) {
-        statusEl.textContent = t("search.status.found_interval", {
+        statusEl.textContent = t("results.recommendations_found", {
             count: data.resultados.length,
             activity: activityLabel,
             start: horaInicio,

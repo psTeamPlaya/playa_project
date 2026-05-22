@@ -258,9 +258,10 @@
       "select_activity": "Vyber aktivitu",
       "beach": "Pláž",
       "select_beach": "Vyber pláž",
-      "conditions": "Podmínky",
+      "conditions": "Nastavení upozornění",
       "save_alert": "Uložit upozornění",
-      "cancel_editing": "Zrušit úpravy"
+      "cancel_editing": "Zrušit úpravy",
+      "no_saved_alerts": "Nemáš uložená žádná upozornění."
     }
   },
   "onboarding": {
