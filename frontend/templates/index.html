@@ -250,12 +250,26 @@
         </fieldset>
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="viento">
+<<<<<<< HT16-languages-part2
           <div data-i18n="weather.wind" class="dynamic-filter-title">Viento(km/h)</div>
           <div class="dynamic-filter-slider">
 
             <div class="range-values">
               <span><strong id="windMinValue">0</strong> km/h</span>
               <span><strong id="windMaxValue">15</strong> km/h</span>
+=======
+
+          <div class="dynamic-filter-title" data-i18n="weather.wind">Viento(km/h)</div>
+
+          <div class="dynamic-filter-slider">
+
+            <div class="range-values">
+
+              <span><strong id="windMinValue">0</strong> <span data-unit-label="wind-speed">km/h</span></span>
+
+              <span><strong id="windMaxValue">15</strong> <span data-unit-label="wind-speed">km/h</span></span>
+
+>>>>>>> feature/njhm-recomendacion-playas-fecha-rango-horas
             </div>
 
             <div class="dual-range" id="windRangeTrack">
@@ -526,7 +540,14 @@
           cuenta</button>
       </form>
 
+      <div class="auth-divider">
+        <span>o</span>
+      </div>
 
+      <div id="googleSignInBtn"
+        data-client-id="{{ google_client_id }}"
+        class="auth-google-btn-wrapper">
+      </div>
 
       <div class="auth-error" id="loginErrorMessage"></div>
 

@@ -184,7 +184,35 @@
   "tide": {
     "low": "Niedrig",
     "medium": "Mittel",
-    "high": "Hoch"
+    "high": "Hoch",
+    "rising": "Steigend",
+    "falling": "Fallend",
+    "high_tide": "Flut",
+    "low_tide": "Ebbe"
+  },
+  "recommendation": {
+    "recommended_between": "Empfohlen zwischen {start} und {end}",
+    "recommended_at": "Empfohlen um {time}",
+    "recommended_now": "Empfohlen zu diesem Zeitpunkt",
+    "because": "wegen",
+    "and": "und",
+    "of": "von",
+    "also_ideal": "Außerdem passt der Strand besonders gut zur ausgewählten Aktivität.",
+    "generic": "Bedingungen für die ausgewählte Aktivität bewertet.",
+    "factors": {
+      "air_temp": "durchschnittliche Lufttemperatur",
+      "wind_speed": "durchschnittliche Windgeschwindigkeit",
+      "wave_height": "durchschnittliche Wellenhöhe",
+      "water_temp": "Wassertemperatur",
+      "cloud_cover": "durchschnittliche Bewölkung",
+      "rain_probability": "durchschnittliche Regenwahrscheinlichkeit",
+      "uv_index": "durchschnittlicher UV-Index"
+    }
+  },
+  "reviews": {
+    "loading": "Bewertungen werden geladen...",
+    "load_error": "Fehler beim Laden der Bewertungen.",
+    "empty": "Noch keine Bewertungen."
   },
   "admin": {
     "management": {

@@ -36,6 +36,7 @@ function getNestedValue(obj, path) {
 }
 
 export function t(key, params = {}) {
+<<<<<<< HT16-languages-part2
   let value =
     getNestedValue(translations, key) ||
     getNestedValue(fallbackTranslations, key) ||
@@ -45,6 +46,38 @@ export function t(key, params = {}) {
   Object.entries(params).forEach(([k, v]) => {
     value = value.replaceAll(`{{${k}}}`, v);
   });
+=======
+  const value = getNestedValue(translations, key)
+    || getNestedValue(fallbackTranslations, key)
+    || key;
+
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  return Object.entries(params).reduce((result, [paramKey, paramValue]) => {
+    return result.replaceAll(`{${paramKey}}`, String(paramValue));
+  }, value);
+}
+
+export function getCurrentLanguage() {
+  return currentLang;
+}
+
+function setTextBySelector(selector, key) {
+  const element = document.querySelector(selector);
+  if (element) {
+    element.textContent = t(key);
+  }
+}
+
+function setAriaBySelector(selector, key) {
+  const element = document.querySelector(selector);
+  if (element) {
+    element.setAttribute("aria-label", t(key));
+  }
+}
+>>>>>>> feature/njhm-recomendacion-playas-fecha-rango-horas
 
   return value;
 }

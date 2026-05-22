@@ -1,4 +1,5 @@
 import { authFetch } from "../api/auth-fetch.js";
+import { t } from "../languages/i18n.js";
 
 const resultsContainer = document.getElementById("resultsContainer");
 const favoritesResultsContainer = document.getElementById("favoritesResultsContainer");
@@ -31,7 +32,7 @@ async function handleReviewClick(event) {
     const list = document.getElementById("reviewsList");
 
     modal.hidden = false;
-    list.innerHTML = "<div class='empty-state'>Cargando reseñas...</div>";
+    list.innerHTML = `<div class='empty-state'>${t("reviews.loading")}</div>`;
 
     try {
         const res = await authFetch(`/reviews/beach/${beachId}`);
@@ -39,7 +40,7 @@ async function handleReviewClick(event) {
         renderReviews(reviews);
     } 
     catch (err) {
-        list.innerHTML = "<div class='empty-state'>Error al cargar las reseñas</div>";
+        list.innerHTML = `<div class='empty-state'>${t("reviews.load_error")}</div>`;
         console.log(err);
     }
 }
@@ -76,7 +77,7 @@ function renderReviews(reviews) {
     const user = sessionUIController?.getCurrentUser?.();
 
     if (!reviews.length) {
-        list.innerHTML = "<div class='empty-state'>Sin reseñas todavía</div>";
+        list.innerHTML = `<div class='empty-state'>${t("reviews.empty")}</div>`;
         return;
     }
 
