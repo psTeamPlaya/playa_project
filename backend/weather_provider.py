@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 import requests
 from typing import Any
+import json
 
 WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 MARINE_URL = "https://marine-api.open-meteo.com/v1/marine"

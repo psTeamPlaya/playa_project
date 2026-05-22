@@ -54,7 +54,7 @@
             <button class="language-button btn-secondary" id="languageMenuBtn" type="button" aria-label="Language">
               <span id="currentLanguageFlag">🇬🇧</span>
             </button>
-        
+
 
             <div class="language-dropdown" id="languageDropdown" hidden>
               <button class="language-option" data-lang="es">
@@ -70,13 +70,15 @@
               </button>
 
             </div>
-            <button class="mobile-menu-trigger" id="mobileMenuBtn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenuDrawer">
+            <button class="mobile-menu-trigger" id="mobileMenuBtn" type="button" aria-label="Abrir menú"
+              aria-expanded="false" aria-controls="mobileMenuDrawer">
               <i class="bi bi-list" aria-hidden="true"></i>
             </button>
 
           </section>
           <section class="auth-container">
-            <button data-i18n-aria="auth.access" class="auth-trigger btn-secondary" id="authActionBtn" type="button" aria-label="Acceder">
+            <button data-i18n-aria="auth.access" class="auth-trigger btn-secondary" id="authActionBtn" type="button"
+              aria-label="Acceder">
               <span class="auth-trigger-icon" aria-hidden="true">
                 <i class="bi bi-box-arrow-in-right" id="authActionIcon"></i>
               </span>
@@ -109,12 +111,15 @@
                 <span data-i18n="titles.my_filters" id="openConfigLink"
                   style="cursor:pointer; text-decoration: underline;">Mis Filtros</span>
               </label>
-              <label class="preference-item">
-                <input type="checkbox" id="expandResultsPreference">
-                <span data-i18n="titles.configure_alerts">Configurar alertas</span>
-              </label>
+              <div class="preference-item">
+                <button data-i18n="titles.configure_alerts" class="preferences-link-button" id="openAlertsModalBtn"
+                  type="button">
+                  Configurar alertas
+                </button>
+              </div>
               <div class="preferences-divider"></div>
-              <button data-i18n-aria="auth.logout" class="preferences-logout" id="preferencesLogoutBtn" type="button" aria-label="Cerrar sesion">
+              <button data-i18n-aria="auth.logout" class="preferences-logout" id="preferencesLogoutBtn" type="button"
+                aria-label="Cerrar sesion">
                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
               </button>
             </div>
@@ -127,13 +132,15 @@
   </header>
 
   <div class="mobile-menu-backdrop" id="mobileMenuBackdrop" hidden>
-    <aside class="mobile-menu-drawer" id="mobileMenuDrawer" aria-modal="true" aria-labelledby="mobileMenuTitle" role="dialog">
+    <aside class="mobile-menu-drawer" id="mobileMenuDrawer" aria-modal="true" aria-labelledby="mobileMenuTitle"
+      role="dialog">
       <div class="mobile-menu-drawer-header">
         <div class="mobile-menu-heading">
           <h2 id="mobileMenuTitle">Menú</h2>
           <p>Acceso y filtros</p>
         </div>
-        <button class="mobile-menu-close" id="mobileMenuCloseBtn" type="button" aria-label="Cerrar menú">&times;</button>
+        <button class="mobile-menu-close" id="mobileMenuCloseBtn" type="button"
+          aria-label="Cerrar menú">&times;</button>
       </div>
       <div class="mobile-menu-section" id="mobileAuthMount"></div>
       <div class="mobile-menu-section" id="mobileFiltersMount"></div>
@@ -183,7 +190,7 @@
 
         <fieldset class="filter-group" data-user-filter="servicios">
           <legend data-i18n="services.title">Servicios</legend>
-          
+
           <label class="filter-option">
             <input type="checkbox" id="filterRestaurant" value="restaurant">
             <span data-i18n="services.restaurant">Restaurante</span>
@@ -250,26 +257,12 @@
         </fieldset>
 
         <fieldset class="filter-group dynamic-filter-group" data-user-filter="viento">
-<<<<<<< HT16-languages-part2
           <div data-i18n="weather.wind" class="dynamic-filter-title">Viento(km/h)</div>
           <div class="dynamic-filter-slider">
 
             <div class="range-values">
               <span><strong id="windMinValue">0</strong> km/h</span>
               <span><strong id="windMaxValue">15</strong> km/h</span>
-=======
-
-          <div class="dynamic-filter-title" data-i18n="weather.wind">Viento(km/h)</div>
-
-          <div class="dynamic-filter-slider">
-
-            <div class="range-values">
-
-              <span><strong id="windMinValue">0</strong> <span data-unit-label="wind-speed">km/h</span></span>
-
-              <span><strong id="windMaxValue">15</strong> <span data-unit-label="wind-speed">km/h</span></span>
-
->>>>>>> feature/njhm-recomendacion-playas-fecha-rango-horas
             </div>
 
             <div class="dual-range" id="windRangeTrack">
@@ -356,14 +349,14 @@
     </aside>
 
     <main class="app-main">
-    <section class="panel activities-panel">
+      <section class="panel activities-panel">
         <h2 data-i18n="search.questions.actividad">1. ¿Qué quieres hacer en tu día de playa?</h2>
         <div class="activities-grid" id="activitiesGrid">
           <div data-i18n="activities.downloading" class="empty-state">Cargando actividades disponibles...</div>
-      </div>
-    </section>
+        </div>
+      </section>
 
-    <section class="panel schedule-panel">
+      <section class="panel schedule-panel">
         <h2 data-i18n="search.questions.when">2. ¿Cuándo quieres ir a la playa?</h2>
 
         <div class="form-grid schedule-grid">
@@ -377,21 +370,18 @@
             </div>
           </div>
           <div class="field">
-            <label data-i18n="common.time" for="hourWheel">Hora</label>
-            <div class="hour-wheel-wrapper">
-              <div class="hour-wheel-highlight"></div>
-              <div class="hour-wheel" id="hourWheel"></div>
-            </div>
+            <label data-i18n="common.time" for="horaInicio">Hora</label>
+            <select id="horaInicio"></select>
           </div>
           <div class="field">
-            <label data-i18n="common.time_end" for="hourFin">Hora de fin</label>
+            <label data-i18n="common.time_end" for="horaFin">Hora de fin</label>
             <select id="horaFin"></select>
           </div>
-          
+
         </div>
-    </section> 
-  
-    <section class="panel location-panel">
+      </section>
+
+      <section class="panel location-panel">
         <h2 data-i18n="search.questions.where">3. Elige tu ubicación</h2>
         <div class="form-grid location-grid">
           <div class="field">
@@ -426,7 +416,7 @@
 
         </div>
         <div id="locationHistory" class="mini-chip-container"></div>
-    </section>
+      </section>
 
       <section class="panel search-panel">
         <div class="actions search-actions">
@@ -544,9 +534,7 @@
         <span>o</span>
       </div>
 
-      <div id="googleSignInBtn"
-        data-client-id="{{ google_client_id }}"
-        class="auth-google-btn-wrapper">
+      <div id="googleSignInBtn" data-client-id="{{ google_client_id }}" class="auth-google-btn-wrapper">
       </div>
 
       <div class="auth-error" id="loginErrorMessage"></div>
@@ -600,13 +588,15 @@
 
   <div class="modal-backdrop" id="userManagementModal" hidden>
 
-    <div class="admin-modal admin-modal-wide" role="dialog" aria-modal="true" aria-labelledby="userManagementModalTitle">
+    <div class="admin-modal admin-modal-wide" role="dialog" aria-modal="true"
+      aria-labelledby="userManagementModalTitle">
 
       <button class="modal-close" id="closeUserManagementModal" type="button" aria-label="Cerrar">&times;</button>
       <div class="admin-modal-header">
 
         <h2 data-i18n="admin.management.users" id="userManagementModalTitle">Gestión de usuarios</h2>
-        <p data-i18n="admin.management.users_description">Panel básico para revisar usuarios, banearlos o eliminar cuentas no administradoras.</p>
+        <p data-i18n="admin.management.users_description">Panel básico para revisar usuarios, banearlos o eliminar
+          cuentas no administradoras.</p>
       </div>
 
       <div class="admin-feedback" id="userManagementFeedback"></div>
@@ -644,167 +634,142 @@
       <button class="modal-close" id="closeBeachManagementModal" type="button" aria-label="Cerrar">&times;</button>
       <div class="admin-modal-header">
 
-        <h2 data-i18n="admin.management.beaches" id="beachManagementModalTitle">Gestión de playas ( Administración de playas</h2>
-        <p data-i18n="admin.management.beaches_description">Añade nuevas playas o modifica las existentes con sus actividades y servicios.</p>
+        <h2 data-i18n="admin.management.beaches" id="beachManagementModalTitle">Gestión de playas ( Administración de
+          playas</h2>
+        <p data-i18n="admin.management.beaches_description">Añade nuevas playas o modifica las existentes con sus
+          actividades y servicios.</p>
         <p>Organiza playas, actividades y servicios desde un único panel.</p>
       </div>
-      
+
       <div class="admin-tabs" role="tablist" aria-label="Secciones de administración">
-        <button
-          class="admin-tab-button is-active"
-          id="adminTabButtonBeaches"
-          type="button"
-          role="tab"
-          aria-selected="true"
-          aria-controls="adminTabPanelBeaches"
-          data-admin-tab-target="beaches"
-        >
+        <button class="admin-tab-button is-active" id="adminTabButtonBeaches" type="button" role="tab"
+          aria-selected="true" aria-controls="adminTabPanelBeaches" data-admin-tab-target="beaches">
           Gestión de playas
         </button>
-        <button
-          class="admin-tab-button"
-          id="adminTabButtonActivities"
-          type="button"
-          role="tab"
-          aria-selected="false"
-          aria-controls="adminTabPanelActivities"
-          data-admin-tab-target="activities"
-          tabindex="-1"
-        >
+        <button class="admin-tab-button" id="adminTabButtonActivities" type="button" role="tab" aria-selected="false"
+          aria-controls="adminTabPanelActivities" data-admin-tab-target="activities" tabindex="-1">
           Gestión de actividades
         </button>
-        <button
-          class="admin-tab-button"
-          id="adminTabButtonServices"
-          type="button"
-          role="tab"
-          aria-selected="false"
-          aria-controls="adminTabPanelServices"
-          data-admin-tab-target="services"
-          tabindex="-1"
-        >
+        <button class="admin-tab-button" id="adminTabButtonServices" type="button" role="tab" aria-selected="false"
+          aria-controls="adminTabPanelServices" data-admin-tab-target="services" tabindex="-1">
           Gestión de servicios
         </button>
       </div>
 
-      <section
-        class="admin-tab-panel is-active"
-        id="adminTabPanelBeaches"
-        role="tabpanel"
-        aria-labelledby="adminTabButtonBeaches"
-        data-admin-tab-panel="beaches"
-      >
+      <section class="admin-tab-panel is-active" id="adminTabPanelBeaches" role="tabpanel"
+        aria-labelledby="adminTabButtonBeaches" data-admin-tab-panel="beaches">
         <div class="admin-modal-layout">
 
           <aside class="admin-sidebar">
 
-            <button data-i18n="admin.beach_management.new_beach" class="btn-secondary admin-create-button" id="newBeachBtn" type="button">Nueva playa</button>
+            <button data-i18n="admin.beach_management.new_beach" class="btn-secondary admin-create-button"
+              id="newBeachBtn" type="button">Nueva playa</button>
 
             <div class="admin-search-box">
               <label for="beachSearchInput">Buscar playa</label>
-              <input
-                id="beachSearchInput"
-                type="search"
-                placeholder="Escribe al menos 3 letras"
-                autocomplete="off"
-              >
+              <input id="beachSearchInput" type="search" placeholder="Escribe al menos 3 letras" autocomplete="off">
             </div>
 
             <div class="admin-list admin-beach-list" id="beachManagementList"></div>
 
           </aside>
 
-        <section class="admin-form-panel">
+          <section class="admin-form-panel">
 
-          <form id="beachManagementForm" class="admin-form">
+            <form id="beachManagementForm" class="admin-form">
 
-            <input id="beachId" type="hidden">
+              <input id="beachId" type="hidden">
 
-            <div class="admin-form-grid">
+              <div class="admin-form-grid">
 
-              <div class="field auth-field">
-                <label data-i18n="admin.beach_management.name" for="beachName">Nombre</label>
-                <input id="beachName" type="text" required>
-              </div>
-              
-              <div class="field auth-field">
-              <label data-i18n="admin.beach_management.location" for="beachLocation">Ubicación</label>
+                <div class="field auth-field">
+                  <label data-i18n="admin.beach_management.name" for="beachName">Nombre</label>
+                  <input id="beachName" type="text" required>
+                </div>
+
+                <div class="field auth-field">
+                  <label data-i18n="admin.beach_management.location" for="beachLocation">Ubicación</label>
                   <input id="beachLocation" type="text">
-              </div>
+                </div>
 
-              <div class="field auth-field">
-                <label data-i18n="titles.beach_type" for="beachType">Tipo</label>
-                <select id="beachType">
-                  <option data-i18n="beach_types.sand" value="arena">Arena</option>
-                  <option data-i18n="beach_types.stone" value="piedra">Piedra</option>
-                  <option data-i18n="beach_types.natural_pool" value="piscina_natural">Piscina natural</option>
-                </select>
-              </div>
+                <div class="field auth-field">
+                  <label data-i18n="titles.beach_type" for="beachType">Tipo</label>
+                  <select id="beachType">
+                    <option data-i18n="beach_types.sand" value="arena">Arena</option>
+                    <option data-i18n="beach_types.stone" value="piedra">Piedra</option>
+                    <option data-i18n="beach_types.natural_pool" value="piscina_natural">Piscina natural</option>
+                  </select>
+                </div>
 
-              <div class="field auth-field">
-                <label data-i18n="admin.beach_management.accessibility" for="beachAccessibility">Accesibilidad</label>
-                <select id="beachAccessibility">
-                   <option data-i18n="admin.beach_management.high" value="alta">Alta</option>
-                  <option data-i18n="admin.beach_management.medium" value="media">Media</option>
-                  <option data-i18n="admin.beach_management.low" value="baja">Baja</option>
-                </select>
-              </div>
-              
-              <div class="field auth-field">
-                <label data-i18n="admin.beach_management.latitude" for="beachLatitude">Latitud</label>
-                <input id="beachLatitude" type="number" step="0.000001" required>
-              </div>
+                <div class="field auth-field">
+                  <label data-i18n="admin.beach_management.accessibility" for="beachAccessibility">Accesibilidad</label>
+                  <select id="beachAccessibility">
+                    <option data-i18n="admin.beach_management.high" value="alta">Alta</option>
+                    <option data-i18n="admin.beach_management.medium" value="media">Media</option>
+                    <option data-i18n="admin.beach_management.low" value="baja">Baja</option>
+                  </select>
+                </div>
 
-              <div class="field auth-field">
-                <label data-i18n="admin.beach_management.longitude" for="beachLongitude">Longitud</label>
-                <input id="beachLongitude" type="number" step="0.000001" required>
-              </div>
-              
-              <div class="field auth-field admin-full-width">
+                <div class="field auth-field">
+                  <label data-i18n="admin.beach_management.latitude" for="beachLatitude">Latitud</label>
+                  <input id="beachLatitude" type="number" step="0.000001" required>
+                </div>
+
+                <div class="field auth-field">
+                  <label data-i18n="admin.beach_management.longitude" for="beachLongitude">Longitud</label>
+                  <input id="beachLongitude" type="number" step="0.000001" required>
+                </div>
+
+                <div class="field auth-field admin-full-width">
                   <div class="admin-map-toolbar">
                     <label data-i18n="admin.beach_management.location_on_map" for="beachMap">Ubicación en mapa</label>
-                    <button data-i18n="admin.beach_management.choose_on_map" class="btn-secondary admin-map-button" id="beachPickOnMapBtn" type="button">
+                    <button data-i18n="admin.beach_management.choose_on_map" class="btn-secondary admin-map-button"
+                      id="beachPickOnMapBtn" type="button">
                       Elegir en mapa
                     </button>
                   </div>
-                
-                <p data-i18n="admin.beach_management.map_help" class="admin-map-help">
-                  Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.
-                </p>
-                
-                <div data-i18n="admin.beach_management.map_label" id="beachMap" class="admin-beach-map" aria-label="Mapa para seleccionar ubicación de la playa"></div>
 
-              </div>
-              <div class="field auth-field admin-full-width">
-                <label data-i18n="admin.beach_management.image" for="beachImage">Imagen</label>
-                <input data-i18n-placeholder="placeholders.image" id="beachImage" type="text" placeholder="nombre_imagen.jpg">
-              </div> 
-                
-              <div class="field auth-field admin-full-width">
-                <label data-i18n="admin.beach_management.description" for="beachDescription">Descripción</label>
-                <textarea id="beachDescription" rows="4"></textarea>
-              </div>
-            </div>
-              
-                
-            <div class="admin-section">
-              <h3 data-i18n="services.title">Servicios</h3>
-              <div class="admin-chip-grid" id="beachServicesOptions"></div>
-            </div>
-                
-              
-            <div class="admin-section">
-              <h3 data-i18n="activities.title">Actividades</h3>
-              <div class="admin-chip-grid" id="beachActivitiesOptions"></div>
-            </div>
+                  <p data-i18n="admin.beach_management.map_help" class="admin-map-help">
+                    Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.
+                  </p>
 
-            <div class="actions admin-form-actions">   
-              <button data-i18n="common.reset" class="btn-secondary" id="resetBeachFormBtn" type="button">Limpiar</button>
-              <button data-i18n="admin.beach_management.save_beach" class="btn-primary" type="submit">Guardar playa</button>
-            </div>
-            
-                
-            <div class="admin-feedback" id="beachManagementFeedback"></div>
+                  <div data-i18n="admin.beach_management.map_label" id="beachMap" class="admin-beach-map"
+                    aria-label="Mapa para seleccionar ubicación de la playa"></div>
+
+                </div>
+                <div class="field auth-field admin-full-width">
+                  <label data-i18n="admin.beach_management.image" for="beachImage">Imagen</label>
+                  <input data-i18n-placeholder="placeholders.image" id="beachImage" type="text"
+                    placeholder="nombre_imagen.jpg">
+                </div>
+
+                <div class="field auth-field admin-full-width">
+                  <label data-i18n="admin.beach_management.description" for="beachDescription">Descripción</label>
+                  <textarea id="beachDescription" rows="4"></textarea>
+                </div>
+              </div>
+
+
+              <div class="admin-section">
+                <h3 data-i18n="services.title">Servicios</h3>
+                <div class="admin-chip-grid" id="beachServicesOptions"></div>
+              </div>
+
+
+              <div class="admin-section">
+                <h3 data-i18n="activities.title">Actividades</h3>
+                <div class="admin-chip-grid" id="beachActivitiesOptions"></div>
+              </div>
+
+              <div class="actions admin-form-actions">
+                <button data-i18n="common.reset" class="btn-secondary" id="resetBeachFormBtn"
+                  type="button">Limpiar</button>
+                <button data-i18n="admin.beach_management.save_beach" class="btn-primary" type="submit">Guardar
+                  playa</button>
+              </div>
+
+
+              <div class="admin-feedback" id="beachManagementFeedback"></div>
 
             </form>
 
@@ -813,31 +778,29 @@
         </div>
       </section>
 
-      <section
-        class="admin-tab-panel"
-        id="adminTabPanelActivities"
-        role="tabpanel"
-        aria-labelledby="adminTabButtonActivities"
-        data-admin-tab-panel="activities"
-        hidden
-      >
+      <section class="admin-tab-panel" id="adminTabPanelActivities" role="tabpanel"
+        aria-labelledby="adminTabButtonActivities" data-admin-tab-panel="activities" hidden>
         <section class="admin-catalog-panel">
           <article class="admin-catalog-card admin-catalog-card-single">
-            <div class="admin-catalog-header">          
+            <div class="admin-catalog-header">
               <h3 data-i18n="admin.beach_management.activity_catalog">Catálogo de actividades</h3>
-              <p data-i18n="admin.beach_management.activity_catalog_description">Crea o elimina actividades disponibles para asignarlas a las playas.</p>
+              <p data-i18n="admin.beach_management.activity_catalog_description">Crea o elimina actividades disponibles
+                para asignarlas a las playas.</p>
             </div>
 
             <form class="admin-inline-form" id="activityCatalogForm">
-              <input data-i18n-placeholder="placeholders.activity" id="activityCatalogName" type="text" placeholder="Ej: paddle surf" required>
-              <button data-i18n="common.cancel" class="btn-secondary" id="cancelActivityEditBtn" type="button" hidden>Cancelar</button>
+              <input data-i18n-placeholder="placeholders.activity" id="activityCatalogName" type="text"
+                placeholder="Ej: paddle surf" required>
+              <button data-i18n="common.cancel" class="btn-secondary" id="cancelActivityEditBtn" type="button"
+                hidden>Cancelar</button>
               <button data-i18n="common.add" class="btn-secondary" type="submit">Añadir</button>
             </form>
 
             <div class="admin-weights-panel" id="activityWeightsPanel">
               <div class="admin-weights-header">
                 <h4 data-i18n="admin.beach_management.activity_weights">Pesos de la actividad</h4>
-                <p data-i18n="admin.beach_management.activity_weights_description">Define la importancia relativa de cada variable. No hace falta que sumen 1: se normalizan automáticamente.</p>
+                <p data-i18n="admin.beach_management.activity_weights_description">Define la importancia relativa de
+                  cada variable. No hace falta que sumen 1: se normalizan automáticamente.</p>
               </div>
 
               <div class="admin-weights-grid" id="activityWeightsGrid"></div>
@@ -852,24 +815,20 @@
         </section>
       </section>
 
-      <section
-        class="admin-tab-panel"
-        id="adminTabPanelServices"
-        role="tabpanel"
-        aria-labelledby="adminTabButtonServices"
-        data-admin-tab-panel="services"
-        hidden
-      >
+      <section class="admin-tab-panel" id="adminTabPanelServices" role="tabpanel"
+        aria-labelledby="adminTabButtonServices" data-admin-tab-panel="services" hidden>
         <section class="admin-catalog-panel">
           <article class="admin-catalog-card admin-catalog-card-single">
 
             <div class="admin-catalog-header">
               <h3 data-i18n="admin.beach_management.service_catalog">Catálogo de servicios</h3>
-              <p data-i18n="admin.beach_management.service_catalog_description">Gestiona los servicios globales que luego podrás marcar en cada playa.</p>
+              <p data-i18n="admin.beach_management.service_catalog_description">Gestiona los servicios globales que
+                luego podrás marcar en cada playa.</p>
             </div>
 
             <form class="admin-inline-form" id="serviceCatalogForm">
-              <input data-i18n-placeholder="placeholders.service" id="serviceCatalogName" type="text" placeholder="Ej: hamacas" required>
+              <input data-i18n-placeholder="placeholders.service" id="serviceCatalogName" type="text"
+                placeholder="Ej: hamacas" required>
               <button data-i18n="common.add" class="btn-secondary" type="submit">Añadir</button>
             </form>
 
@@ -883,16 +842,18 @@
     </div>
   </div>
 
-      
+
   <div class="modal-backdrop" id="filterConfigModal" hidden>
 
     <div class="auth-modal config-modal">
-      <h2 data-i18n="settings.personalize_filters" >Personaliza tu experiencia</h2>
-      <p data-i18n="settings.personalize_filters_description">Selecciona los filtros que deseas tener siempre a mano. Podrás cambiarlos luego en preferencias.</p>
+      <h2 data-i18n="settings.personalize_filters">Personaliza tu experiencia</h2>
+      <p data-i18n="settings.personalize_filters_description">Selecciona los filtros que deseas tener siempre a mano.
+        Podrás cambiarlos luego en preferencias.</p>
 
       <div class="config-list" id="configFilterList"></div>
 
-      <button data-i18n="settings.save" class="btn-primary auth-submit" id="saveFilterConfigBtn">Guardar mi configuración</button>
+      <button data-i18n="settings.save" class="btn-primary auth-submit" id="saveFilterConfigBtn">Guardar mi
+        configuración</button>
 
     </div>
   </div>
@@ -901,7 +862,8 @@
 
     <div class="auth-modal alerts-modal" role="dialog" aria-modal="true" aria-labelledby="alertsModalTitle">
 
-      <button data-i18n-aria="common.close" class="modal-close" id="closeAlertsModal" type="button" aria-label="Cerrar">&times;</button>
+      <button data-i18n-aria="common.close" class="modal-close" id="closeAlertsModal" type="button"
+        aria-label="Cerrar">&times;</button>
       <h2 data-i18n="settings.alerts.email_alerts" id="alertsModalTitle">Alertas por email</h2>
 
       <p data-i18n="settings.alerts.email_alerts_description" class="alerts-modal-copy">
@@ -912,11 +874,13 @@
         <div class="alerts-existing-header">
           <div>
             <h3 data-i18n="settings.alerts.my_alerts">Mis alertas</h3>
-            <p data-i18n="settings.alerts.my_alerts_description">Desde aquí puedes revisar, editar o borrar cualquiera de tus alertas guardadas.</p>
+            <p data-i18n="settings.alerts.my_alerts_description">Desde aquí puedes revisar, editar o borrar cualquiera
+              de tus alertas guardadas.</p>
           </div>
-          <button data-i18n="settings.alerts.add_alert" class="btn-secondary" id="openAlertsEditorBtn" type="button">Añadir alerta</button>
+          <button data-i18n="settings.alerts.add_alert" class="btn-secondary" id="openAlertsEditorBtn"
+            type="button">Añadir alerta</button>
         </div>
-        
+
         <div class="alerts-list" id="alertsList"></div>
       </section>
 
@@ -927,10 +891,12 @@
 
         <div class="alerts-editor-header">
           <div>
-            <h3  data-i18n="settings.alerts.new_alert" id="alertsEditorTitle">Nueva alerta</h3>
-            <p  data-i18n="settings.alerts.new_alert_description" id="alertsEditorCopy">Configura la actividad, la playa y las condiciones a vigilar.</p>
+            <h3 data-i18n="settings.alerts.new_alert" id="alertsEditorTitle">Nueva alerta</h3>
+            <p data-i18n="settings.alerts.new_alert_description" id="alertsEditorCopy">Configura la actividad, la playa
+              y las condiciones a vigilar.</p>
           </div>
-          <button data-i18n-aria="common.close" class="modal-close" id="closeAlertsEditorBtn" type="button" aria-label="Cerrar">&times;</button>
+          <button data-i18n-aria="common.close" class="modal-close" id="closeAlertsEditorBtn" type="button"
+            aria-label="Cerrar">&times;</button>
         </div>
 
         <div class="alerts-form-grid">
@@ -997,51 +963,61 @@
 
             <label class="field">
               <span data-i18n="weather.temp_min">Temperatura mín. (ºC)</span>
-              <input data-i18n-placeholder="placeholders.temp_min" id="alertMinTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 22">
+              <input data-i18n-placeholder="placeholders.temp_min" id="alertMinTemperature" type="number" step="1"
+                min="0" max="45" placeholder="Ej: 22">
             </label>
 
             <label class="field">
               <span data-i18n="weather.temp_max">Temperatura máx. (ºC)</span>
-              <input data-i18n-placeholder="placeholders.temp_max" id="alertMaxTemperature" type="number" step="1" min="0" max="45" placeholder="Ej: 30">
+              <input data-i18n-placeholder="placeholders.temp_max" id="alertMaxTemperature" type="number" step="1"
+                min="0" max="45" placeholder="Ej: 30">
             </label>
 
             <label class="field">
               <span data-i18n="weather.wind_min">Viento mín. (km/h)</span>
-              <input data-i18n-placeholder="placeholders.wind_min" id="alertMinWind" type="number" step="1" min="0" max="60" placeholder="Ej: 8">
+              <input data-i18n-placeholder="placeholders.wind_min" id="alertMinWind" type="number" step="1" min="0"
+                max="60" placeholder="Ej: 8">
             </label>
 
             <label class="field">
               <span data-i18n="weather.wind_max">Viento máx. (km/h)</span>
-              <input data-i18n-placeholder="placeholders.wind_max" id="alertMaxWind" type="number" step="1" min="0" max="60" placeholder="Ej: 20">
+              <input data-i18n-placeholder="placeholders.wind_max" id="alertMaxWind" type="number" step="1" min="0"
+                max="60" placeholder="Ej: 20">
             </label>
 
             <label class="field">
               <span data-i18n="weather.cloud_min">Nubosidad mín. (%)</span>
-              <input data-i18n-placeholder="placeholders.cloud_min" id="alertMinCloud" type="number" step="1" min="0" max="100" placeholder="Ej: 0">
+              <input data-i18n-placeholder="placeholders.cloud_min" id="alertMinCloud" type="number" step="1" min="0"
+                max="100" placeholder="Ej: 0">
             </label>
 
             <label class="field">
               <span data-i18n="weather.cloud_max">Nubosidad máx. (%)</span>
-              <input data-i18n-placeholder="placeholders.cloud_max" id="alertMaxCloud" type="number" step="1" min="0" max="100" placeholder="Ej: 25">
+              <input data-i18n-placeholder="placeholders.cloud_max" id="alertMaxCloud" type="number" step="1" min="0"
+                max="100" placeholder="Ej: 25">
             </label>
 
             <label class="field">
               <span data-i18n="weather.waves_min">Oleaje mín. (m)</span>
-              <input data-i18n-placeholder="placeholders.waves_min" id="alertMinWave" type="number" step="0.1" min="0" max="5" placeholder="Ej: 0.5">
+              <input data-i18n-placeholder="placeholders.waves_min" id="alertMinWave" type="number" step="0.1" min="0"
+                max="5" placeholder="Ej: 0.5">
             </label>
 
             <label class="field">
               <span data-i18n="weather.waves_max">Oleaje máx. (m)</span>
-              <input data-i18n-placeholder="placeholders.waves_max" id="alertMaxWave" type="number" step="0.1" min="0" max="5" placeholder="Ej: 1.5">
+              <input data-i18n-placeholder="placeholders.waves_max" id="alertMaxWave" type="number" step="0.1" min="0"
+                max="5" placeholder="Ej: 1.5">
             </label>
           </div>
         </div>
 
         <div class="actions">
-          <button data-i18n="settings.alerts.save_alert" class="btn-primary auth-submit" id="saveCurrentAlertBtn" type="submit">
+          <button data-i18n="settings.alerts.save_alert" class="btn-primary auth-submit" id="saveCurrentAlertBtn"
+            type="submit">
             Guardar alerta
           </button>
-          <button data-i18n="settings.alerts.cancel_editing" class="btn-secondary" id="cancelAlertEditBtn" type="button" hidden>
+          <button data-i18n="settings.alerts.cancel_editing" class="btn-secondary" id="cancelAlertEditBtn" type="button"
+            hidden>
             Cancelar edición
           </button>
         </div>
@@ -1093,12 +1069,13 @@
 
 
 
-        <textarea data-i18n-placeholder="placeholders.review_comment" id="reviewText" placeholder="Escribe tu reseña..."></textarea>
+        <textarea data-i18n-placeholder="placeholders.review_comment" id="reviewText"
+          placeholder="Escribe tu reseña..."></textarea>
         <button data-i18n="reviews.add_review" class="btn-primary" type="submit">Añadir reseña</button>
       </form>
 
     </div>
-  </div>  
+  </div>
 
   <div class="modal-backdrop" id="reviewManagementModal" hidden>
 
@@ -1117,7 +1094,7 @@
 
         </aside>
 
-        
+
 
         <!-- DERECHA: reseñas -->
 
@@ -1133,7 +1110,7 @@
 
     </div>
 
-  </div>  
+  </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 

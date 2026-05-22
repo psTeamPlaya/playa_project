@@ -456,7 +456,7 @@ body.is-authenticated .app-shell {
 
 .field input,
 .field select {
-    height: 5rem;
+    height: 3rem;
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 0 0.9rem;
@@ -1587,8 +1587,8 @@ button {
     min-height: 2.9rem;
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 0.7rem 0.85rem;
-    font-size: 2rem;
+    padding: 0rem 0.85rem;
+    font-size: 1.42rem;
     font-family: 'Atma';
     background: #ffffff;
     font-weight: 700;

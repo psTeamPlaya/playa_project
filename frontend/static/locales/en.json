@@ -256,7 +256,8 @@
       "select_beach": "Select a beach",
       "conditions": "Conditions",
       "save_alert": "Save alert",
-      "cancel_editing": "Cancel editing"
+      "cancel_editing": "Cancel editing",
+      "no_saved_alerts": "You have no saved alerts."
     }
   },
   "onboarding": {

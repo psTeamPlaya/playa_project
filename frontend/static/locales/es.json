@@ -187,8 +187,8 @@
     "select_location": "Seleccionar ubicación"
   },
   "recommendation": {
-    "recommended_between": "Se recomienda entre las {start} y las {end}",
-    "recommended_at": "Se recomienda a las {time}",
+    "recommended_between": "Se recomienda entre las {{start}} y las {{end}}",
+    "recommended_at": "Se recomienda a las {{time}}",
     "recommended_now": "Se recomienda en ese momento",
     "because": "por",
     "and": "y",
@@ -260,7 +260,8 @@
       "select_beach": "Selecciona una playa",
       "conditions": "Condiciones",
       "save_alert": "Guardar alerta",
-      "cancel_editing": "Cancelar edición"
+      "cancel_editing": "Cancelar edición",
+      "no_saved_alerts": "No tienes alertas guardadas."
     }
   },
   "onboarding": {
