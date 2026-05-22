@@ -165,6 +165,7 @@ function mapBeachType(type) {
 }
 
 function mapTide(tide) {
+    console.log("Mapping tide:", tide);
     const map = {
         baja: "low_tide",
         alta: "high_tide"
@@ -229,25 +230,14 @@ export function pintarResultados(resultados, container, options = {}) {
 
                     <div class="meta-list">
                         ${renderIntervalChip(condiciones)}
-<<<<<<< HT16-languages-part2
                         <span class="chip">${ICONS.beachType} ${t("titles.beach_type")}: ${t(`beach_types.${mapBeachType(playa.tipo)}`)}</span>
-                        <span class="chip">${ICONS.airTemp} ${t("weather.temp")}: ${condiciones.air_temp ?? "N/A"} \u00baC</span>
-                        <span class="chip">${ICONS.wave} ${t("weather.waves")}: ${condiciones.wave_height ?? "N/A"} m</span>
-                        <span class="chip">${ICONS.wind} ${t("weather.wind")}: ${condiciones.wind_speed ?? "N/A"} km/h</span>
-                        <span class="chip">${ICONS.waterTemp} ${t("weather.water_temp")}: ${condiciones.water_temp ?? "N/A"} \u00baC</span>
-                        <span class="chip">${ICONS.cloud} ${t("weather.cloudiness")}: ${condiciones.cloud_cover ?? "N/A"}%</span>
-                        <span class="chip">${ICONS.rain} ${t("weather.rain")}: ${condiciones.rain_probability ?? "N/A"}%</span>
+                        <span class="chip">${ICONS.airTemp} ${t("weather.temp")}: ${formatTemperature(condiciones.air_temp)} ${getTemperatureUnit()}</span>
+                        <span class="chip">${ICONS.wave} ${t("weather.waves")}: ${formatConditionValue(condiciones.wave_height, { quarterStep: true })} m</span>
+                        <span class="chip">${ICONS.wind} ${t("weather.wind")}: ${formatWindSpeed(condiciones.wind_speed)} ${getWindSpeedUnit()}</span>
+                        <span class="chip">${ICONS.waterTemp} ${t("weather.water_temp")}: ${formatTemperature(condiciones.water_temp)} ${getTemperatureUnit()}</span>
+                        <span class="chip">${ICONS.cloud} ${t("weather.cloudiness")}: ${formatConditionValue(condiciones.cloud_cover)}%</span>
+                        <span class="chip">${ICONS.rain} ${t("weather.rain")}: ${formatConditionValue(condiciones.rain_probability)}%</span>
                         <span class="chip">${ICONS.tide} ${t("weather.tide")}: ${t(`weather.${mapTide(formatearMarea(condiciones))}`)}</span>
-=======
-                        <span class="chip">${ICONS.beachType} ${t("results.beach_type")}: ${formatearTipoPlaya(playa.tipo)}</span>
-                        <span class="chip">${ICONS.airTemp} ${t("results.avg_air_temp")}: ${formatTemperature(condiciones.air_temp)} ${getTemperatureUnit()}</span>
-                        <span class="chip">${ICONS.wave} ${t("results.avg_wave")}: ${formatConditionValue(condiciones.wave_height, { quarterStep: true })} m</span>
-                        <span class="chip">${ICONS.wind} ${t("results.avg_wind")}: ${formatWindSpeed(condiciones.wind_speed)} ${getWindSpeedUnit()}</span>
-                        <span class="chip">${ICONS.waterTemp} ${t("results.avg_water_temp")}: ${formatTemperature(condiciones.water_temp)} ${getTemperatureUnit()}</span>
-                        <span class="chip">${ICONS.cloud} ${t("results.avg_cloud")}: ${formatConditionValue(condiciones.cloud_cover)}%</span>
-                        <span class="chip">${ICONS.rain} ${t("results.avg_rain")}: ${formatConditionValue(condiciones.rain_probability)}%</span>
->>>>>>> feature/njhm-recomendacion-playas-fecha-rango-horas
-                        ${renderTideChips(condiciones)}
                     </div>
 
                     ${renderMotivo(playa, resolvedOptions)}

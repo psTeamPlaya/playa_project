@@ -99,7 +99,16 @@
     "tide": "Příliv",
     "low_tide": "nízký",
     "high_tide": "vysoký",
-    "medium_tide": "střední"
+    "medium_tide": "střední",
+    "tide_high": {
+      "low": "Nízký",
+      "medium": "Střední",
+      "high": "Vysoký",
+      "rising": "Stoupající",
+      "falling": "Klesající",
+      "high_tide": "Příliv",
+      "low_tide": "Odliv"
+    }
   },
   "services": {
     "title": "Služby",
@@ -177,20 +186,9 @@
     "close_recommendations": "Zavřít mapu doporučení",
     "select_location": "Vybrat polohu"
   },
-<<<<<<< HT16-languages-part2
-=======
-  "tide": {
-    "low": "Nízký",
-    "medium": "Střední",
-    "high": "Vysoký",
-    "rising": "Stoupající",
-    "falling": "Klesající",
-    "high_tide": "Příliv",
-    "low_tide": "Odliv"
-  },
   "recommendation": {
-    "recommended_between": "Doporučeno mezi {start} a {end}",
-    "recommended_at": "Doporučeno v {time}",
+    "recommended_between": "Doporučeno mezi {{start}} a {{end}}",
+    "recommended_at": "Doporučeno v {{time}}",
     "recommended_now": "Doporučeno v tuto dobu",
     "because": "kvůli",
     "and": "a",
@@ -207,12 +205,6 @@
       "uv_index": "průměrný UV index"
     }
   },
-  "reviews": {
-    "loading": "Načítají se recenze...",
-    "load_error": "Chyba při načítání recenzí.",
-    "empty": "Zatím žádné recenze."
-  },
->>>>>>> feature/njhm-recomendacion-playas-fecha-rango-horas
   "admin": {
     "management": {
       "users": "Správa uživatelů",
@@ -280,7 +272,8 @@
   "reviews": {
     "title": "Recenze pláží",
     "downloading_reviews": "Načítání recenzí...",
-    "add_review": "Přidat recenzi"
+    "add_review": "Přidat recenzi",
+    "empty": "Zatím žádné recenze."
   },
   "metric_card": {
     "available": "Dostupné",
@@ -295,7 +288,8 @@
     "recommendations_found": "Bylo nalezeno {{count}} doporučení pro aktivitu {{activity}}.",
     "no_results": "Pro toto vyhledávání nebyly nalezeny žádné výsledky.",
     "score": "Skóre",
-    "recommendation_explanation": "Vysvětlení doporučení"
+    "recommendation_explanation": "Vysvětlení doporučení",
+    "interval": "Období"
   },
   "errors": {
     "not_able_fetch_activities": "Nepodařilo se načíst aktivity.",

@@ -98,7 +98,16 @@
     "waves_max": "Maximum wave height",
     "low_tide": "low",
     "high_tide": "high",
-    "medium_tide": "medium tide"
+    "medium_tide": "medium tide",
+    "tide_high": {
+      "low": "low",
+      "medium": "medium",
+      "high": "high",
+      "rising": "rising",
+      "falling": "falling",
+      "high_tide": "high tide",
+      "low_tide": "low tide"
+    }
   },
   "services": {
     "title": "Services",
@@ -174,8 +183,8 @@
     "low_tide": "Low tide"
   },
   "recommendation": {
-    "recommended_between": "Recommended between {start} and {end}",
-    "recommended_at": "Recommended at {time}",
+    "recommended_between": "Recommended between {{start}} and {{end}}",
+    "recommended_at": "Recommended at {{time}}",
     "recommended_now": "Recommended at that time",
     "because": "because of",
     "and": "and",
@@ -273,7 +282,10 @@
   },
   "results": {
     "recommendations_found": "{{count}} recommendations found for {{activity}}.",
-    "no_results": "No results for that search."
+    "no_results": "No results for that search.",
+    "score": "Score",
+    "recommendation_explanation": "Explanation of the recommendation",
+    "interval": "Interval"
   },
   "errors": {
     "not_able_fetch_activities": "Could not load activities.",
