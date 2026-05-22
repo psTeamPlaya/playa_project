@@ -1,4 +1,4 @@
-import { t } from "../languages/i18n.js";
+import { t } from "/static/js/languages/i18n.js";
 import "../review-photo/galllery-photos.js";
 import {
     formatearEtiquetaEventoMarea,
@@ -9,13 +9,15 @@ import {
 } from "../shared/formatters.js";
 import { formatTemperature, formatWindSpeed, getTemperatureUnit, getWindSpeedUnit } from "../shared/units.js";
 
-const DEFAULT_OPTIONS = {
-    emptyMessage: null,
+
+// const DEFAULT_OPTIONS = {
+const getDefaultOptions = () => ({
+    emptyMessage: t("results.no_results"),
     showScore: true,
     showMotivo: true,
     favoriteButtonLabel: null,
     favoriteButtonAriaLabel: null
-};
+});
 
 const ICONS = {
     beachType: "\u{1F3D6}\uFE0F",
@@ -152,15 +154,36 @@ export function configurarAnimacionDetalles(container) {
     });
 }
 
+function mapBeachType(type) {
+    const map = {
+        arena: "sand",
+        piedra: "stone",
+        piscina_natural: "natural_pool"
+    };
+
+    return map[type] ?? "sand";
+}
+
+function mapTide(tide) {
+    const map = {
+        baja: "low_tide",
+        alta: "high_tide"
+    };
+
+    return map[tide] ?? tide;
+}
+
+
 export function pintarResultados(resultados, container, options = {}) {
     if (!container) {
         return;
     }
 
+    // const resolvedOptions = { ...DEFAULT_OPTIONS, ...options };
+
     const resolvedOptions = {
-        ...DEFAULT_OPTIONS,
-        ...options,
-        emptyMessage: options.emptyMessage || t("search.empty_results")
+        ...getDefaultOptions(),
+        ...options
     };
 
     if (!resultados || resultados.length === 0) {
@@ -206,6 +229,16 @@ export function pintarResultados(resultados, container, options = {}) {
 
                     <div class="meta-list">
                         ${renderIntervalChip(condiciones)}
+<<<<<<< HT16-languages-part2
+                        <span class="chip">${ICONS.beachType} ${t("titles.beach_type")}: ${t(`beach_types.${mapBeachType(playa.tipo)}`)}</span>
+                        <span class="chip">${ICONS.airTemp} ${t("weather.temp")}: ${condiciones.air_temp ?? "N/A"} \u00baC</span>
+                        <span class="chip">${ICONS.wave} ${t("weather.waves")}: ${condiciones.wave_height ?? "N/A"} m</span>
+                        <span class="chip">${ICONS.wind} ${t("weather.wind")}: ${condiciones.wind_speed ?? "N/A"} km/h</span>
+                        <span class="chip">${ICONS.waterTemp} ${t("weather.water_temp")}: ${condiciones.water_temp ?? "N/A"} \u00baC</span>
+                        <span class="chip">${ICONS.cloud} ${t("weather.cloudiness")}: ${condiciones.cloud_cover ?? "N/A"}%</span>
+                        <span class="chip">${ICONS.rain} ${t("weather.rain")}: ${condiciones.rain_probability ?? "N/A"}%</span>
+                        <span class="chip">${ICONS.tide} ${t("weather.tide")}: ${t(`weather.${mapTide(formatearMarea(condiciones))}`)}</span>
+=======
                         <span class="chip">${ICONS.beachType} ${t("results.beach_type")}: ${formatearTipoPlaya(playa.tipo)}</span>
                         <span class="chip">${ICONS.airTemp} ${t("results.avg_air_temp")}: ${formatTemperature(condiciones.air_temp)} ${getTemperatureUnit()}</span>
                         <span class="chip">${ICONS.wave} ${t("results.avg_wave")}: ${formatConditionValue(condiciones.wave_height, { quarterStep: true })} m</span>
@@ -213,6 +246,7 @@ export function pintarResultados(resultados, container, options = {}) {
                         <span class="chip">${ICONS.waterTemp} ${t("results.avg_water_temp")}: ${formatTemperature(condiciones.water_temp)} ${getTemperatureUnit()}</span>
                         <span class="chip">${ICONS.cloud} ${t("results.avg_cloud")}: ${formatConditionValue(condiciones.cloud_cover)}%</span>
                         <span class="chip">${ICONS.rain} ${t("results.avg_rain")}: ${formatConditionValue(condiciones.rain_probability)}%</span>
+>>>>>>> feature/njhm-recomendacion-playas-fecha-rango-horas
                         ${renderTideChips(condiciones)}
                     </div>
 
