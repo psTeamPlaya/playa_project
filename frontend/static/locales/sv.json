@@ -1,0 +1,113 @@
+{
+  "titles": {
+    "app_title": "Min stranddag",
+    "preferences": "Inställningar",
+    "favorite_beaches": "Mina favoritstränder",
+    "downloading_favs": "Laddar ner favoritstränder...",
+    "filters": "Filter",
+    "my_filters": "Mina filter",
+    "configure_alerts": "Konfigurera aviseringar",
+    "beaches": "Stränder",
+    "weather": "Väder",
+    "alerts": "Aviseringar",
+    "beach_type": "Strandtyp",
+    "results": "Rekommenderade stränder",
+    "see_map": "Visa karta",
+    "in_map_title": "Karta över rekommenderade stränder",
+    "in_map_description": "Se rankning och poäng för varje strand direkt på kartan.",
+    "language": "Språk"
+  },
+  "common": {
+    "reset": "Återställ",
+    "date": "Datum",
+    "time": "Tid",
+    "time_end": "Sluttid",
+    "submit": "Skicka",
+    "cancel": "Avbryt",
+    "close": "Stäng",
+    "add": "Lägg till"
+  },
+  "mobile": {
+    "title": "Meny",
+    "subtitle": "Åtkomst och filter",
+    "open_menu": "Öppna meny",
+    "close_menu": "Stäng meny"
+  },
+  "search": {
+    "search_beaches": "Sök rekommenderade stränder",
+    "reset_filters": "Återställ statiska filter",
+    "disable_dynamic_filters": "Inaktivera dynamiska filter",
+    "enable_dynamic_filters": "Aktivera dynamiska filter",
+    "deactivate_filter": "Inaktivera filter",
+    "activate_filter": "Aktivera filter",
+    "quantity": "Antal",
+    "location": {
+      "title": "Stad / Plats",
+      "my_location": "Min plats",
+      "choose_location": "Välj en plats",
+      "range": "Sökområde:",
+      "select": "Välj plats"
+    },
+    "questions": {
+      "actividad": "1. Vad vill du göra under din stranddag?",
+      "when": "2. När vill du gå till stranden?",
+      "where": "3. Välj din plats"
+    },
+    "empty_results": "Det finns inga strandrekommendationer just nu.",
+    "warnings": {
+      "no_activity": "Du måste välja en aktivitet.",
+      "no_date": "Du måste välja ett datum.",
+      "no_time": "Du måste välja en tid.",
+      "past_date": "Du kan inte välja ett tidigare datum.",
+      "past_time": "Du kan inte välja en tidigare tid för idag.",
+      "missing_location": "Ange platsinformation."
+    },
+    "searching": "Söker rekommendationer..."
+  },
+  "activities": {
+    "title": "Aktiviteter",
+    "sunbathing": "Sola",
+    "swimming": "Simma",
+    "surfing": "Surfing",
+    "wind_surfing": "Windsurfing",
+    "kitesurfing": "Kitesurfing",
+    "snorkeling": "Snorkling",
+    "walking": "Promenera",
+    "fishing": "Fiske",
+    "kayaking": "Kajak",
+    "no_activities_available": "Inga aktiviteter tillgängliga just nu.",
+    "paddle_surfing": "Paddle surf",
+    "bodyboarding": "Bodyboarding",
+    "beach_volleyball": "Beachvolleyboll",
+    "downloading": "Laddar tillgängliga aktiviteter..."
+  },
+  "weather": {
+    "cloudiness": "Molnighet",
+    "cloud_min": "Minsta molnighet",
+    "cloud_max": "Högsta molnighet",
+    "wind": "Vind (km/h)",
+    "wind_min": "Minsta vind",
+    "wind_max": "Högsta vind",
+    "temp": "Temp. (°C)",
+    "temp_min": "Lägsta lufttemperatur",
+    "temp_max": "Högsta lufttemperatur",
+    "water_temp": "Vattentemp. (°C)",
+    "waves": "Vågor (m)",
+    "waves_min": "Minsta våghöjd",
+    "waves_max": "Högsta våghöjd",
+    "rain": "Regn (%)",
+    "tide": "Tidvatten",
+    "low_tide": "lågt",
+    "high_tide": "högt",
+    "medium_tide": "medel",
+    "tide_high": {
+      "low": "Lågt",
+      "medium": "Medel",
+      "high": "Högt",
+      "rising": "Stigande",
+      "falling": "Sjunkande",
+      "high_tide": "Högvatten",
+      "low_tide": "Lågvatten"
+    }
+  }
+}
