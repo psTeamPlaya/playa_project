@@ -1,6 +1,6 @@
 import { authFetch } from "../api/auth-fetch.js";
 
-export async function openReviewAdminModal(params) {
+export async function openReviewAdminModal(params = {}) {
     const { beachId, onRefresh } = params;
 
     const existingModal = document.getElementById("reviewAdminModal");

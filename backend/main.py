@@ -6,7 +6,7 @@ from sqlalchemy import inspect, text
 from datetime import date, timedelta
 from sqlalchemy import func
 
-import backend.models  # NO BORRAR
+import backend.models  # noqa: F401  # NO BORRAR
 from backend.config import settings
 from backend.routes import (
     api_router, views_router, auth_router, users_router,
@@ -52,6 +52,19 @@ def ensure_user_schema() -> None:
             )
 
 
+def ensure_activity_schema() -> None:
+    inspector = inspect(engine)
+    if "activities" not in inspector.get_table_names():
+        return
+
+    activity_columns = {column["name"] for column in inspector.get_columns("activities")}
+    with engine.begin() as conn:
+        if "icon" not in activity_columns:
+            conn.execute(
+                text("ALTER TABLE activities ADD COLUMN icon VARCHAR")
+            )
+
+
 def ensure_admin_user() -> None:
     session = SessionLocal()
     try:
@@ -73,8 +86,6 @@ def ensure_admin_user() -> None:
     finally:
         session.close()
 
-from backend.routes.beach_conditions import upsert_beach_conditions
-
 def needs_weather_update(db) -> bool:
     expected_last_day = date.today() + timedelta(days=14)
     latest = db.query(func.max(BeachCondition.datetime)).scalar()
@@ -87,6 +98,7 @@ def needs_weather_update(db) -> bool:
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     ensure_user_schema()
+    ensure_activity_schema()
     ensure_admin_user()
     alert_worker_task = None
 

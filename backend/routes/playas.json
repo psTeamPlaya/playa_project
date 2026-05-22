@@ -43,5 +43,46 @@
     },
     "imagen": "las_canteras.jpg",
     "accesibilidad": "alta"
+  },
+  {
+    "id": 10,
+    "nombre": "La Laja",
+    "ubicacion": "Las Palmas, Canarias, España",
+    "latitud": 28.058448,
+    "longitud": -15.418794,
+    "tipo": "arena",
+    "descripcion": "Playa urbana con carácter más abierto, útil para ampliar catálogo en la demo.",
+    "actividades_ideales": [],
+    "servicios": {},
+    "imagen": "la_laja.jpg",
+    "accesibilidad": "media"
+  },
+  {
+    "id": 55,
+    "nombre": "Bahía de Formas",
+    "ubicacion": "Santa Lucía de Tirajana, Canarias, España",
+    "latitud": 27.844335,
+    "longitud": -15.416524,
+    "tipo": "piedra",
+    "descripcion": "Bahía del sureste de Gran Canaria donde la presencia de mascotas no consta como legalmente autorizada; según la fuente consultada, podrían sancionar por acudir con perro.",
+    "actividades_ideales": [
+      {
+        "actividad": "kitesurf",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "windsurf",
+        "condicion": "gestionado desde panel admin"
+      }
+    ],
+    "servicios": {
+      "escuela_de_windsurf": true
+    },
+    "imagen": "bahia_de_formas.jpg",
+    "accesibilidad": "media"
   }
 ]
