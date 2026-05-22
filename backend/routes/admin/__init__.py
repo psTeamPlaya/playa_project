@@ -43,7 +43,7 @@ router.include_router(reviews_router)
 
 PLAYAS_FILE = Path(__file__).resolve().parents[1] / "playas.json"
 ACTIVITY_ICONS_DIR = Path(__file__).resolve().parents[3] / "frontend" / "static" / "img"
-MAX_ACTIVITY_ICON_SIZE = 512 * 1024
+MAX_ACTIVITY_ICON_SIZE = 1024 * 1024
 
 ACTIVITY_ALIASES = {
     "tomar_sol": "tomar_sol",
@@ -670,7 +670,7 @@ async def upload_admin_activity_icon(
     if not file_bytes:
         raise HTTPException(status_code=400, detail="Debes seleccionar un archivo PNG")
     if len(file_bytes) > MAX_ACTIVITY_ICON_SIZE:
-        raise HTTPException(status_code=413, detail="El icono no puede superar 512 KB")
+        raise HTTPException(status_code=413, detail="El icono no puede superar 1024 KB")
 
     try:
         image = Image.open(io.BytesIO(file_bytes))

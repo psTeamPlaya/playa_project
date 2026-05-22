@@ -187,6 +187,10 @@ export function initAdminUI({
 
     function updateAdminVisibility(user) {
         adminPreferencesGroup?.classList.toggle("hidden", !user?.is_admin);
+        if (openReviewManagementBtn) {
+            openReviewManagementBtn.disabled = !user?.is_admin;
+            openReviewManagementBtn.classList.toggle("is-disabled", !user?.is_admin);
+        }
     }
 
     function parseCoordinate(value) {
@@ -918,7 +922,7 @@ export function initAdminUI({
 
     openUserManagementBtn?.addEventListener("click", openUsersModal);
     openBeachManagementBtn?.addEventListener("click", openBeachesModal);
-    openReviewManagementBtn?.addEventListener("click", openReviewAdminModal);
+    openReviewManagementBtn?.addEventListener("click", () => openReviewAdminModal({}));
 
     closeUserManagementModal?.addEventListener("click", () => closeModal(userManagementModal));
     closeBeachManagementModal?.addEventListener("click", () => closeModal(beachManagementModal));
