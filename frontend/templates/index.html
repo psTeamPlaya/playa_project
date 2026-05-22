@@ -593,7 +593,17 @@
 
       <div class="actions search-actions">
 
-        <button data-i18n="search.search_beaches" class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
+        <div style="flex: 1;"></div>
+
+          <button class="btn-primary" id="buscarBtn">
+              <i class="bi bi-search"></i> Buscar playas
+          </button>
+        
+          <div style="flex: 1; display: flex; justify-content: flex-end;">
+              <button class="btn-secondary" id="openPhotoModalBtn">
+                  <i class="bi bi-camera"></i>
+              </button>
+          </div>
 
       </div>
 
@@ -1100,6 +1110,14 @@
             <form class="admin-inline-form" id="activityCatalogForm">
 
               <input id="activityCatalogName" type="text" placeholder="Ej: paddle surf" required>
+
+              <div class="admin-inline-upload">
+                <input id="activityCatalogIconFile" type="file" accept="image/png">
+                <small id="activityCatalogIconHelp" class="admin-inline-help">
+                  Sube un icono en PNG como los existentes. Si editas una actividad y no subes uno nuevo, se mantiene el actual.
+                </small>
+                <div id="activityCatalogIconCurrent" class="admin-list-meta" hidden></div>
+              </div>
 
               <button class="btn-secondary" id="cancelActivityEditBtn" type="button" hidden>Cancelar</button>
 

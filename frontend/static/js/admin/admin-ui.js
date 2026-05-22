@@ -98,6 +98,8 @@ export function initAdminUI({
     beachActivitiesOptions,
     activityCatalogForm,
     activityCatalogNameInput,
+    activityCatalogIconFileInput,
+    activityCatalogIconCurrent,
     cancelActivityEditBtn,
     activityWeightsPanel,
     activityWeightsGrid,
@@ -125,6 +127,7 @@ export function initAdminUI({
         mapMarker: null,
         activityWeightSourceKey: "",
         editingActivityName: null,
+        editingActivityIcon: null,
     };
 
     const DEFAULT_MAP_COORDS = [28.1235, -15.4363];
@@ -246,12 +249,26 @@ export function initAdminUI({
         return activityCatalogForm?.querySelector('button[type="submit"]') || null;
     }
 
+    function updateActivityIconCurrent(icon = null) {
+        if (!activityCatalogIconCurrent) return;
+        const normalizedIcon = typeof icon === "string" ? icon.trim() : "";
+        activityCatalogIconCurrent.hidden = !normalizedIcon;
+        activityCatalogIconCurrent.textContent = normalizedIcon
+            ? `Icono actual: ${normalizedIcon}`
+            : "";
+    }
+
     function setActivityEditMode(item = null) {
         state.editingActivityName = item?.name || null;
+        state.editingActivityIcon = item?.icon || null;
         if (activityCatalogNameInput) {
             activityCatalogNameInput.value = item?.name || "";
             activityCatalogNameInput.readOnly = Boolean(item && item.can_rename === false);
         }
+        if (activityCatalogIconFileInput) {
+            activityCatalogIconFileInput.value = "";
+        }
+        updateActivityIconCurrent(state.editingActivityIcon);
         if (cancelActivityEditBtn) {
             cancelActivityEditBtn.hidden = !item;
         }
@@ -419,6 +436,52 @@ export function initAdminUI({
         return response.json();
     }
 
+    async function uploadActivityIcon(rawName) {
+        const file = activityCatalogIconFileInput?.files?.[0];
+        if (!file) {
+            return state.editingActivityIcon || null;
+        }
+
+        const formData = new FormData();
+        formData.append("name", rawName);
+        formData.append("icon_file", file);
+
+        const response = await authFetch("/admin/activities/icon-upload", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!response.ok) {
+            let detail = "No se pudo subir el icono.";
+            try {
+                const data = await response.json();
+                detail = data.detail || detail;
+            } catch (error) {
+                console.error("Error reading upload payload", error);
+            }
+            throw new Error(detail);
+        }
+
+        const data = await response.json();
+        return data.icon || null;
+    }
+
+    function hasPendingActivityIconUpload() {
+        return Boolean(activityCatalogIconFileInput?.files?.[0]);
+    }
+
+    async function applyUploadedIconToActivity(activityName) {
+        const icon = await uploadActivityIcon(activityName);
+        return fetchJson(`/admin/activities/${encodeURIComponent(activityName)}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                name: activityName,
+                icon,
+                weights: getActivityWeightsPayload(),
+            }),
+        });
+    }
+
     function renderUsers(users) {
         if (!userManagementList) return;
         const currentUser = getCurrentUser?.();
@@ -519,6 +582,7 @@ export function initAdminUI({
                 <div>
                     <strong>${escapeHtml(item.label)}</strong>
                     <div class="admin-list-meta">${escapeHtml(item.name)}</div>
+                    ${type === "activity" && item.icon ? `<div class="admin-list-meta">${escapeHtml(item.icon)}</div>` : ""}
                 </div>
                 <div class="admin-inline-actions">
                     ${type === "activity" ? `
@@ -765,23 +829,44 @@ export function initAdminUI({
 
     async function createCatalogItem(type, rawName) {
         const url = type === "activity" ? "/admin/activities" : "/admin/services";
-        const payload = type === "activity"
-            ? { name: rawName, weights: getActivityWeightsPayload() }
-            : { name: rawName };
-        return fetchJson(url, {
-            method: "POST",
-            body: JSON.stringify(payload),
-        });
-    }
+        if (type !== "activity") {
+            return fetchJson(url, {
+                method: "POST",
+                body: JSON.stringify({ name: rawName }),
+            });
+        }
 
-    async function updateActivityCatalogItem(previousName, rawName) {
-        return fetchJson(`/admin/activities/${encodeURIComponent(previousName)}`, {
-            method: "PUT",
+        const createdActivity = await fetchJson(url, {
+            method: "POST",
             body: JSON.stringify({
                 name: rawName,
+                icon: null,
                 weights: getActivityWeightsPayload(),
             }),
         });
+
+        if (!hasPendingActivityIconUpload()) {
+            return createdActivity;
+        }
+
+        return applyUploadedIconToActivity(createdActivity.name);
+    }
+
+    async function updateActivityCatalogItem(previousName, rawName) {
+        const updatedActivity = await fetchJson(`/admin/activities/${encodeURIComponent(previousName)}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                name: rawName,
+                icon: state.editingActivityIcon || null,
+                weights: getActivityWeightsPayload(),
+            }),
+        });
+
+        if (!hasPendingActivityIconUpload()) {
+            return updatedActivity;
+        }
+
+        return applyUploadedIconToActivity(updatedActivity.name);
     }
 
     async function submitCatalogForm(event, type) {

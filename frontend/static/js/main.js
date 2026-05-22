@@ -171,6 +171,8 @@ const beachServicesOptions = document.getElementById("beachServicesOptions");
 const beachActivitiesOptions = document.getElementById("beachActivitiesOptions");
 const activityCatalogForm = document.getElementById("activityCatalogForm");
 const activityCatalogNameInput = document.getElementById("activityCatalogName");
+const activityCatalogIconFileInput = document.getElementById("activityCatalogIconFile");
+const activityCatalogIconCurrent = document.getElementById("activityCatalogIconCurrent");
 const cancelActivityEditBtn = document.getElementById("cancelActivityEditBtn");
 const activityWeightsPanel = document.getElementById("activityWeightsPanel");
 const activityWeightsGrid = document.getElementById("activityWeightsGrid");
@@ -480,10 +482,20 @@ function getActivityIcon(activityName = "") {
     return ACTIVITY_ICON_MAP[activityName] || "\u{1F3D6}\uFE0F";
 }
 
-function getActivityIconMarkup(activityName = "") {
-    const iconImage = ACTIVITY_IMAGE_MAP[activityName];
+function escapeHtmlAttribute(value = "") {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+}
+
+function getActivityIconMarkup(activity = {}) {
+    const activityName = activity?.name || "";
+    const customIcon = typeof activity?.icon === "string" ? activity.icon.trim() : "";
+    const iconImage = customIcon || ACTIVITY_IMAGE_MAP[activityName];
     if (iconImage) {
-        return `<img class="activity-icon-image" src="${iconImage}" alt="" aria-hidden="true">`;
+        return `<img class="activity-icon-image" src="${escapeHtmlAttribute(iconImage)}" alt="" aria-hidden="true">`;
     }
 
     return getActivityIcon(activityName);
@@ -516,7 +528,7 @@ function renderActivityCards(activities = []) {
 
     activitiesGrid.innerHTML = activities.map((activity) => `
         <div class="activity-card" data-activity="${activity.name}">
-            <span class="activity-icon">${getActivityIconMarkup(activity.name)}</span>
+            <span class="activity-icon">${getActivityIconMarkup(activity)}</span>
             <span class="activity-name">${getActivityDisplayLabel(activity)}</span>
         </div>
     `).join("");
@@ -902,6 +914,8 @@ function initControllers() {
         beachActivitiesOptions,
         activityCatalogForm,
         activityCatalogNameInput,
+        activityCatalogIconFileInput,
+        activityCatalogIconCurrent,
         cancelActivityEditBtn,
         activityWeightsPanel,
         activityWeightsGrid,
