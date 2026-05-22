@@ -23,13 +23,13 @@ const BEACH_TYPE_LABELS = {
     roca: "beach_types.natural_pool",
 };
 const TIDE_LABELS = {
-    baja: "tide.low",
-    media: "tide.medium",
-    alta: "tide.high",
-    subiendo: "tide.rising",
-    bajando: "tide.falling",
-    pleamar: "tide.high_tide",
-    bajamar: "tide.low_tide",
+    baja: "tide_high.low",
+    media: "tide_high.medium",
+    alta: "tide_high.high",
+    subiendo: "tide_high.rising",
+    bajando: "tide_high.falling",
+    pleamar: "tide_high.high_tide",
+    bajamar: "tide_high.low_tide",
 };
 const RECOMMENDATION_FACTORS = {
     "temperatura media": "air_temp",
@@ -64,7 +64,9 @@ export function formatearTipoPlaya(tipo = "") {
 }
 
 function traducirValorMarea(valor = "") {
+    console.log("Translating tide value:", valor);
     const key = TIDE_LABELS[String(valor).trim().toLowerCase()];
+    console.log("Mapped tide key:", key);
     return key ? t(key) : valor;
 }
 
@@ -90,12 +92,12 @@ export function formatearMarea(condiciones = {}) {
         return "---";
     }
     if (tideValue <= -0.10) {
-        return t("tide.low");
+        return t("weather.tide_high.low");
     }
     if (tideValue >= 0.10) {
-        return t("tide.high");
+        return t("weather.tide_high.high");
     }
-    return t("tide.medium");
+    return t("weather.tide_high.medium");
 }
 
 function formatearFactorRecomendacion(factor = "") {

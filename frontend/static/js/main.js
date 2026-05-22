@@ -30,25 +30,18 @@ import {
 } from "./search/date-time.js";
 import { initQuantity } from "./search/quantity.js";
 import { initResultsMap } from "./results/results-map.js";
-import { initReviewsModule }  from "./reviews/reviews.js";
+import { initReviewsModule } from "./reviews/reviews.js";
 import { initReviewPhotoModal } from "./review-photo/review-photo.js";
 
 import { initLanguage, setLanguage, t } from "/static/js/languages/i18n.js";
 
 initLanguage();
 
-function getFlagEmoji(countryCode = "") {
-    return Array.from(countryCode.toUpperCase())
-        .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
-        .join("");
-}
-
 
 const languageFlags = {
-    es: getFlagEmoji("ES"),
-    en: getFlagEmoji("GB"),
-    cs: getFlagEmoji("CZ"),
-    de: getFlagEmoji("DE"),
+    es: "🇪🇸",
+    en: "🇬🇧",
+    cs: "🇨🇿",
 };
 
 const activityCards = document.querySelectorAll(".activity-card");
@@ -284,9 +277,56 @@ const staticFilterInputs = [
 
 function updateLanguageFlag(lang) {
     const currentLanguageFlag = document.getElementById("currentLanguageFlag");
-    if (currentLanguageFlag) {
-        currentLanguageFlag.textContent = languageFlags[lang] || "🌐";
+    currentLanguageFlag.textContent =
+        languageFlags[lang] || "🌍";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // const languageMenuBtn = document.getElementById("languageMenuBtn");
+    // const languageDropdown = document.getElementById("languageDropdown");
+    const currentLanguageFlag = document.getElementById("currentLanguageFlag");
+    const btn = document.getElementById("languageMenuBtn");
+    const dropdown = document.getElementById("languageDropdown");
+
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle("open");
+    });
+
+    document.addEventListener("click", () => {
+        dropdown.classList.remove("open");
+    });
+
+    document.querySelectorAll(".language-option").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const lang = btn.dataset.lang;
+    
+            setLanguage(lang);
+    
+            updateLanguageFlag(lang);
+    
+            languageDropdown.hidden = true;
+        });
+    });
+});
+
+
+document.addEventListener("click", (e) => {
+    if (!e.target.closest(".language-menu")) {
+        languageDropdown.hidden = true;
     }
+});
+
+updateLanguageFlag(
+    localStorage.getItem("lang") || "en"
+);
+
+
+
+function limpiarResultadosPorCambioDeFiltros() {
+    resultsContainer.innerHTML = "";
+    statusEl.textContent = "";
+    ocultarAvisoSolar();
 }
 
 function updateLanguageOptionFlags() {
@@ -413,12 +453,6 @@ function abrirMenuMovil() {
     mobileMenuBtn?.setAttribute("aria-expanded", "true");
 }
 
-function limpiarResultadosPorCambioDeFiltros() {
-    resultsContainer.innerHTML = "";
-    statusEl.textContent = "";
-    ocultarAvisoSolar();
-}
-
 function resetRecommendationContext() {
     lastRecommendationContext = null;
 }
@@ -520,7 +554,7 @@ function renderActivityCards(activities = []) {
     if (!Array.isArray(activities) || activities.length === 0) {
         activitiesGrid.innerHTML = `
             <div class="empty-state">
-                ${t("search.no_activities")}
+                ${t("activities.no_activities_available")}
             </div>
         `;
         return;
@@ -555,10 +589,10 @@ async function loadActivities() {
         availableActivities = [];
         activitiesGrid.innerHTML = `
             <div class="empty-state">
-                ${t("search.errors.activities_load")}
+                ${t("errors.not_able_fetch_activities")}
             </div>
         `;
-        statusEl.textContent = t("search.errors.activities_load_status");
+        statusEl.textContent = t("errors.not_able_fetch_activities");
         return [];
     }
 }
@@ -699,7 +733,9 @@ function renderRecommendationResults(data, { shouldScroll = false } = {}) {
         return;
     }
 
-    statusEl.textContent = t("search.status.found", {
+    ocultarAvisoSolar();
+    // statusEl.textContent = `Se han encontrado ${data.resultados.length} recomendaciones para ${actividadSeleccionada.replace("_", " ")}.`;
+    statusEl.textContent = t("results.recommendations_found", {
         count: data.resultados.length,
         activity: activityLabel
     });
@@ -837,20 +873,20 @@ function initControllers() {
 
     authModalController = initAuthModal({
         loginModalEl,
-    closeLoginModalBtn,
-    loginModalForm,
-    loginEmailInput,
-    loginPasswordInput,
-    confirmPasswordInput,
-    confirmPasswordGroup,
-    loginErrorMessageEl,
-    authSubmitBtn,
-    authModeHint,
-    toggleAuthModeBtn,
-    onAuthSuccess: async () => {
-        await sessionUIController?.loadCurrentUser();
-        sessionUIController?.actualizarBotonesSesion();
-    }
+        closeLoginModalBtn,
+        loginModalForm,
+        loginEmailInput,
+        loginPasswordInput,
+        confirmPasswordInput,
+        confirmPasswordGroup,
+        loginErrorMessageEl,
+        authSubmitBtn,
+        authModeHint,
+        toggleAuthModeBtn,
+        onAuthSuccess: async () => {
+            await sessionUIController?.loadCurrentUser();
+            sessionUIController?.actualizarBotonesSesion();
+        }
     });
 
     sessionUIController = initSessionUI({
@@ -989,31 +1025,28 @@ async function buscarRecomendaciones() {
     ocultarAvisoSolar();
 
     if (!actividadSeleccionada) {
-        statusEl.textContent = t("search.errors.activity_required");
+        statusEl.textContent = t("search.warnings.no_activity");
         return;
     }
     if (!fecha) {
-        statusEl.textContent = t("search.errors.date_required");
+        statusEl.textContent = t("search.warnings.no_date");
         return;
     }
     if (!horaInicio || !horaFin) {
-        statusEl.textContent = t("search.errors.time_range_required");
+        statusEl.textContent = t("search.warnings.no_time");
         return;
     }
     if (fecha < formatearFechaLocal(new Date())) {
-        statusEl.textContent = t("search.errors.past_date");
+        statusEl.textContent = t("search.warnings.past_date");
         return;
     }
     if (dateTimeController?.esFechaHoy(fecha) && dateTimeController?.esHoraPasadaParaHoy(horaInicio)) {
-        statusEl.textContent = t("search.errors.past_start_time");
+        statusEl.textContent = t("search.warnings.past_time");
+        dateTimeController?.asegurarHoraValidaSeleccionada({ silent: true });
         guardarHorarioRecordado();
         return;
     }
-    if (horaFin <= horaInicio) {
-        statusEl.textContent = t("search.errors.end_before_start");
-        return;
-    }
-    statusEl.textContent = t("search.status.searching");
+    statusEl.textContent = t("search.searching");
     try {
         const radioSeleccionado = document.querySelector('input[name="rango"]:checked');
         const rango = radioSeleccionado ? radioSeleccionado.value : "50";
@@ -1030,7 +1063,7 @@ async function buscarRecomendaciones() {
         });
 
         if (!recommendationResult.ok && recommendationResult.reason === "missing-location") {
-            statusEl.textContent = t("search.errors.missing_location");
+            statusEl.textContent = t("search.warnings.missing_location");
             return;
         }
 
@@ -1057,12 +1090,13 @@ async function buscarRecomendaciones() {
     catch (error) {
         console.error(error);
         resetRecommendationContext();
-        statusEl.textContent = t("search.errors.api_error");
+        clearSourceMetrics();
+        statusEl.textContent = t("errors.API");
         resultsMapController?.setResults([]);
         resultsContainer.innerHTML = `
-          <div class="empty-state">
-            ${t("search.errors.results_load")}
-          </div>
+            <div class="empty-state">
+                ${t("errors.results_load_error")}
+            </div>
         `;
     }
 }
@@ -1106,7 +1140,7 @@ async function handleFavoriteToggle(event) {
     const beachId = Number(btn.dataset.id);
     const token = sessionStorage.getItem("token");
     if (!token) {
-        alert("Inicia sesion para gestionar favoritas.");
+        alert(t("alerts.sign_in"));
         return;
     }
     const isFavorite = btn.innerText === "\u2764\uFE0F";
