@@ -3347,3 +3347,27 @@ img.emoji {
   max-height: 90vh;
   overflow-y: auto;
 }
+
+.search-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 1.2rem;
+    gap: 1rem;
+}
+
+.search-actions-left-spacer {
+    flex: 1;
+    display: flex;
+}
+
+.search-actions-right-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#buscarBtn {
+    flex-shrink: 0;
+}

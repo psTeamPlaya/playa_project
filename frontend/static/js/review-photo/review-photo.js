@@ -2,7 +2,7 @@
  * Opens the photo upload and review modal.
  * Handles image selection, compression, GPS verification, and AI status tracking.
  */
-async function openReviewPhotoModal() {
+async function openReviewPhotoModal(sessionUIController) {
     const existingModal = document.getElementById("reviewPhotoModal");
     if (existingModal) existingModal.remove();
 
@@ -247,8 +247,30 @@ async function openReviewPhotoModal() {
      * Verifies the image through backend AI processing.
      */
     async function sendToVerificationAPI(fileBlob) {
-        actionBtn.textContent = "Acquiring GPS location...";
+        actionBtn.textContent = "Checking authorization...";
         actionBtn.disabled = true;
+
+        const user = sessionUIController?.getCurrentUser?.();
+        const isAdmin = user && user.is_admin === true;
+
+        if (isAdmin) {
+            const manualLat = prompt("Admin notification: Enter Latitude manually (or leave empty to use GPS):");
+            if (manualLat !== null && manualLat.trim() !== "") {
+                const manualLon = prompt("Enter Longitude:");
+                
+                const latNum = parseFloat(manualLat);
+                const lonNum = parseFloat(manualLon);
+
+                if (!isNaN(latNum) && !isNaN(lonNum)) {
+                    proceedWithCoordinates(latNum, lonNum);
+                    return;
+                } else {
+                    alert("Invalid coordinates entered. Falling back to GPS...");
+                }
+            }
+        }
+
+        actionBtn.textContent = "Acquiring GPS location...";
         
         if (!navigator.geolocation) {
             alert("Geolocation is not supported by your browser.");
@@ -258,57 +280,7 @@ async function openReviewPhotoModal() {
     
         navigator.geolocation.getCurrentPosition(
             async (position) => {
-                const userLat = position.coords.latitude;
-                const userLon = position.coords.longitude;
-            
-                actionBtn.textContent = "Generating cryptographic hash (MD5)...";
-            
-                const reader = new FileReader();
-                reader.readAsArrayBuffer(fileBlob);
-                reader.onloadend = async function () {
-                    const arrayBuffer = reader.result;
-                    
-                    if (!window.SparkMD5) {
-                        alert("Cryptographic library loading. Please try again in a second.");
-                        actionBtn.disabled = false;
-                        return;
-                    }
-                    const clientPhotoHash = SparkMD5.ArrayBuffer.hash(arrayBuffer);
-                
-                    actionBtn.textContent = "Processing Anti-Spoofing & CLIP...";
-                
-                    const formData = new FormData();
-                    formData.append("img", fileBlob, "photo.jpg");
-                    formData.append("lat", userLat);
-                    formData.append("lon", userLon);
-                    formData.append("client_photo_hash", clientPhotoHash);
-                
-                    try {
-                        const response = await fetch("/api/review-photo/verify", {
-                            method: "POST",
-                            body: formData
-                        });
-                    
-                        const result = await response.json();
-                    
-                        if (response.ok && result.status === "received") {
-                            const previewReader = new FileReader();
-                            previewReader.onloadend = function() {
-                                switchToStatusView(previewReader.result, result.beach_id, clientPhotoHash, result.beach_name);
-                            };
-                            previewReader.readAsDataURL(fileBlob);
-                        
-                        } else {
-                            alert(`Error: ${result.detail || "Verification failed."}`);
-                            actionBtn.textContent = "Verify & Submit Location";
-                            actionBtn.disabled = false;
-                        }
-                    } catch (error) {
-                        console.error("API Error:", error);
-                        alert("Network error.");
-                        actionBtn.disabled = false;
-                    }
-                };
+                proceedWithCoordinates(position.coords.latitude, position.coords.longitude);
             },
             (error) => {
                 alert("Location access denied.");
@@ -316,15 +288,66 @@ async function openReviewPhotoModal() {
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
+
+        async function proceedWithCoordinates(lat, lon) {
+            actionBtn.textContent = "Generating cryptographic hash (MD5)...";
+        
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(fileBlob);
+            reader.onloadend = async function () {
+                const arrayBuffer = reader.result;
+                
+                if (!window.SparkMD5) {
+                    alert("Cryptographic library loading. Please try again in a second.");
+                    actionBtn.disabled = false;
+                    return;
+                }
+                const clientPhotoHash = SparkMD5.ArrayBuffer.hash(arrayBuffer);
+            
+                actionBtn.textContent = "Processing Anti-Spoofing & CLIP...";
+            
+                const formData = new FormData();
+                formData.append("img", fileBlob, "photo.jpg");
+                formData.append("lat", lat);
+                formData.append("lon", lon);
+                formData.append("client_photo_hash", clientPhotoHash);
+            
+                try {
+                    const response = await fetch("/api/review-photo/verify", {
+                        method: "POST",
+                        body: formData
+                    });
+                
+                    const result = await response.json();
+                
+                    if (response.ok && result.status === "received") {
+                        const previewReader = new FileReader();
+                        previewReader.onloadend = function() {
+                            switchToStatusView(previewReader.result, result.beach_id, clientPhotoHash, result.beach_name);
+                        };
+                        previewReader.readAsDataURL(fileBlob);
+                    
+                    } else {
+                        alert(`Error: ${result.detail || "Verification failed."}`);
+                        actionBtn.textContent = "Verify & Submit Location";
+                        actionBtn.disabled = false;
+                    }
+                } catch (error) {
+                    console.error("API Error:", error);
+                    alert("Network error.");
+                    actionBtn.disabled = false;
+                }
+            };
+        }
     }
 }
 
-export function initReviewPhotoModal(){
+export function initReviewPhotoModal(sessionUIController){
     const testBtn = document.getElementById("openPhotoModalBtn");
 
     if (testBtn) {
         testBtn.addEventListener("click", () => {
-            openReviewPhotoModal();
+            openReviewPhotoModal(sessionUIController);
         });
 }
 }

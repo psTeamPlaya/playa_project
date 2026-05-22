@@ -71,8 +71,8 @@ async def addReviewPhoto(
         if d < min_dystans:
             min_dystans = d
             closest_beach = p
-    if not closest_beach or min_dystans > 15000000:
-        raise HTTPException(status_code=400, detail="Nie wykryto plaży w zasięgu 150m.")
+    if not closest_beach or min_dystans > 1000:
+        raise HTTPException(status_code=400, detail="No ha detectado playa en 1000m.")
 
     beach_id = closest_beach["id"]
     timestamp = int(time.time())
