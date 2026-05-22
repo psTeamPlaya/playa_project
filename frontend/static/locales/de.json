@@ -48,8 +48,8 @@
     "end_time": "Endzeit",
     "location": {
       "title": "Stadt / Standort",
-      "my_location": "📍 Mein Standort",
-      "choose_location": "🗺️ Standort wählen",
+      "my_location": "Mein Standort",
+      "choose_location": "Standort wählen",
       "range": "Suchradius:",
       "select": "Standort auswählen"
     },
