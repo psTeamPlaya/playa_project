@@ -277,8 +277,9 @@ const staticFilterInputs = [
 
 function updateLanguageFlag(lang) {
     const currentLanguageFlag = document.getElementById("currentLanguageFlag");
-    currentLanguageFlag.textContent =
-        languageFlags[lang] || "🌍";
+    currentLanguageFlag.textContent = languageFlags[lang] || "🌍";
+
+    twemoji.parse(currentLanguageFlag);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
