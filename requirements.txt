@@ -13,3 +13,5 @@ redis
 pillow
 google-auth-oauthlib
 google-auth>=2
+responses
+pytest

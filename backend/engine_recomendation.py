@@ -477,6 +477,22 @@ def calcular_eventos_marea_siguientes_por_playa(
 
 
 def fusionar_playas(playas_locales, playas_db):
+    if playas_db and "beach_id" in playas_db[0]:
+        condiciones_por_id = {condicion["beach_id"]: condicion for condicion in playas_db}
+        fusionadas = []
+
+        for playa_local in playas_locales:
+            playa_id = playa_local.get("id")
+            condicion = condiciones_por_id.get(playa_id)
+            if condicion is None:
+                continue
+            fusionadas.append({
+                **playa_local,
+                "condiciones": condicion,
+            })
+
+        return fusionadas
+
     locales_por_id = {
         playa["id"]: {
             **playa,
@@ -527,6 +543,8 @@ def fusionar_playas(playas_locales, playas_db):
 
 def filtrar_resultados_recomendacion(resultados, **filtros):
     filtros_normalizados = dict(filtros)
+    if filtros_normalizados.get("tipo_roca"):
+        filtros_normalizados["tipo_piscina_natural"] = True
 
     filtros_base = {
         k: v
@@ -553,7 +571,7 @@ def filtrar_resultados_recomendacion(resultados, **filtros):
     filtros_servicio_extra = {
         k: v
         for k, v in filtros_normalizados.items()
-        if k not in filtros_base and bool(v)
+        if k not in filtros_base and k not in {"tipo_roca", "sitios_para_comer"} and bool(v)
     }
 
     filtrados = []
@@ -563,6 +581,12 @@ def filtrar_resultados_recomendacion(resultados, **filtros):
             "servicios": dict(resultado.get("servicios") or {}),
         }
         condiciones = _normalize_condition_keys(resultado.get("condiciones"))
+
+        if filtros_normalizados.get("sitios_para_comer") and not (
+            playa["servicios"].get("restaurantes")
+            or playa["servicios"].get("comida_para_llevar")
+        ):
+            continue
 
         if not filtrar(playa, condiciones, filtros_base):
             continue
@@ -877,10 +901,19 @@ def calcular_score(condicion, actividad, pesos: dict[str, float] | None = None):
 
     total = 0
     suma_pesos = 0
+
     for k, v in condicion.items():
         if not isinstance(v, (int, float)) or k not in pesos:
             continue
-        score = puntuar(k, v)
+
+        if k == "wind_speed":
+            if actividad == "windsurf":
+                score = score_cercania(v, 25, 10)   # viento alto = bueno
+            else:
+                score = score_inverso(v, 0, 30)     # viento bajo = bueno
+        else:
+            score = puntuar(k, v)
+
         total += score * pesos[k]
         suma_pesos += pesos[k]
 
@@ -936,50 +969,76 @@ def calcular_score_final(
 
 
 def filtrar(playa, conditions, filtros: dict):
-    # Filtros de datos fijos
+    # -------------------------
+    # Filtros de tipo de playa
+    # -------------------------
     if filtros.get("tipo_arena") and playa["tipo"] != "arena":
         return False
     if filtros.get("tipo_piedra") and playa["tipo"] != "piedra":
         return False
     if filtros.get("tipo_piscina_natural") and playa["tipo"] != "piscina_natural":
         return False
-    
-    if filtros.get("restaurantes") and not playa["servicios"].get("restaurantes"):
+
+    # -------------------------
+    # Filtros de servicios básicos
+    # -------------------------
+    if filtros.get("restaurantes") and not playa["servicios"].get("restaurantes", False):
         return False
-    if filtros.get("comida_para_llevar") and not playa["servicios"].get("comida_para_llevar"):
+    if filtros.get("comida_para_llevar") and not playa["servicios"].get("comida_para_llevar", False):
         return False
-    if filtros.get("balnearios") and not playa["servicios"].get("balnearios"):
+    if filtros.get("balnearios") and not playa["servicios"].get("balnearios", False):
         return False
-    if filtros.get("zona_deportiva") and not playa["servicios"].get("zona_deportiva"):
+    if filtros.get("zona_deportiva") and not playa["servicios"].get("zona_deportiva", False):
         return False
-    if filtros.get("pet_friendly") and not playa["servicios"].get("pet_friendly"):
+    if filtros.get("pet_friendly") and not playa["servicios"].get("pet_friendly", False):
         return False
 
-    # Filtros de datos dinámicos
+    # -------------------------
+    # Filtros de escuelas / actividades
+    # -------------------------
+    if filtros.get("escuela_surf") and not playa["servicios"].get("escuela_surf", False):
+        return False
+
+    if filtros.get("escuela_windsurf") and not playa["servicios"].get("escuela_windsurf", False):
+        return False
+
+    if filtros.get("escuela_kayak") and not playa["servicios"].get("escuela_kayak", False):
+        return False
+
+    if filtros.get("zona_beachvolley") and not playa["servicios"].get("zona_beachvolley", False):
+        return False
+
+    # -------------------------
+    # Filtros climáticos dinámicos
+    # -------------------------
     if "min_velocidad_viento" in filtros:
         if conditions.get("wind_speed", 0) < filtros["min_velocidad_viento"]:
             return False
     if "max_velocidad_viento" in filtros:
         if conditions.get("wind_speed", 0) > filtros["max_velocidad_viento"]:
             return False
+
     if "min_temperatura_ambiente" in filtros:
         if conditions.get("air_temp", 0) < filtros["min_temperatura_ambiente"]:
             return False
     if "max_temperatura_ambiente" in filtros:
         if conditions.get("air_temp", 0) > filtros["max_temperatura_ambiente"]:
             return False
+
     if "min_nubosidad" in filtros:
         if conditions.get("cloud_cover", 0) < filtros["min_nubosidad"]:
             return False
     if "max_nubosidad" in filtros:
         if conditions.get("cloud_cover", 0) > filtros["max_nubosidad"]:
             return False
+
     if "min_altura_oleaje" in filtros:
         if conditions.get("wave_height", 0) < filtros["min_altura_oleaje"]:
             return False
     if "max_altura_oleaje" in filtros:
         if conditions.get("wave_height", 0) > filtros["max_altura_oleaje"]:
             return False
+
     return True
 
 
@@ -1009,7 +1068,14 @@ def generar_motivo_intervalo(
     if not variables_ordenadas:
         variables_ordenadas = [
             variable
-            for variable in ("air_temp", "wind_speed", "wave_height", "rain_probability", "cloud_cover", "uv_index")
+            for variable in (
+                "air_temp",
+                "wind_speed",
+                "wave_height",
+                "rain_probability",
+                "cloud_cover",
+                "uv_index",
+            )
             if isinstance(cond.get(variable), (int, float))
         ]
 
@@ -1030,7 +1096,7 @@ def generar_motivo_intervalo(
     descripcion = factores[0] if len(factores) == 1 else ", ".join(factores[:-1]) + f" y {factores[-1]}"
     motivo = f"Se recomienda {tramo} por {descripcion}"
     if actividad_ideal:
-        motivo += ". Además, la playa encaja especialmente bien con la actividad seleccionada."
+        motivo += ". AdemÃ¡s, la playa encaja especialmente bien con la actividad seleccionada."
     else:
         motivo += "."
     return motivo
@@ -1246,3 +1312,136 @@ def generar_motivo(actividad, cond):
         candidatos.append(motivos[2])
 
     return candidatos[0] if candidatos else motivos[0]
+
+def _legacy_fusionar_playas(playas, datos):
+    """
+    Compatibilidad con tests antiguos.
+
+    Si `datos` contiene `beach_id`, se interpreta como condiciones.
+    Si contiene `id`, se interpreta como playas DB y se fusionan
+    sobrescribiendo coordenadas y metadatos.
+    """
+
+    if not datos:
+        return playas
+
+    # Caso 1: condiciones meteorológicas
+    if "beach_id" in datos[0]:
+        condiciones_por_id = {
+            c["beach_id"]: c for c in datos
+        }
+
+        fusionadas = []
+
+        for playa in playas:
+            playa_id = playa.get("id")
+            condicion = condiciones_por_id.get(playa_id)
+
+            if condicion:
+                playa_fusionada = {
+                    **playa,
+                    "condiciones": condicion,
+                }
+                fusionadas.append(playa_fusionada)
+
+        return fusionadas
+
+    # Caso 2: playas DB
+    playas_por_id = {p["id"]: dict(p) for p in playas}
+
+    for playa_db in datos:
+        playa_id = playa_db["id"]
+
+        if playa_id in playas_por_id:
+            original = playas_por_id[playa_id]
+
+            playas_por_id[playa_id] = {
+                **original,
+                **playa_db,
+                # conservar metadata local
+                "servicios": original.get("servicios", {}),
+                "actividades_ideales": original.get("actividades_ideales", []),
+            }
+        else:
+            playas_por_id[playa_id] = {
+                **playa_db,
+                "servicios": playa_db.get("servicios", {}),
+                "actividades_ideales": playa_db.get("actividades_ideales", []),
+            }
+
+    return list(playas_por_id.values())
+
+
+def _legacy_filtrar_resultados_recomendacion(resultados, **filtros):
+    filtrados = []
+
+    for resultado in resultados:
+        playa = {
+            "tipo": _normalize_beach_type(resultado.get("tipo")),
+            "servicios": resultado.get("servicios", {}),
+            "actividades_ideales": resultado.get("actividades_ideales", []),
+        }
+
+        condiciones_originales = resultado.get("condiciones", {})
+
+        condiciones = {
+            "air_temp": condiciones_originales.get(
+                "air_temp",
+                condiciones_originales.get("temperatura_ambiente")
+            ),
+            "cloud_cover": condiciones_originales.get(
+                "cloud_cover",
+                condiciones_originales.get("nubosidad")
+            ),
+            "wind_speed": condiciones_originales.get(
+                "wind_speed",
+                condiciones_originales.get("velocidad_viento")
+            ),
+            "wave_height": condiciones_originales.get(
+                "wave_height",
+                condiciones_originales.get("altura_oleaje")
+            ),
+        }
+
+        filtros_normalizados = dict(filtros)
+
+        if filtros_normalizados.get("tipo_roca"):
+            filtros_normalizados["tipo_piscina_natural"] = True
+
+        if filtros_normalizados.get("sitios_para_comer"):
+            servicios = playa["servicios"]
+            if not (
+                servicios.get("restaurantes")
+                or servicios.get("comida_para_llevar")
+            ):
+                continue
+
+        servicios = playa["servicios"]
+
+        # -----------------------------
+        # FILTRO DE SERVICIOS
+        # -----------------------------
+        servicios_map = [
+            "escuela_surf",
+            "escuela_windsurf",
+            "escuela_kayak",
+            "zona_beachvolley",
+            "zona_deportiva",
+            "restaurantes",
+            "comida_para_llevar",
+            "balnearios",
+            "pet_friendly",
+        ]
+
+        for clave in servicios_map:
+            if filtros_normalizados.get(clave) is True:
+                if not servicios.get(clave, False):
+                    break
+        else:
+            # -----------------------------
+            # FILTROS GENERALES
+            # -----------------------------
+            if filtrar(playa, condiciones, filtros_normalizados):
+                filtrados.append(resultado)
+
+    return filtrados

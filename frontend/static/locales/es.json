@@ -177,6 +177,38 @@
     "close_recommendations": "Cerrar mapa de recomendaciones",
     "select_location": "Seleccionar ubicación"
   },
+  "tide": {
+    "low": "Baja",
+    "medium": "Media",
+    "high": "Alta",
+    "rising": "Subiendo",
+    "falling": "Bajando",
+    "high_tide": "Pleamar",
+    "low_tide": "Bajamar"
+  },
+  "recommendation": {
+    "recommended_between": "Se recomienda entre las {start} y las {end}",
+    "recommended_at": "Se recomienda a las {time}",
+    "recommended_now": "Se recomienda en ese momento",
+    "because": "por",
+    "and": "y",
+    "of": "de",
+    "also_ideal": "Además, la playa encaja especialmente bien con la actividad seleccionada.",
+    "generic": "Condiciones evaluadas para la actividad seleccionada.",
+    "factors": {
+      "air_temp": "temperatura media",
+      "wind_speed": "viento medio",
+      "wave_height": "oleaje medio",
+      "water_temp": "temperatura del agua",
+      "cloud_cover": "nubosidad media",
+      "rain_probability": "probabilidad media de lluvia",
+      "uv_index": "índice UV medio"
+    }
+  },
+  "reviews": {
+    "loading": "Cargando reseñas...",
+    "load_error": "Error al cargar las reseñas.",
+  },
   "admin": {
     "management": {
       "users": "Gestión de usuarios",

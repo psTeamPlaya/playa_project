@@ -87,10 +87,10 @@
     "cloudiness": "Cloudiness",
     "cloud_min": "Minimum cloudiness",
     "cloud_max": "Maximum cloudiness",
-    "wind": "Wind (km/h)",
+    "wind": "Wind (mph)",
     "wind_min": "Minimum wind",
     "wind_max": "Maximum wind",
-    "temp": "Temp. (°C)",
+    "temp": "Temp. (°F)",
     "temp_min": "Minimum air temperature",
     "temp_max": "Maximum air temperature",
     "waves": "Waves (m)",
@@ -164,6 +164,34 @@
     "close_recommendations": "Close recommended beaches map",
     "select_location": "Select location"
   },
+  "tide": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "rising": "Rising",
+    "falling": "Falling",
+    "high_tide": "High tide",
+    "low_tide": "Low tide"
+  },
+  "recommendation": {
+    "recommended_between": "Recommended between {start} and {end}",
+    "recommended_at": "Recommended at {time}",
+    "recommended_now": "Recommended at that time",
+    "because": "because of",
+    "and": "and",
+    "of": "of",
+    "also_ideal": "Also, this beach is a particularly good match for the selected activity.",
+    "generic": "Conditions evaluated for the selected activity.",
+    "factors": {
+      "air_temp": "average air temperature",
+      "wind_speed": "average wind speed",
+      "wave_height": "average wave height",
+      "water_temp": "water temperature",
+      "cloud_cover": "average cloudiness",
+      "rain_probability": "average rain probability",
+      "uv_index": "average UV index"
+    }
+  },
   "admin": {
     "management": {
       "users": "User management",
@@ -231,7 +259,8 @@
   "reviews": {
     "title": "Beach reviews",
     "downloading_reviews": "Loading reviews...",
-    "add_review": "Add review"
+    "add_review": "Add review",
+    "empty": "No reviews yet."
   },
   "metric_card": {
     "available": "Available",
