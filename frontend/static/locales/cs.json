@@ -35,6 +35,7 @@
   },
   "search": {
     "search_beaches": "Vyhledat doporučené pláže",
+    "add_photo": "Přidat fotku",
     "reset_filters": "Resetovat statické filtry",
     "disable_dynamic_filters": "Deaktivovat dynamické filtry",
     "enable_dynamic_filters": "Aktivovat dynamické filtry",

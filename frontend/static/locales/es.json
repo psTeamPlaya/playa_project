@@ -35,6 +35,7 @@
   },
   "search": {
     "search_beaches": "Buscar playas recomendadas",
+    "add_photo": "Añadir foto",
     "reset_filters": "Reset filtros estáticos",
     "disable_dynamic_filters": "Desactivar filtros dinámicos",
     "enable_dynamic_filters": "Activar filtros dinámicos",

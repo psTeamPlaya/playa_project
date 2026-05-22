@@ -33,6 +33,7 @@
   },
   "search": {
     "search_beaches": "Empfohlene Strände suchen",
+    "add_photo": "Foto hinzufügen",
     "reset_filters": "Statische Filter zurücksetzen",
     "disable_dynamic_filters": "Dynamische Filter deaktivieren",
     "enable_dynamic_filters": "Dynamische Filter aktivieren",

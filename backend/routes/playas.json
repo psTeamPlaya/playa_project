@@ -58,6 +58,24 @@
     "accesibilidad": "media"
   },
   {
+    "id": 27,
+    "nombre": "Las Alcaravaneras",
+    "ubicacion": "Las Palmas, Canarias, España",
+    "latitud": 28.13082,
+    "longitud": -15.429074,
+    "tipo": "arena",
+    "descripcion": "Playa urbana situada en la bahía de Las Palmas de Gran Canaria, de aguas generalmente tranquilas y muy utilizada para deportes de playa y actividades náuticas suaves.",
+    "actividades_ideales": [],
+    "servicios": {
+      "balnearios": true,
+      "comida_para_llevar": true,
+      "restaurantes": true,
+      "zona_deportiva": true
+    },
+    "imagen": "las_alcaravaneras.jpg",
+    "accesibilidad": "alta"
+  },
+  {
     "id": 55,
     "nombre": "Bahía de Formas",
     "ubicacion": "Santa Lucía de Tirajana, Canarias, España",

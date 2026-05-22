@@ -36,6 +36,7 @@
   },
   "search": {
     "search_beaches": "Search recommended beaches",
+    "add_photo": "Add a photo",
     "reset_filters": "Reset static filters",
     "disable_dynamic_filters": "Disable dynamic filters",
     "enable_dynamic_filters": "Enable dynamic filters",
