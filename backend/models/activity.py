@@ -6,3 +6,4 @@ class Activity(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False, unique=True)
+    icon = Column(String, nullable=True)

@@ -2112,6 +2112,12 @@ button {
     align-items: center;
 }
 
+.admin-inline-upload {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.35rem;
+}
+
 .admin-inline-form input {
     height: 3rem;
     padding: 0 0.85rem;
@@ -2126,6 +2132,17 @@ button {
     border-color: var(--secondary);
     box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.12);
     outline: none;
+}
+
+.admin-inline-form input[type="file"] {
+    height: auto;
+    padding: 0.6rem 0.85rem;
+}
+
+.admin-inline-help {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.35;
 }
 
 .admin-weights-panel {
