@@ -35,6 +35,7 @@
   },
   "search": {
     "search_beaches": "Sök rekommenderade stränder",
+    "add_photo": "Lägg till ett foto",
     "reset_filters": "Återställ statiska filter",
     "disable_dynamic_filters": "Inaktivera dynamiska filter",
     "enable_dynamic_filters": "Aktivera dynamiska filter",
@@ -109,5 +110,25 @@
       "high_tide": "Högvatten",
       "low_tide": "Lågvatten"
     }
+  },
+  "services": {
+    "title": "Tjänster",
+    "restaurant": "Restaurang",
+    "take_away_food": "Avhämtning",
+    "showers": "Duschar",
+    "toilets": "Toaletter",
+    "parking": "Parkering",
+    "lifeguard": "Livräddare",
+    "accessibility": "Tillgänglighet",
+    "sport_zone": "Sportområde",
+    "pet_friendly": "Husdjursvänlig",
+    "spa": "Spa",
+    "surf_school": "Surfskola",
+    "windsurf_school": "Windsurfingskola"
+  },
+  "beach_types": {
+    "sand": "Sand",
+    "stone": "Sten",
+    "natural_pool": "Naturlig pool"
   }
 }
