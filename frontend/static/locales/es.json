@@ -2,10 +2,10 @@
   "titles": {
     "app_title": "Mi día de Playa",
     "preferences": "Preferencias",
-    "favorite_beaches": "Mis playas favoritas",
+    "favorite_beaches": "Mis Playas Favoritas",
     "downloading_favs": "Descargando playas favoritas...",
     "filters": "Filtros",
-    "my_filters": "Mis filtros",
+    "my_filters": "Mis Filtros",
     "configure_alerts": "Configurar alertas",
     "beaches": "Playas",
     "weather": "Clima",
@@ -14,16 +14,18 @@
     "results": "Playas recomendadas",
     "see_map": "Ver mapa",
     "in_map_title": "Mapa de playas recomendadas",
-    "in_map_description": "Consulta el ranking y la puntuación de cada playa directamente en el mapa.",
+    "in_map_description": "Consulta el ranking y score de cada playa directamente en el mapa.",
     "language": "Idioma"
   },
   "common": {
     "reset": "Reset",
     "date": "Fecha",
     "time": "Hora",
+    "time_end": "Hora de fin",
     "submit": "Enviar",
     "cancel": "Cancelar",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "add": "Añadir"
   },
   "mobile": {
     "title": "Menú",
@@ -39,57 +41,45 @@
     "deactivate_filter": "Desactivar filtro",
     "activate_filter": "Activar filtro",
     "quantity": "Cantidad",
-    "quantity_label": "Nº de recomendaciones",
-    "quantity_aria": "Cantidad de playas recomendadas",
-    "loading_activities": "Cargando actividades disponibles...",
-    "no_activities": "No hay actividades disponibles en este momento.",
-    "start_time": "Hora de inicio",
-    "end_time": "Hora de fin",
     "location": {
       "title": "Ciudad / Ubicación",
-      "my_location": "📍 Mi ubicación",
-      "choose_location": "🗺️ Elige una ubicación",
+      "my_location": "Mi ubicación",
+      "choose_location": "Elege una ubicación",
       "range": "Rango de búsqueda:",
-      "select": "Seleccionar ubicación"
+      "select": "Seleccionar ubicacion"
     },
     "questions": {
       "actividad": "1. ¿Qué quieres hacer en tu día de playa?",
       "when": "2. ¿Cuándo quieres ir a la playa?",
       "where": "3. Elige tu ubicación"
     },
-    "status": {
-      "searching": "Buscando recomendaciones...",
-      "found": "Se han encontrado {count} recomendaciones para {activity}.",
-      "found_interval": "Se han encontrado {count} recomendaciones para {activity} entre las {start} y las {end}."
-    },
-    "errors": {
-      "activity_required": "Debes seleccionar una actividad.",
-      "date_required": "Debes seleccionar una fecha.",
-      "time_range_required": "Debes seleccionar una hora de inicio y una hora de fin.",
+    "empty_results": "Por ahora no hay ninguna recomendacion de playas.",
+    "warnings": {
+      "no_activity": "Debes seleccionar una actividad.",
+      "no_date": "Debes seleccionar una fecha.",
+      "no_time": "Debes seleccionar una hora.",
       "past_date": "No puedes seleccionar una fecha pasada.",
-      "past_start_time": "No puedes seleccionar una hora de inicio pasada para el día de hoy.",
-      "end_before_start": "La hora de fin debe ser posterior a la hora de inicio.",
-      "missing_location": "Introduce información de localización.",
-      "api_error": "Ha ocurrido un error al consultar la API.",
-      "results_load": "No se pudieron cargar los resultados.",
-      "activities_load": "No se pudieron cargar las actividades.",
-      "activities_load_status": "No se pudieron cargar las actividades disponibles."
+      "past_time": "No puedes seleccionar una hora pasada para el d\u00eda de hoy.",
+      "missing_location": "Introduce informacion de localizacion."
     },
-    "empty_results": "Por ahora no hay ninguna recomendación de playas."
+    "searching": "Buscando recomendaciones..."
   },
   "activities": {
+    "title": "Actividades",
     "sunbathing": "Tomar el sol",
     "swimming": "Nadar",
     "surfing": "Surf",
     "wind_surfing": "Windsurf",
-    "kitesurfing": "Kitesurf",
+    "kitesurfing": "KiteSurf",
     "snorkeling": "Bucear",
     "walking": "Pasear",
     "fishing": "Pescar",
     "kayaking": "Kayak",
+    "no_activities_available": "No hay actividades disponibles en este momento.",
     "paddle_surfing": "Paddle surf",
     "bodyboarding": "Bodyboard",
-    "beach_volleyball": "Vóley playa"
+    "beach_volleyball": "Vóley playa",
+    "downloading": "Cargando actividades disponibles..."
   },
   "weather": {
     "cloudiness": "Nubosidad",
@@ -99,11 +89,17 @@
     "wind_min": "Viento mínimo",
     "wind_max": "Viento máximo",
     "temp": "Temp. (°C)",
-    "temp_min": "Temperatura ambiente mínima",
+    "temp_min": "Temperatura ambiente minima",
     "temp_max": "Temperatura ambiente máxima",
+    "water_temp": "Temp. agua (°C)",
     "waves": "Olas (m)",
     "waves_min": "Oleaje mínimo",
-    "waves_max": "Oleaje máximo"
+    "waves_max": "Oleaje máximo",
+    "rain": "Lluvia (%)",
+    "tide": "Marea",
+    "low_tide": "baja",
+    "high_tide": "alta",
+    "medium_tide": "media"
   },
   "services": {
     "title": "Servicios",
@@ -127,7 +123,19 @@
   },
   "placeholders": {
     "city": "Ej: Las Palmas",
-    "email": "tu@correo.com o admin"
+    "email": "tu@correo.com o admin",
+    "image": "nombre_imagen.jpg",
+    "activity": "Ej: paddle surf",
+    "service": "Ej: hamacas",
+    "temp_min": "Ej: 22",
+    "temp_max": "Ej: 30",
+    "wind_min": "Ej: 8",
+    "wind_max": "Ej: 20",
+    "cloud_min": "Ej: 0",
+    "cloud_max": "Ej: 25",
+    "waves_min": "Ej: 0.5",
+    "waves_max": "Ej: 1.5",
+    "review_comment": "Escribe tu reseña..."
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -138,6 +146,8 @@
     "confirm_password": "Confirmar contraseña",
     "enter": "Entrar a mi cuenta",
     "no_account_question": "¿Sin cuenta?",
+    "or_continue_with": "o continúa con",
+    "access": "Acceder",
     "create_account": "Crear cuenta",
     "already_have_account": "¿Ya tienes cuenta?",
     "signing_in": "Accediendo...",
@@ -159,20 +169,6 @@
     "remove": "Quitar de favoritas",
     "login_required": "Inicia sesión para ver tus playas favoritas.",
     "remove_error": "No se pudo quitar la playa de favoritas."
-  },
-  "results": {
-    "score": "Puntuación",
-    "recommendation_explanation": "Explicación de la recomendación",
-    "interval": "Tramo",
-    "tide": "Marea",
-    "beach_type": "Tipo",
-    "avg_air_temp": "Tª media",
-    "avg_wave": "Oleaje medio",
-    "avg_wind": "Vel. media del viento",
-    "avg_water_temp": "Tª media del agua",
-    "avg_cloud": "Nubosidad media",
-    "avg_rain": "Prob. media de lluvia",
-    "view_beach_photos": "Ver fotos de la playa"
   },
   "map": {
     "location_unavailable": "Ubicación no disponible",
@@ -212,13 +208,97 @@
   "reviews": {
     "loading": "Cargando reseñas...",
     "load_error": "Error al cargar las reseñas.",
-    "empty": "Sin reseñas todavía."
   },
   "admin": {
     "management": {
       "users": "Gestión de usuarios",
+      "users_description": "Panel básico para revisar usuarios, banearlos o eliminar cuentas no administradoras.",
       "beaches": "Gestión de playas",
+      "beaches_description": "Añade nuevas playas o modifica las existentes con sus actividades y servicios.",
       "reviews": "Gestión de reseñas"
+    },
+    "users": "Usuarios",
+    "recent_history_title": "Historial reciente",
+    "beach_management": {
+      "new_beach": "Nueva playa",
+      "edit_beach": "Editar playa",
+      "delete_beach": "Eliminar playa",
+      "save_beach": "Guardar playa",
+      "name": "Nombre",
+      "location": "Ubicación",
+      "accessibility": "Accesibilidad",
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja",
+      "latitude": "Latitud",
+      "longitude": "Longitud",
+      "location_on_map": "Ubicación en mapa",
+      "choose_on_map": "Elegir en mapa",
+      "map_help": " Haz clic en el mapa para actualizar automáticamente la latitud y la longitud.",
+      "map_label": "Mapa para seleccionar ubicación de la playa",
+      "image": "Imagen",
+      "description": "Descripción",
+      "activity_catalog": "Catálogo de actividades",
+      "activity_catalog_description": "Crea o elimina actividades disponibles para asignarlas a las playas.",
+      "activity_weight": "Pesos de la actividad",
+      "activity_weight_description": "Define la importancia relativa de cada variable. No hace falta que sumen 1: se normalizan automáticamente.",
+      "service_catalog": "Catálogo de servicios",
+      "service_catalog_description": "Gestiona los servicios globales que luego podrás marcar en cada playa."
     }
+  },
+  "settings": {
+    "personalize_filters": "Personaliza tu experiencia",
+    "personalize_filters_description": "Selecciona los filtros que deseas tener siempre a mano. Podrás cambiarlos luego en preferencias.",
+    "save": "Guardar mi configuración",
+    "alerts": {
+      "email_alerts": "Alertas por email",
+      "email_alerts_description": "Configura una alerta indicando la actividad, la playa y las condiciones que quieres vigilar.",
+      "my_alerts": "Mis alertas",
+      "my_alerts_description": "Desde aquí puedes revisar, editar o borrar cualquiera de tus alertas guardadas.",
+      "add_alert": "Añadir alerta",
+      "new_alert": "Nueva alerta",
+      "new_alert_description": "Configura la actividad, la playa y las condiciones a vigilar.",
+      "activity": "Actividad",
+      "select_activity": "Selecciona una actividad",
+      "beach": "Playa",
+      "select_beach": "Selecciona una playa",
+      "conditions": "Condiciones",
+      "save_alert": "Guardar alerta",
+      "cancel_editing": "Cancelar edición"
+    }
+  },
+  "onboarding": {
+    "step_1_of_3": "Paso 1 de 3",
+    "step_2_of_3": "Paso 2 de 3",
+    "step_3_of_3": "Paso 3 de 3",
+    "skip_all": "Omitir todo"
+  },
+  "reviews": {
+    "title": "Reseñas de playas",
+    "downloading_reviews": "Cargando reseñas...",
+    "add_review": "Añadir reseña"
+  },
+  "metric_card": {
+    "available": "Disponible",
+    "without_data": "Sin datos",
+    "records_found": "{{count}} registros encontrados",
+    "no_records_for_datetime": "No hay registros para esa fecha y hora",
+    "query_metrics": "Métrica de consulta",
+    "query_metrics_description": "Tiempo medido para recuperar condiciones desde la base de datos.",
+    "database": "Base de datos"
+  },
+  "results": {
+    "recommendations_found": "Se han encontrado {{count}} recomendaciones para {{activity}}.",
+    "no_results": "No hay resultados para esa b\u00fasqueda.",
+    "score": "Score",
+    "recommendation_explanation": "Explicación de la recomendación"
+  },
+  "errors": {
+    "not_able_fetch_activities": "No se pudieron cargar las actividades.",
+    "API": "Ha ocurrido un error al consultar la API.",
+    "results_load_error": "No se pudieron cargar los resultados."
+  },
+  "alerts": {
+    "sign_in": "Inicia sesion para gestionar favoritas."
   }
 }
