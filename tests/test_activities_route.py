@@ -1,5 +1,6 @@
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
+from types import SimpleNamespace
 
 
 ACTIVITIES_ROUTE_PATH = Path(__file__).resolve().parents[1] / "backend" / "routes" / "activities.py"
@@ -17,10 +18,15 @@ def test_get_activities_returns_public_catalog(monkeypatch):
         "collect_available_activities",
         lambda _db: ["surf", "paddle_surf"],
     )
+    monkeypatch.setattr(
+        ACTIVITIES_ROUTE_MODULE,
+        "_find_activity_by_normalized_name",
+        lambda _db, name: SimpleNamespace(icon="/static/img/paddle-surf.png") if name == "paddle_surf" else None,
+    )
 
     activities = get_activities(db=object())
 
     assert activities == [
-        {"name": "surf", "label": "Surf"},
-        {"name": "paddle_surf", "label": "Paddle surf"},
+        {"name": "surf", "label": "Surf", "icon": None},
+        {"name": "paddle_surf", "label": "Paddle surf", "icon": "/static/img/paddle-surf.png"},
     ]

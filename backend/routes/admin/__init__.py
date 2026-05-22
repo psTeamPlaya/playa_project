@@ -1,9 +1,12 @@
 import json
+import io
 from pathlib import Path
+import time
 import unicodedata
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
+from PIL import Image
 from sqlalchemy import text
 from sqlalchemy.orm import Session, selectinload
 
@@ -39,6 +42,8 @@ router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(requir
 router.include_router(reviews_router)
 
 PLAYAS_FILE = Path(__file__).resolve().parents[1] / "playas.json"
+ACTIVITY_ICONS_DIR = Path(__file__).resolve().parents[3] / "frontend" / "static" / "img"
+MAX_ACTIVITY_ICON_SIZE = 1024 * 1024
 
 ACTIVITY_ALIASES = {
     "tomar_sol": "tomar_sol",
@@ -78,6 +83,7 @@ class AdminBeachPayload(BaseModel):
 
 class AdminCatalogItemPayload(BaseModel):
     name: str = Field(min_length=1)
+    icon: str | None = None
     weights: dict[str, float] = Field(default_factory=dict)
 
 
@@ -124,6 +130,25 @@ def normalize_beach_type(beach_type: str | None) -> str | None:
 
 def prettify_catalog_name(name: str) -> str:
     return name.replace("_", " ").strip().capitalize()
+
+
+def normalize_catalog_icon(icon: str | None) -> str | None:
+    if icon is None:
+        return None
+
+    normalized = str(icon).strip()
+    return normalized or None
+
+
+def build_activity_icon_storage_path(normalized_name: str) -> Path:
+    return ACTIVITY_ICONS_DIR / f"activity-{normalized_name}.png"
+
+
+def save_activity_icon_file(normalized_name: str, file_bytes: bytes) -> str:
+    ACTIVITY_ICONS_DIR.mkdir(parents=True, exist_ok=True)
+    target_path = build_activity_icon_storage_path(normalized_name)
+    target_path.write_bytes(file_bytes)
+    return f"/static/img/{target_path.name}?v={int(time.time())}"
 
 
 def collect_available_activities(db: Session) -> list[str]:
@@ -304,6 +329,14 @@ def serialize_catalog_option(name: str) -> dict:
     }
 
 
+def serialize_activity_option(name: str, db_activity: Activity | None) -> dict:
+    return {
+        "name": name,
+        "label": prettify_catalog_name(name),
+        "icon": normalize_catalog_icon(getattr(db_activity, "icon", None)),
+    }
+
+
 def serialize_variable_option(variable: Variable) -> dict:
     return {
         "id": variable.id,
@@ -315,11 +348,14 @@ def serialize_variable_option(variable: Variable) -> dict:
 
 def serialize_catalog_item(item: Activity | Service, normalizer) -> dict:
     normalized = normalizer(item.name)
-    return {
+    payload = {
         "id": item.id,
         "name": normalized,
         "label": prettify_catalog_name(normalized or item.name),
     }
+    if isinstance(item, Activity):
+        payload["icon"] = normalize_catalog_icon(item.icon)
+    return payload
 
 
 def serialize_admin_activity(
@@ -332,6 +368,7 @@ def serialize_admin_activity(
         "id": db_activity.id if db_activity is not None else None,
         "name": normalized_name,
         "label": prettify_catalog_name(normalized_name),
+        "icon": normalize_catalog_icon(db_activity.icon) if db_activity is not None else None,
         "weights": weights,
         "is_system": is_system,
         "can_rename": not is_system,
@@ -589,7 +626,10 @@ def set_user_ban_status(
 def get_catalog(
     db: Session = Depends(get_db),
 ):
-    activities = [serialize_catalog_option(name) for name in collect_available_activities(db)]
+    activities = [
+        serialize_activity_option(name, _find_activity_by_normalized_name(db, name))
+        for name in collect_available_activities(db)
+    ]
     services = [serialize_catalog_option(name) for name in collect_available_services(db)]
     variables = [
         serialize_variable_option(variable)
@@ -617,6 +657,35 @@ def list_admin_activities(
     ]
 
 
+@router.post("/activities/icon-upload")
+async def upload_admin_activity_icon(
+    name: str = Form(...),
+    icon_file: UploadFile = File(...),
+):
+    normalized_name = normalize_activity_name(name)
+    if not normalized_name or normalized_name in EXCLUDED_ADMIN_ACTIVITIES:
+        raise HTTPException(status_code=400, detail="Nombre de actividad no válido")
+
+    file_bytes = await icon_file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Debes seleccionar un archivo PNG")
+    if len(file_bytes) > MAX_ACTIVITY_ICON_SIZE:
+        raise HTTPException(status_code=413, detail="El icono no puede superar 1024 KB")
+
+    try:
+        image = Image.open(io.BytesIO(file_bytes))
+        if image.format != "PNG":
+            raise HTTPException(status_code=400, detail="El icono debe estar en formato PNG")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Archivo de icono no válido") from exc
+
+    return {
+        "icon": save_activity_icon_file(normalized_name, file_bytes),
+    }
+
+
 @router.post("/activities")
 def create_admin_activity(
     payload: AdminCatalogItemPayload,
@@ -638,7 +707,10 @@ def create_admin_activity(
         )
 
     ensure_activity_id_sequence(db)
-    activity = Activity(name=normalized_name)
+    activity = Activity(
+        name=normalized_name,
+        icon=normalize_catalog_icon(payload.icon),
+    )
     db.add(activity)
     db.flush()
     replace_activity_weights(db, activity.id, payload.weights)
@@ -687,11 +759,15 @@ def update_admin_activity(
     metadata = load_beach_metadata()
     if current_activity is None:
         ensure_activity_id_sequence(db)
-        current_activity = Activity(name=new_name)
+        current_activity = Activity(
+            name=new_name,
+            icon=normalize_catalog_icon(payload.icon),
+        )
         db.add(current_activity)
         db.flush()
     else:
         current_activity.name = new_name
+        current_activity.icon = normalize_catalog_icon(payload.icon)
 
     replace_activity_weights(db, current_activity.id, payload.weights)
     if current_name != new_name:
