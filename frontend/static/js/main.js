@@ -42,6 +42,7 @@ const languageFlags = {
     es: "🇪🇸",
     en: "🇬🇧",
     cs: "🇨🇿",
+    de: "🇩🇪"
 };
 
 const activityCards = document.querySelectorAll(".activity-card");
@@ -309,6 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
             languageDropdown.hidden = true;
         });
     });
+    twemoji.parse(dropdown);
 });
 
 
