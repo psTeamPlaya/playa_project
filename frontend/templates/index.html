@@ -429,8 +429,15 @@
 
       <section class="panel search-panel">
         <div class="actions search-actions">
-          <button data-i18n="search.search_beaches" class="btn-primary" id="buscarBtn">Buscar playas
-            recomendadas</button>
+          <div class="search-actions-left-spacer"></div>
+          
+          <button data-i18n="search.search_beaches" class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
+
+          <div class="search-actions-right-wrapper">
+              <button class="btn-secondary" id="openPhotoModalBtn">
+                  <i class="bi bi-camera"></i>
+              </button>
+          </div>
         </div>
         <div class="sun-alert" id="sunAlert" hidden></div>
         <div class="status" id="status"></div>

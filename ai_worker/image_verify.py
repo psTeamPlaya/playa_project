@@ -133,7 +133,7 @@ while True:
                 "photo": photo_base64,
                 "photo_hash": photo_hash,
                 "weather": weather_labels[weather_best_idx],
-                "weather_prob": weather_probs[weather_best_idx]
+                "weather_prob": float(weather_probs[weather_best_idx].item())
             }
             print(int(raw_timestamp))
             expire_at = int(time.time()) 

@@ -1290,7 +1290,7 @@ async function initApp() {
     initLayoutEvents();
     await initInitialState();
     initReviewsModule(sessionUIController);
-    initReviewPhotoModal();
+    initReviewPhotoModal(sessionUIController);
 }
 
 // =========================================================
