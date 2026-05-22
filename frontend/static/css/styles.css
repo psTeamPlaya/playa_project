@@ -3021,6 +3021,15 @@ button {
 
 /* languages */
 
+img.emoji {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0px 0px 3px 0px;
+}
+
 .right-part {
   display: flex;
   align-items: center;
