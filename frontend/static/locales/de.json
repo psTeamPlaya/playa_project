@@ -59,8 +59,8 @@
     },
     "status": {
       "searching": "Empfehlungen werden gesucht...",
-      "found": "{count} Empfehlungen wurden für {activity} gefunden.",
-      "found_interval": "{count} Empfehlungen wurden für {activity} zwischen {start} und {end} gefunden."
+      "found": "{{count}} Empfehlungen wurden für {{activity}} gefunden.",
+      "found_interval": "{{count}} Empfehlungen wurden für {{activity}} zwischen {{start}} und {{end}} gefunden."
     },
     "errors": {
       "activity_required": "Du musst eine Aktivität auswählen.",
