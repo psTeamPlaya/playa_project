@@ -323,7 +323,6 @@ updateLanguageFlag(
 
 function limpiarResultadosPorCambioDeFiltros() {
     resultsContainer.innerHTML = "";
-    clearSourceMetrics();
     statusEl.textContent = "";
     ocultarAvisoSolar();
 }
@@ -450,12 +449,6 @@ function abrirMenuMovil() {
     });
     document.body.classList.add("mobile-menu-open");
     mobileMenuBtn?.setAttribute("aria-expanded", "true");
-}
-
-function limpiarResultadosPorCambioDeFiltros() {
-    resultsContainer.innerHTML = "";
-    statusEl.textContent = "";
-    ocultarAvisoSolar();
 }
 
 function resetRecommendationContext() {

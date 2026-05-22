@@ -99,7 +99,16 @@
     "tide": "Marea",
     "low_tide": "baja",
     "high_tide": "alta",
-    "medium_tide": "media"
+    "medium_tide": "media",
+    "tide_high": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta",
+      "rising": "Subiendo",
+      "falling": "Bajando",
+      "high_tide": "Pleamar",
+      "low_tide": "Bajamar"
+    }
   },
   "services": {
     "title": "Servicios",
@@ -177,15 +186,6 @@
     "close_recommendations": "Cerrar mapa de recomendaciones",
     "select_location": "Seleccionar ubicación"
   },
-  "tide": {
-    "low": "Baja",
-    "medium": "Media",
-    "high": "Alta",
-    "rising": "Subiendo",
-    "falling": "Bajando",
-    "high_tide": "Pleamar",
-    "low_tide": "Bajamar"
-  },
   "recommendation": {
     "recommended_between": "Se recomienda entre las {start} y las {end}",
     "recommended_at": "Se recomienda a las {time}",
@@ -204,10 +204,6 @@
       "rain_probability": "probabilidad media de lluvia",
       "uv_index": "índice UV medio"
     }
-  },
-  "reviews": {
-    "loading": "Cargando reseñas...",
-    "load_error": "Error al cargar las reseñas.",
   },
   "admin": {
     "management": {
@@ -276,7 +272,8 @@
   "reviews": {
     "title": "Reseñas de playas",
     "downloading_reviews": "Cargando reseñas...",
-    "add_review": "Añadir reseña"
+    "add_review": "Añadir reseña",
+    "empty": "Sin reseñas todavía."
   },
   "metric_card": {
     "available": "Disponible",
@@ -291,7 +288,8 @@
     "recommendations_found": "Se han encontrado {{count}} recomendaciones para {{activity}}.",
     "no_results": "No hay resultados para esa b\u00fasqueda.",
     "score": "Score",
-    "recommendation_explanation": "Explicación de la recomendación"
+    "recommendation_explanation": "Explicación de la recomendación",
+    "interval": "Intervalo"
   },
   "errors": {
     "not_able_fetch_activities": "No se pudieron cargar las actividades.",

@@ -2,6 +2,9 @@ let translations = {};
 let fallbackTranslations = {};
 let currentLang = "es";
 
+export function getCurrentLanguage() {
+  return currentLang;
+}
 
 async function loadFallbackTranslations() {
     const response = await fetch("/static/locales/es.json");
