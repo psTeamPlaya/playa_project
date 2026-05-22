@@ -11,6 +11,19 @@ async function loadFallbackTranslations() {
     fallbackTranslations = await response.json();
 }
 
+function notifyLanguageChange(lang) {
+    const eventDetail = { lang };
+
+    document.dispatchEvent(new CustomEvent("app-language-change", {
+        detail: eventDetail,
+        bubbles: true,
+    }));
+
+    window.dispatchEvent(new CustomEvent("app-language-change", {
+        detail: eventDetail,
+    }));
+}
+
 export async function setLanguage(lang) {
     currentLang = lang;
 
@@ -26,10 +39,8 @@ export async function setLanguage(lang) {
     }
 
     localStorage.setItem("lang", lang);
-    
-    document.dispatchEvent(new CustomEvent("app-language-change", {
-         detail: { lang }
-     }));
+
+    notifyLanguageChange(lang);
 }
 
 function getNestedValue(obj, path) {
