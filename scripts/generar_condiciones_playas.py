@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import requests
@@ -10,15 +10,17 @@ import requests
 START_ISO = "2026-04-20T00:00"
 END_ISO = "2026-04-27T23:00"
 TIMEZONE = "Atlantic/Canary"
+ROOT_DIR = Path(__file__).resolve().parents[1]
+OUTPUT_FILE = ROOT_DIR / "artifacts" / "condiciones_playas.openmeteo.json"
 
-# Catálogo base de playas usado en el proyecto
+# Catalogo base de playas usado en el proyecto.
 PLAYAS = [
     {"id": 1, "nombre": "Las Canteras", "latitud": 28.1416, "longitud": -15.4328},
     {"id": 2, "nombre": "Maspalomas", "latitud": 27.7394, "longitud": -15.5860},
     {"id": 3, "nombre": "El Confital", "latitud": 28.1537, "longitud": -15.4505},
     {"id": 4, "nombre": "Pozo Izquierdo", "latitud": 27.8242, "longitud": -15.4448},
     {"id": 5, "nombre": "Playa de Amadores", "latitud": 27.7897, "longitud": -15.7303},
-    {"id": 6, "nombre": "Playa del Inglés", "latitud": 27.7562, "longitud": -15.5665},
+    {"id": 6, "nombre": "Playa del Ingles", "latitud": 27.7562, "longitud": -15.5665},
     {"id": 7, "nombre": "Puerto Rico", "latitud": 27.7889, "longitud": -15.7126},
     {"id": 8, "nombre": "Anfi del Mar", "latitud": 27.7777, "longitud": -15.7102},
     {"id": 9, "nombre": "Sardina del Norte", "latitud": 28.1654, "longitud": -15.6990},
@@ -26,9 +28,9 @@ PLAYAS = [
     {"id": 11, "nombre": "Melenara", "latitud": 27.9877, "longitud": -15.3751},
     {"id": 12, "nombre": "La Garita", "latitud": 28.0065, "longitud": -15.3767},
     {"id": 13, "nombre": "Meloneras", "latitud": 27.7351, "longitud": -15.5989},
-    {"id": 14, "nombre": "Playa del Cabrón", "latitud": 27.8545, "longitud": -15.3804},
+    {"id": 14, "nombre": "Playa del Cabron", "latitud": 27.8545, "longitud": -15.3804},
     {"id": 15, "nombre": "Salinetas", "latitud": 27.9966, "longitud": -15.3649},
-    {"id": 16, "nombre": "San Agustín", "latitud": 27.7676, "longitud": -15.5494},
+    {"id": 16, "nombre": "San Agustin", "latitud": 27.7676, "longitud": -15.5494},
     {"id": 17, "nombre": "Arinaga", "latitud": 27.8559, "longitud": -15.3926},
     {"id": 18, "nombre": "Tufia", "latitud": 27.9614, "longitud": -15.3523},
 ]
@@ -86,8 +88,8 @@ def _hourly_to_dict(data: dict[str, Any], variable_names: list[str]) -> dict[str
 
 def _infer_marea(sea_level_height_msl: float | None) -> str:
     """
-    Aproximación simple para mantener compatibilidad con motor actual.
-    Ojo: NO es una marea astronómica real; es una discretización de sea_level_height_msl.
+    Aproximacion simple para mantener compatibilidad con el motor actual.
+    No es una marea astronomica real; discretiza sea_level_height_msl.
     """
     if sea_level_height_msl is None:
         return "media"
@@ -124,32 +126,35 @@ def generar_condiciones() -> list[dict[str, Any]]:
             w = weather_map[timestamp]
             m = marine_map[timestamp]
 
-            resultado.append({
-                "beach_id": playa["id"],
-                "nombre_playa": playa["nombre"],
-                "fecha": dt.strftime("%Y-%m-%d"),
-                "hora": dt.strftime("%H:%M"),
-                "temperatura_ambiente": w["temperature_2m"],
-                "velocidad_viento": w["wind_speed_10m"],
-                "altura_oleaje": m["wave_height"],
-                "temperatura_agua": m["sea_surface_temperature"],
-                "nubosidad": w["cloud_cover"],
-                "probabilidad_lluvia": w["precipitation_probability"],
-                "sea_level_height_msl": m["sea_level_height_msl"],
-                "marea": _infer_marea(m["sea_level_height_msl"]),
-                "fuente": "Open-Meteo Forecast API + Marine Weather API",
-                "timezone": TIMEZONE,
-            })
+            resultado.append(
+                {
+                    "beach_id": playa["id"],
+                    "nombre_playa": playa["nombre"],
+                    "fecha": dt.strftime("%Y-%m-%d"),
+                    "hora": dt.strftime("%H:%M"),
+                    "temperatura_ambiente": w["temperature_2m"],
+                    "velocidad_viento": w["wind_speed_10m"],
+                    "altura_oleaje": m["wave_height"],
+                    "temperatura_agua": m["sea_surface_temperature"],
+                    "nubosidad": w["cloud_cover"],
+                    "probabilidad_lluvia": w["precipitation_probability"],
+                    "sea_level_height_msl": m["sea_level_height_msl"],
+                    "marea": _infer_marea(m["sea_level_height_msl"]),
+                    "fuente": "Open-Meteo Forecast API + Marine Weather API",
+                    "timezone": TIMEZONE,
+                }
+            )
 
     return resultado
 
 
 def main() -> None:
     condiciones = generar_condiciones()
-    with open("condiciones_playas.json", "w", encoding="utf-8") as f:
+    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with OUTPUT_FILE.open("w", encoding="utf-8") as f:
         json.dump(condiciones, f, ensure_ascii=False, indent=2)
 
-    print(f"Generado condiciones_playas.json con {len(condiciones)} registros.")
+    print(f"Generado {OUTPUT_FILE} con {len(condiciones)} registros.")
 
 
 if __name__ == "__main__":

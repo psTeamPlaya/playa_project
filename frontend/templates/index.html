@@ -412,13 +412,13 @@
               </button>
             </div>
             <div class="range-selector">
-              <input type="radio" id="rango5" name="rango" value="5" checked>
+              <input type="radio" id="rango5" name="rango" value="5">
               <label for="rango5">5 km</label>
 
               <input type="radio" id="rango15" name="rango" value="15">
               <label for="rango15">15 km</label>
 
-              <input type="radio" id="rango50" name="rango" value="50">
+              <input type="radio" id="rango50" name="rango" value="50" checked>
               <label for="rango50">50 km</label>
             </div>
           </div>
@@ -431,7 +431,7 @@
         <div class="actions search-actions">
           <button data-i18n="search.search_beaches" class="btn-primary" id="buscarBtn">Buscar playas recomendadas</button>
 
-          <button class="btn-secondary photo-action-button" id="openPhotoModalBtn" type="button">
+          <button class="btn-secondary photo-action-button loggedIn hidden" id="openPhotoModalBtn" type="button">
               <i class="bi bi-camera" aria-hidden="true"></i>
               <span class="photo-action-button-label" data-i18n="search.add_photo">Add a photo</span>
           </button>
@@ -544,19 +544,13 @@
       </form>
 
       <div class="auth-divider">
-        <span>o</span>
+        <span data-i18n="auth.or_continue_with">o continúa con</span>
       </div>
 
       <div id="googleSignInBtn" data-client-id="{{ google_client_id }}" class="auth-google-btn-wrapper">
       </div>
 
       <div class="auth-error" id="loginErrorMessage"></div>
-
-      <div class="auth-divider">
-
-        <span data-i18n="auth.or_continue_with">o continúa con</span>
-
-      </div>
 
       <div id="googleSignInBtn"
         data-client-id="833555363742-69076ol0c0l4gb2rdv679t5rr2vl9c2o.apps.googleusercontent.com"

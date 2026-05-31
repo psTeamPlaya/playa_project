@@ -65,12 +65,22 @@
     "longitud": -15.429074,
     "tipo": "arena",
     "descripcion": "Playa urbana situada en la bahía de Las Palmas de Gran Canaria, de aguas generalmente tranquilas y muy utilizada para deportes de playa y actividades náuticas suaves.",
-    "actividades_ideales": [],
+    "actividades_ideales": [
+      {
+        "actividad": "nadar",
+        "condicion": "gestionado desde panel admin"
+      },
+      {
+        "actividad": "tomar_sol",
+        "condicion": "gestionado desde panel admin"
+      }
+    ],
     "servicios": {
       "balnearios": true,
       "comida_para_llevar": true,
       "restaurantes": true,
-      "zona_deportiva": true
+      "zona_deportiva": true,
+      "escuela_de_voleyplaya": true
     },
     "imagen": "las_alcaravaneras.jpg",
     "accesibilidad": "alta"
